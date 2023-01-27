@@ -540,6 +540,7 @@ public class MapSurface extends SurfaceView implements SurfaceHolder.Callback {
     */
    public void featuresRelabel() {
       // Discard and recreate the label layer
+      System.out.println("CCCCPUT");
       G.layers.put(
          Constants.MAP_LABEL_LAYER, new MapLayer(Constants.MAP_LABEL_LAYER));
       this.featuresLabel();
@@ -793,6 +794,7 @@ public class MapSurface extends SurfaceView implements SurfaceHolder.Callback {
     * @param f feature that may need a new layer
     */
    public void layersAddMaybe(Feature f) {
+      System.out.println("CCCCPUT2");
       if (!(G.layers.containsKey(f.getZplus()))) {
          G.layers.put(f.getZplus(), new MapLayer(f.getZplus()));
       }
@@ -1266,6 +1268,7 @@ public class MapSurface extends SurfaceView implements SurfaceHolder.Callback {
       // scaled versions at the new zoom level.
       MapLayer tiles = G.layers.get(Constants.TILE_LAYER);
       MapLayer old_tiles = G.layers.get(Constants.TILE_LAYER);
+      System.out.println("CCCCPUT3");
       if (tiles != null) {
          if (!tiles.isEmpty()) {
             G.layers.put(Constants.OLD_TILE_LAYER, tiles);

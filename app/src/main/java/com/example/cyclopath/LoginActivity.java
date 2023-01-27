@@ -173,6 +173,9 @@ public class LoginActivity extends BaseActivity
                              @Override
                              public void onSuccess(Void aVoid) {
                                 Toast.makeText(LoginActivity.this, "Successfully sign up!", Toast.LENGTH_SHORT).show();
+                                G.user.setName(username);
+                                G.user.isLoggedIn();
+
                              }
                           })
                           .addOnFailureListener(new OnFailureListener() {

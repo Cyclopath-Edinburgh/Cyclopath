@@ -1,83 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="28"
-    android:versionName="2.0.11"
     android:installLocation="auto"
-    package="com.example.cyclopath">
+    android:versionCode="28"
+    android:versionName="2.0.11">
 
-    <uses-sdk android:minSdkVersion="8"
+    <uses-sdk
+        android:minSdkVersion="8"
         android:targetSdkVersion="8" />
 
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <application android:icon="@drawable/ic_launcher"
+    <application
+        android:name=".CyclopathApplication"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:name="CyclopathApplication">
-        <activity android:name=".Cyclopath"
-            android:label="@string/app_name"
+        android:theme="@style/Theme.Cyclopath">
+        <activity
+            android:name=".t1Activity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".TestingActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+        </activity>
+        <activity
+            android:name=".SearchActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".SearchRouteActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+        </activity> <!-- <activity -->
+        <!-- android:name=".DirectionActivity" -->
+        <!-- android:exported="false"> -->
+        <!-- <meta-data -->
+        <!-- android:name="android.app.lib_name" -->
+        <!-- android:value="" /> -->
+        <!-- </activity> -->
+        <!-- <activity -->
+        <!-- android:name=".NavigationActivity" -->
+        <!-- android:exported="false"> -->
+        <!-- <meta-data -->
+        <!-- android:name="android.app.lib_name" -->
+        <!-- android:value="" /> -->
+        <!-- </activity> -->
+        <activity
+            android:name=".Cyclopath"
             android:debuggable="false"
             android:exported="true"
+            android:label="@string/app_name"
             android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
+             <intent-filter>
+             <action android:name="android.intent.action.MAIN" />
+
+
+             <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="http"
-                    android:host="cycloplan.cyclopath.org" />
-                <!-- <data android:scheme="http"
-                      android:host="dev.cs.umn.edu" />-->
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="cycloplan.cyclopath.org"
+                    android:scheme="http" />
+                <!--
+                     <data android:scheme="http"
+                      android:host="dev.cs.umn.edu" />
+                -->
             </intent-filter>
         </activity>
-        <activity android:name=".TrackManager"
-            android:label="@string/saved_tracks"></activity>
-        <activity android:name=".RouteLibrary"
-            android:label="@string/route_library"></activity>
-        <activity android:name="LoginActivity"
-            android:theme="@android:style/Theme.Dialog"
-            android:label="@string/login">
+        <activity
+            android:name=".TrackManager"
+            android:label="@string/saved_tracks" />
+        <activity
+            android:name=".RouteLibrary"
+            android:label="@string/route_library" />
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/login"
+            android:theme="@android:style/Theme.Dialog" />
+        <activity
+            android:name=".UserAgreement"
+            android:label="@string/terms_of_service" />
+        <activity
+            android:name=".FindRouteActivity"
+            android:configChanges="orientation"
+            android:label="@string/route_finder" />
+        <activity
+            android:name=".AddressChooseActivity"
+            android:configChanges="orientation"
+            android:label="@string/address_choose" />
+        <activity
+            android:name=".DirectionsActivity"
+            android:label="@string/directions" />
+        <activity
+            android:name=".ItemDetailsActivity"
+            android:label="@string/item_details" />
+        <activity
+            android:name=".NoteActivity"
+            android:label="@string/note_details" />
+        <activity
+            android:name=".TrackDetailsActivity"
+            android:label="@string/track_details" />
+        <activity
+            android:name=".ExperimentAgreement"
+            android:label="New Feature Testing" />
+        <activity
+            android:name=".NavigationActivity"
+            android:exported="true"
+            android:label="NavigationActivity">
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
-        <activity android:name=".UserAgreement"
-            android:label="@string/terms_of_service">
-        </activity>
-        <activity android:name="FindRouteActivity"
-            android:label="@string/route_finder"
-            android:configChanges="orientation">
-        </activity>
-        <activity android:name="AddressChooseActivity"
-            android:label="@string/address_choose"
-            android:configChanges="orientation">
-        </activity>
-        <activity android:name="DirectionsActivity"
-            android:label="@string/directions">
-        </activity>
-        <activity android:name="ItemDetailsActivity"
-            android:label="@string/item_details">
-        </activity>
-        <activity android:name="NoteActivity"
-            android:label="@string/note_details">
-        </activity>
-        <activity android:name="TrackDetailsActivity"
-            android:label="@string/track_details">
-        </activity>
-        <activity android:name="ExperimentAgreement"
-            android:label="New Feature Testing">
-        </activity>
-        <service android:name="TrackingService"></service>
-        <receiver android:name="com.example.cyclopath.net.NetworkListener"
+
+        <service android:name=".TrackingService" />
+
+        <receiver
+            android:name=".net.NetworkListener"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
     </application>
