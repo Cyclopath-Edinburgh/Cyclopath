@@ -251,13 +251,13 @@ public class GWIS extends Thread
     */
    public void fetch() {
       
-      if (!G.isConnected()) {
-         if (!this.retrying) {
-            G.showToast(G.app_context.getResources().getString(
-                  R.string.network_error_toast));
-         }
-         return;
-      }
+//      if (!G.isConnected()) {
+//         if (!this.retrying) {
+//            G.showToast(G.app_context.getResources().getString(
+//                  R.string.network_error_toast));
+//         }
+//         return;
+//      }
 
       if (!Conf.config_fetched
             && !GWIS_ValueMapGet.class.isInstance(this)
@@ -664,6 +664,7 @@ public class GWIS extends Thread
             msg.sendToTarget();
          }
       } catch (IOException e) {
+         System.out.println("HERE");
          Message msg = Message.obtain();
          msg.what = Constants.GWIS_IO_ERROR;
          msg.obj = e;
@@ -690,6 +691,7 @@ public class GWIS extends Thread
     * to throb.
     */
    public void throbberAttach() {
+      System.out.println("Hello");
       if (this.throb) {
          G.incrementThrobber();
       }

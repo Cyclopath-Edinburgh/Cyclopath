@@ -5,7 +5,11 @@
 package com.example.cyclopath;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -13,11 +17,25 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.example.cyclopath.conf.Constants;
 import com.example.cyclopath.gwis.GWIS_Hello;
 import com.example.cyclopath.gwis.GWIS_HelloCallback;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import org.w3c.dom.Node;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Activity that handles user login. <br>
@@ -29,7 +47,8 @@ public class LoginActivity extends BaseActivity
                                       GWIS_HelloCallback {
 
    // *** Listeners
-   
+
+   public FirebaseFirestore db;
    /**
     * Creates and initialize login window.
     */
@@ -38,6 +57,8 @@ public class LoginActivity extends BaseActivity
       super.onCreate(savedInstanceState);
       
       setContentView(R.layout.login);
+
+      db = FirebaseFirestore.getInstance();
 
       Button button = (Button)findViewById(R.id.login_btn);
       button.setOnClickListener(this);
@@ -129,6 +150,50 @@ public class LoginActivity extends BaseActivity
            this.getResources().getString(R.string.error));
          return;
       }
-      this.loginStart(username.toLowerCase(), password, cb.isChecked());
+      login(username, password);
+      //this.loginStart(username.toLowerCase(), password, cb.isChecked());
+   }
+
+   public void login(String username, String password) {
+      System.out.println(isNetworkAvailable(LoginActivity.this));
+      DocumentReference docRef = db.collection("users").document(username);
+      docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+         @Override
+         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+            if (task.isSuccessful()) {
+               DocumentSnapshot document = task.getResult();
+               if (document.exists()) {
+                  Toast.makeText(LoginActivity.this, "Successfully login!", Toast.LENGTH_SHORT).show();
+               } else {
+                  Map<String, Object> user = new HashMap<>();
+                  user.put("password", password);
+                  db.collection("users").document(username)
+                          .set(user)
+                          .addOnSuccessListener(new OnSuccessListener<Void>() {
+                             @Override
+                             public void onSuccess(Void aVoid) {
+                                Toast.makeText(LoginActivity.this, "Successfully sign up!", Toast.LENGTH_SHORT).show();
+                                G.user.setName(username);
+                                G.user.isLoggedIn();
+
+                             }
+                          })
+                          .addOnFailureListener(new OnFailureListener() {
+                             @Override
+                             public void onFailure(@NonNull Exception e) {
+
+                             }
+                          });
+               }
+            } else {
+
+            }
+         }
+      });
+   }
+
+   public boolean isNetworkAvailable (final Context context) {
+      final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+      return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
    }
 }

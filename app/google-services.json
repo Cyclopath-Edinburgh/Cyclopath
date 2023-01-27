@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "311764064674",
+    "project_id": "cyclopath-a39da",
+    "storage_bucket": "cyclopath-a39da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:311764064674:android:c703b1b68a267107e8bafb",
+        "android_client_info": {
+          "package_name": "com.example.cyclopath"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "311764064674-trb86n5mk72kf3chqmvg2i04jtvj77n0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwAugpzp5ftvBhMVDK9khB2huuNBSm0So"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "311764064674-trb86n5mk72kf3chqmvg2i04jtvj77n0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
