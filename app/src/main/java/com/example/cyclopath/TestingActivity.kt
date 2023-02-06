@@ -1,22 +1,49 @@
 package com.example.cyclopath
 
+import android.Manifest
 import android.accessibilityservice.GestureDescription
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.view.LayoutInflater
+import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.annotation.NonNull
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.PackageManagerCompat.LOG_TAG
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import com.example.cyclopath.TestingActivity.Companion.isPermissionGranted
+import com.example.cyclopath.TestingActivity.Companion.lastKnownLocationOrNull
 import com.example.cyclopath.databinding.ActivityTestingBinding
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonParser.parseString
+import com.mapbox.android.core.location.LocationEngine
+import com.mapbox.android.core.location.LocationEngineCallback
+import com.mapbox.android.core.location.LocationEngineProvider
+import com.mapbox.android.core.location.LocationEngineResult
+import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.Bearing
 import com.mapbox.api.directions.v5.models.DirectionsRoute
@@ -26,6 +53,10 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.camera
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.LocationComponentPlugin
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
@@ -57,43 +88,20 @@ import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources
 import com.mapbox.search.*
+import com.mapbox.search.autofill.*
 import java.util.*
 import com.mapbox.search.result.SearchSuggestion
 
 import com.mapbox.search.common.AsyncOperationTask
 import com.mapbox.search.result.SearchResult
+import com.mapbox.search.ui.adapter.autofill.AddressAutofillUiAdapter
+import com.mapbox.search.ui.view.CommonSearchViewConfiguration
+import com.mapbox.search.ui.view.DistanceUnitType
+import com.mapbox.search.ui.view.SearchResultsView
 
 import java.lang.Exception
 
 
-/**
- * This example demonstrates the usage of the route line and route arrow API's and UI elements.
- *
- * Before running the example make sure you have put your access_token in the correct place
- * inside [app/src/main/res/values/mapbox_access_token.xml]. If not present then add this file
- * at the location mentioned above and add the following content to it
- *
- * <?xml version="1.0" encoding="utf-8"?>
- * <resources xmlns:tools="http://schemas.android.com/tools">
- *     <string name="mapbox_access_token"><PUT_YOUR_ACCESS_TOKEN_HERE></string>
- * </resources>
- *
- * The example assumes that you have granted location permissions and does not enforce it. However,
- * the permission is essential for proper functioning of this example. The example also uses replay
- * location engine to facilitate navigation without actually physically moving.
- *
- * The example uses camera API's exposed by the Maps SDK rather than using the API's exposed by the
- * Navigation SDK. This is done to make the example concise and keep the focus on actual feature at
- * hand. To learn more about how to use the camera API's provided by the Navigation SDK look at
- * [ShowCameraTransitionsActivity]
- *
- * How to use this example:
- * - The example uses a single hardcoded route with alternatives.
- * - When the example starts, the camera transitions to the location where the route is.
- * - It then draws a route line on the map using the hardcoded route.
- * - Click on start navigation.
- * - You should now be able to navigate to the destination with the route line and route arrows drawn.
- */
 class TestingActivity : AppCompatActivity() {
     private lateinit var locationComponent: LocationComponentPlugin
 
@@ -215,21 +223,21 @@ class TestingActivity : AppCompatActivity() {
      * MapboxNavigation. When this observer is called the route data is used to draw route(s)
      * on the map.
      */
-    private val routesObserver: RoutesObserver = RoutesObserver { routeUpdateResult ->
-        // RouteLine: wrap the NavigationRoute objects and pass them
-        // to the MapboxRouteLineApi to generate the data necessary to draw the route(s)
-        // on the map.
-        routeLineApi.setNavigationRoutes(
-                routeUpdateResult.navigationRoutes
-        ) { value ->
-            // RouteLine: The MapboxRouteLineView expects a non-null reference to the map style.
-            // the data generated by the call to the MapboxRouteLineApi above must be rendered
-            // by the MapboxRouteLineView in order to visualize the changes on the map.
-            viewBinding.mapView.getMapboxMap().getStyle()?.apply {
-                routeLineView.renderRouteDrawData(this, value)
-            }
-        }
-    }
+//    private val routesObserver: RoutesObserver = RoutesObserver { routeUpdateResult ->
+//        // RouteLine: wrap the NavigationRoute objects and pass them
+//        // to the MapboxRouteLineApi to generate the data necessary to draw the route(s)
+//        // on the map.
+//        routeLineApi.setNavigationRoutes(
+//                routeUpdateResult.navigationRoutes
+//        ) { value ->
+//            // RouteLine: The MapboxRouteLineView expects a non-null reference to the map style.
+//            // the data generated by the call to the MapboxRouteLineApi above must be rendered
+//            // by the MapboxRouteLineView in order to visualize the changes on the map.
+//            viewBinding.mapView.getMapboxMap().getStyle()?.apply {
+//                routeLineView.renderRouteDrawData(this, value)
+//            }
+//        }
+//    }
 
     /**
      * RouteLine: This listener is necessary only when enabling the vanishing route line feature
@@ -237,32 +245,32 @@ class TestingActivity : AppCompatActivity() {
      * option is set to `false` (the default) in MapboxRouteLineOptions then it is not necessary
      * to use this listener.
      */
-    private val onPositionChangedListener = OnIndicatorPositionChangedListener { point ->
-        val result = routeLineApi.updateTraveledRouteLine(point)
-        viewBinding.mapView.getMapboxMap().getStyle()?.apply {
-            // Render the result to update the map.
-            routeLineView.renderRouteLineUpdate(this, result)
-        }
-    }
+//    private val onPositionChangedListener = OnIndicatorPositionChangedListener { point ->
+//        val result = routeLineApi.updateTraveledRouteLine(point)
+//        viewBinding.mapView.getMapboxMap().getStyle()?.apply {
+//            // Render the result to update the map.
+//            routeLineView.renderRouteLineUpdate(this, result)
+//        }
+//    }
 
-    private val routeProgressObserver = RouteProgressObserver { routeProgress ->
-        // RouteLine: This line is only necessary if the vanishing route line feature
-        // is enabled.
-        routeLineApi.updateWithRouteProgress(routeProgress) { result ->
-            viewBinding.mapView.getMapboxMap().getStyle()?.apply {
-                routeLineView.renderRouteLineUpdate(this, result)
-            }
-        }
-
-        // RouteArrow: The next maneuver arrows are driven by route progress events.
-        // Generate the next maneuver arrow update data and pass it to the view class
-        // to visualize the updates on the map.
-        val arrowUpdate = routeArrowApi.addUpcomingManeuverArrow(routeProgress)
-        viewBinding.mapView.getMapboxMap().getStyle()?.apply {
-            // Render the result to update the map.
-            routeArrowView.renderManeuverUpdate(this, arrowUpdate)
-        }
-    }
+//    private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+//        // RouteLine: This line is only necessary if the vanishing route line feature
+//        // is enabled.
+//        routeLineApi.updateWithRouteProgress(routeProgress) { result ->
+//            viewBinding.mapView.getMapboxMap().getStyle()?.apply {
+//                routeLineView.renderRouteLineUpdate(this, result)
+//            }
+//        }
+//
+//        // RouteArrow: The next maneuver arrows are driven by route progress events.
+//        // Generate the next maneuver arrow update data and pass it to the view class
+//        // to visualize the updates on the map.
+//        val arrowUpdate = routeArrowApi.addUpcomingManeuverArrow(routeProgress)
+//        viewBinding.mapView.getMapboxMap().getStyle()?.apply {
+//            // Render the result to update the map.
+//            routeArrowView.renderManeuverUpdate(this, arrowUpdate)
+//        }
+//    }
 
     private val locationObserver = object : LocationObserver {
         override fun onNewRawLocation(rawLocation: Location) {}
@@ -285,17 +293,17 @@ class TestingActivity : AppCompatActivity() {
             onResumedObserver = object : MapboxNavigationObserver {
                 @SuppressLint("MissingPermission")
                 override fun onAttached(mapboxNavigation: MapboxNavigation) {
-                    mapboxNavigation.registerRoutesObserver(routesObserver)
+                    //mapboxNavigation.registerRoutesObserver(routesObserver)
                     mapboxNavigation.registerLocationObserver(locationObserver)
-                    mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+                    //mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
                     mapboxNavigation.registerRouteProgressObserver(replayProgressObserver)
                     mapboxNavigation.startTripSession()
                 }
 
                 override fun onDetached(mapboxNavigation: MapboxNavigation) {
-                    mapboxNavigation.unregisterRoutesObserver(routesObserver)
+                    //mapboxNavigation.unregisterRoutesObserver(routesObserver)
                     mapboxNavigation.unregisterLocationObserver(locationObserver)
-                    mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
+                    //mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
                     mapboxNavigation.unregisterRouteProgressObserver(replayProgressObserver)
                 }
             },
@@ -303,7 +311,6 @@ class TestingActivity : AppCompatActivity() {
     )
 
     private lateinit var origintext : EditText
-
     private lateinit var destinationtext : EditText
 
     private lateinit var searchbutton : Button
@@ -311,94 +318,287 @@ class TestingActivity : AppCompatActivity() {
     private lateinit var searchEngine: SearchEngine
     private lateinit var searchRequestTask: AsyncOperationTask
 
+    private lateinit var addressAutofill: AddressAutofill
+    private lateinit var mapPinOrigin: View
+    private lateinit var mapPinDestination: View
+    private lateinit var searchResultsViewOrigin: SearchResultsView
+    private lateinit var searchEngineUiAdapterOrigin: AddressAutofillUiAdapter
+    private lateinit var searchResultsViewDestination: SearchResultsView
+    private lateinit var searchEngineUiAdapterDestination: AddressAutofillUiAdapter
+
+//    private lateinit var pinCorrectionNote: TextView
+
+    private var ignoreNextMapIdleEvent: Boolean = false
+    private var ignoreNextQueryTextUpdate: Boolean = false
+
     private lateinit var origin: Point
     private lateinit var destination: Point
     private var isOrigin : Boolean = true
 
-    private val searchCallback = object : SearchSelectionCallback {
-
-        override fun onSuggestions(suggestions: List<SearchSuggestion>, responseInfo: ResponseInfo) {
-            if (suggestions.isEmpty()) {
-                Log.i("SearchApiExample", "No suggestions found")
-            } else {
-                Log.i("SearchApiExample", "Search suggestions: $suggestions.\nSelecting first suggestion...")
-                searchRequestTask = searchEngine.select(suggestions.first(), this)
-            }
-        }
-
-        override fun onResult(
-                suggestion: SearchSuggestion,
-                result: SearchResult,
-                responseInfo: ResponseInfo
-        ) {
-            if (isOrigin) {
-                origin = result.coordinate
-                isOrigin = false
-            } else {
-                destination = result.coordinate
-                isOrigin = true
-                fetchARoute(origin, destination)
-            }
-            Log.i("SearchApiExample", "Search result: $result")
-        }
-
-        override fun onCategoryResult(
-                suggestion: SearchSuggestion,
-                results: List<SearchResult>,
-                responseInfo: ResponseInfo
-        ) {
-            println("333")
-            Log.i("SearchApiExample", "Category search results: $results")
-        }
-
-        override fun onError(e: Exception) {
-            println("444")
-            Log.i("SearchApiExample", "Search error", e)
-        }
-    }
+//    private val searchCallback = object : SearchSelectionCallback {
+//
+//        override fun onSuggestions(suggestions: List<SearchSuggestion>, responseInfo: ResponseInfo) {
+//            if (suggestions.isEmpty()) {
+//                Log.i("SearchApiExample", "No suggestions found")
+//            } else {
+//                Log.i("SearchApiExample", "Search suggestions: $suggestions.\nSelecting first suggestion...")
+//                searchRequestTask = searchEngine.select(suggestions.first(), this)
+//            }
+//        }
+//
+//        override fun onResult(
+//                suggestion: SearchSuggestion,
+//                result: SearchResult,
+//                responseInfo: ResponseInfo
+//        ) {
+//            if (isOrigin) {
+//                origin = result.coordinate
+//                isOrigin = false
+//            } else {
+//                destination = result.coordinate
+//                isOrigin = true
+//                fetchARoute(origin, destination)
+//            }
+//            Log.i("SearchApiExample", "Search result: $result")
+//        }
+//
+//        override fun onCategoryResult(
+//                suggestion: SearchSuggestion,
+//                results: List<SearchResult>,
+//                responseInfo: ResponseInfo
+//        ) {
+//            println("333")
+//            Log.i("SearchApiExample", "Category search results: $results")
+//        }
+//
+//        override fun onError(e: Exception) {
+//            println("444")
+//            Log.i("SearchApiExample", "Search error", e)
+//        }
+//    }
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityTestingBinding.inflate(layoutInflater)
-
         setContentView(viewBinding.root)
+
+        if (ContextCompat.checkSelfPermission(this@TestingActivity,
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                &&
+                ContextCompat.checkSelfPermission(this@TestingActivity,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            askForLocationPermissions()
+        }
+
+        addressAutofill = AddressAutofill.create(getString(R.string.matoken))
+
+        mapPinOrigin = findViewById(R.id.map_pin_origin)
+        mapPinDestination = findViewById(R.id.map_pin_destination)
+//        pinCorrectionNote = findViewById(R.id.pin_correction_note)
+
+        viewBinding.mapView.getMapboxMap().addOnMapIdleListener {
+            if (ignoreNextMapIdleEvent) {
+                ignoreNextMapIdleEvent = false
+                return@addOnMapIdleListener
+            }
+            val mapCenter = viewBinding.mapView.getMapboxMap().cameraState.center
+            findAddress(mapCenter)
+        }
+
+        searchResultsViewOrigin = findViewById(R.id.search_results_view_origin)
+
+        searchResultsViewOrigin.initialize(
+                SearchResultsView.Configuration(
+                        commonConfiguration = CommonSearchViewConfiguration(DistanceUnitType.IMPERIAL)
+                )
+        )
+
+        searchEngineUiAdapterOrigin = AddressAutofillUiAdapter(
+                view = searchResultsViewOrigin,
+                addressAutofill = addressAutofill
+        )
+
+        searchResultsViewDestination = findViewById(R.id.search_results_view_destination)
+
+        searchResultsViewDestination.initialize(
+                SearchResultsView.Configuration(
+                        commonConfiguration = CommonSearchViewConfiguration(DistanceUnitType.IMPERIAL)
+                )
+        )
+
+        searchEngineUiAdapterDestination = AddressAutofillUiAdapter(
+                view = searchResultsViewDestination,
+                addressAutofill = addressAutofill
+        )
+
+        searchEngineUiAdapterOrigin.addSearchListener(object : AddressAutofillUiAdapter.SearchListener {
+
+            override fun onSuggestionSelected(suggestion: AddressAutofillSuggestion) {
+                showAddressAutofillSuggestion(
+                        suggestion,
+                        fromReverseGeocoding = false,
+                        true
+                )
+            }
+
+            override fun onSuggestionsShown(suggestions: List<AddressAutofillSuggestion>) {
+                // Nothing to do
+            }
+
+            override fun onError(e: Exception) {
+                // Nothing to do
+            }
+        })
+
+        searchEngineUiAdapterDestination.addSearchListener(object : AddressAutofillUiAdapter.SearchListener {
+
+            override fun onSuggestionSelected(suggestion: AddressAutofillSuggestion) {
+
+                showAddressAutofillSuggestion(
+                        suggestion,
+                        fromReverseGeocoding = false,
+                        false
+                )
+            }
+
+            override fun onSuggestionsShown(suggestions: List<AddressAutofillSuggestion>) {
+                // Nothing to do
+            }
+
+            override fun onError(e: Exception) {
+                // Nothing to do
+            }
+        })
 
         origintext = viewBinding.origin
         destinationtext = viewBinding.destination
         searchbutton = viewBinding.search
 
-        viewBinding.mapView.getMapboxMap().loadStyleUri(NavigationStyles.NAVIGATION_DAY_STYLE) {
-            viewBinding.startNavigation.visibility = View.VISIBLE
-            viewBinding.startNavigation.text = "Start Navigation"
-            viewBinding.startNavigation.setOnClickListener {
-                mapboxNavigation.setNavigationRoutes(
-                        listOf(hardCodedRoute).toNavigationRoutes(RouterOrigin.Offboard)
-                )
-                viewBinding.startNavigation.visibility = View.INVISIBLE
-                // RouteLine: Hiding the alternative routes when navigation starts.
-                viewBinding.mapView.getMapboxMap().getStyle()?.apply {
-                    routeLineView.hideAlternativeRoutes(this)
-                }
-            }
-        }
+//        viewBinding.mapView.getMapboxMap().loadStyleUri(NavigationStyles.NAVIGATION_DAY_STYLE) {
+//            viewBinding.startNavigation.visibility = View.VISIBLE
+//            viewBinding.startNavigation.text = "Start Navigation"
+//            viewBinding.startNavigation.setOnClickListener {
+//                mapboxNavigation.setNavigationRoutes(
+//                        listOf(hardCodedRoute).toNavigationRoutes(RouterOrigin.Offboard)
+//                )
+//                viewBinding.startNavigation.visibility = View.INVISIBLE
+//                // RouteLine: Hiding the alternative routes when navigation starts.
+//                viewBinding.mapView.getMapboxMap().getStyle()?.apply {
+//                    routeLineView.hideAlternativeRoutes(this)
+//                }
+//            }
+//        }
 
         searchbutton.setOnClickListener {
-            searchEngine = SearchEngine.createSearchEngineWithBuiltInDataProviders(
-                    SearchEngineSettings(getString(R.string.matoken))
-            )
+            if (origin != null && destination != null) {
+                fetchARoute(origin, destination)
+            }
+//                searchEngine = SearchEngine.createSearchEngineWithBuiltInDataProviders(
+//                        SearchEngineSettings(getString(R.string.matoken))
+//                )
+//
+//                searchRequestTask = searchEngine.search(
+//                        origintext.toString(),
+//                        SearchOptions(limit = 5),
+//                        searchCallback
+//                )
+//
+//                searchRequestTask = searchEngine.search(
+//                        destinationtext.toString(),
+//                        SearchOptions(limit = 5),
+//                        searchCallback
+//                )
+        }
 
-            searchRequestTask = searchEngine.search(
-                    origintext.toString(),
-                    SearchOptions(limit = 5),
-                    searchCallback
-            )
+        origintext.addTextChangedListener(object : TextWatcher {
 
-            searchRequestTask = searchEngine.search(
-                    destinationtext.toString(),
-                    SearchOptions(limit = 5),
-                    searchCallback
+            override fun onTextChanged(text: CharSequence, start: Int, before: Int, count: Int) {
+                isOrigin = true
+                if (ignoreNextQueryTextUpdate) {
+                    ignoreNextQueryTextUpdate = false
+                    return
+                }
+
+                val query = Query.create(text.toString())
+                if (query != null) {
+                    lifecycleScope.launchWhenStarted {
+                        val result = searchEngineUiAdapterOrigin.search(query)
+                    }
+                }
+                searchResultsViewOrigin.isVisible = query != null
+            }
+
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+                // Nothing to do
+            }
+
+            override fun afterTextChanged(s: Editable) {
+                // Nothing to do
+            }
+        })
+
+        destinationtext.addTextChangedListener(object : TextWatcher {
+
+            override fun onTextChanged(text: CharSequence, start: Int, before: Int, count: Int) {
+                isOrigin = false
+                if (ignoreNextQueryTextUpdate) {
+                    ignoreNextQueryTextUpdate = false
+                    return
+                }
+
+                val query = Query.create(text.toString())
+                if (query != null) {
+                    lifecycleScope.launchWhenStarted {
+                        searchEngineUiAdapterDestination.search(query)
+                    }
+                }
+                searchResultsViewDestination.isVisible = query != null
+            }
+
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+                // Nothing to do
+            }
+
+            override fun afterTextChanged(s: Editable) {
+                // Nothing to do
+            }
+        })
+
+        if (!isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            ActivityCompat.requestPermissions(
+                    this@TestingActivity,
+                    arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    TestingActivity.PERMISSIONS_REQUEST_LOCATION
             )
+            LocationEngineProvider.getBestLocationEngine(applicationContext).lastKnownLocationOrNull(this) { point ->
+                point?.let {
+                    viewBinding.mapView.getMapboxMap().setCamera(
+                            CameraOptions.Builder()
+                                    .center(point)
+                                    .zoom(9.0)
+                                    .build()
+                    )
+                    ignoreNextMapIdleEvent = true
+                }
+            }
+        } else {
+            LocationEngineProvider.getBestLocationEngine(applicationContext).lastKnownLocationOrNull(this) { point ->
+                point?.let {
+                    viewBinding.mapView.getMapboxMap().setCamera(
+                            CameraOptions.Builder()
+                                    .center(point)
+                                    .zoom(9.0)
+                                    .build()
+                    )
+                    ignoreNextMapIdleEvent = true
+                }
+            }
         }
 
     }
@@ -412,11 +612,11 @@ class TestingActivity : AppCompatActivity() {
                         .build()
         )
 
-        locationComponent = viewBinding.mapView.location.apply {
-            setLocationProvider(navigationLocationProvider)
-            addOnIndicatorPositionChangedListener(onPositionChangedListener)
-            enabled = true
-        }
+//        locationComponent = viewBinding.mapView.location.apply {
+//            setLocationProvider(navigationLocationProvider)
+//            addOnIndicatorPositionChangedListener(onPositionChangedListener)
+//            enabled = true
+//        }
 
         replayOriginLocation()
     }
@@ -525,13 +725,235 @@ class TestingActivity : AppCompatActivity() {
                                 listOf(route).toNavigationRoutes(RouterOrigin.Offboard)
                         )
                         viewBinding.startNavigation.visibility = View.INVISIBLE
-                        viewBinding.mapView.getMapboxMap().getStyle()?.apply {
-                            routeLineView.hideAlternativeRoutes(this)
-                        }
+//                        viewBinding.mapView.getMapboxMap().getStyle()?.apply {
+//                            routeLineView.hideAlternativeRoutes(this)
+//                        }
 
                     }
                 }
         )
+    }
+
+    ////
+    private fun findAddress(point: Point) {
+        lifecycleScope.launchWhenStarted {
+            when (val response = addressAutofill.suggestions(point, AddressAutofillOptions()))  {
+                is AddressAutofillResponse.Suggestions -> {
+                    if (response.suggestions.isEmpty()) {
+                        showToast(R.string.address_autofill_error_pin_correction)
+                    } else {
+                        showAddressAutofillSuggestion(
+                                response.suggestions.first(),
+                                fromReverseGeocoding = true,
+                                isOrigin
+                        )
+                    }
+                }
+                is AddressAutofillResponse.Error -> {
+                    val error = response.error
+                    Log.d("Test.", "Test. $error", error)
+                    showToast(R.string.address_autofill_error_pin_correction)
+                }
+            }
+        }
+    }
+
+    private fun showAddressAutofillSuggestion(suggestion: AddressAutofillSuggestion, fromReverseGeocoding: Boolean, isOrigin: Boolean) {
+        val address = suggestion.result().address
+        if (isOrigin) {
+            origintext.setText(suggestion.formattedAddress)
+        } else {
+            destinationtext.setText(suggestion.formattedAddress)
+        }
+
+        //pinCorrectionNote.isVisible = true
+
+//        if (!fromReverseGeocoding) {
+//            ignoreNextMapIdleEvent = true
+//            viewBinding.mapView.getMapboxMap().setCamera(
+//                    CameraOptions.Builder()
+//                            .center(suggestion.coordinate)
+//                            .zoom(16.0)
+//                            .build()
+//            )
+//            println("HERE1")
+//            println(viewBinding.mapView.getMapboxMap().cameraState.center.longitude())
+//            println(viewBinding.mapView.getMapboxMap().cameraState.center.latitude())
+//            println(suggestion.coordinate.longitude())
+//            println(suggestion.coordinate.latitude())
+//            if (isOrigin) {
+//                mapPinOrigin.isVisible = true
+//                origin = suggestion.coordinate
+//            } else {
+//                mapPinDestination.isVisible = true
+//                destination = suggestion.coordinate
+//            }
+//            addAnnotationToMap(suggestion.coordinate)
+//        }
+
+        ignoreNextMapIdleEvent = true
+        addAnnotationToMap(suggestion.coordinate)
+
+        ignoreNextQueryTextUpdate = true
+        if (isOrigin) {
+            origintext.setText(
+                    listOfNotNull(
+                            address.houseNumber,
+                            address.street
+                    ).joinToString()
+            )
+            origintext.clearFocus()
+
+            searchResultsViewOrigin.isVisible = false
+            searchResultsViewOrigin.hideKeyboard()
+        } else {
+            destinationtext.setText(
+                    listOfNotNull(
+                            address.houseNumber,
+                            address.street
+                    ).joinToString()
+            )
+            destinationtext.clearFocus()
+
+            searchResultsViewDestination.isVisible = false
+            searchResultsViewDestination.hideKeyboard()
+        }
+
+    }
+
+    private fun showToast(@StringRes resId: Int) {
+        Toast.makeText(applicationContext, getString(resId), Toast.LENGTH_SHORT).show()
+    }
+
+    private companion object {
+
+        const val PERMISSIONS_REQUEST_LOCATION = 0
+
+        fun Context.isPermissionGranted(permission: String): Boolean {
+            return ContextCompat.checkSelfPermission(
+                    this, permission
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
+        val Context.inputMethodManager: InputMethodManager
+            get() = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+        fun View.hideKeyboard() {
+            context.inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
+        }
+
+        @SuppressLint("MissingPermission")
+        fun LocationEngine.lastKnownLocationOrNull(context: Context, callback: (Point?) -> Unit) {
+            if (!PermissionsManager.areLocationPermissionsGranted(context)) {
+                callback(null)
+            }
+
+            val locationCallback = object : LocationEngineCallback<LocationEngineResult> {
+                override fun onSuccess(result: LocationEngineResult?) {
+                    val location = (result?.locations?.lastOrNull() ?: result?.lastLocation)?.let { location ->
+                        Point.fromLngLat(location.longitude, location.latitude)
+                    }
+                    callback(location)
+                }
+
+                override fun onFailure(exception: Exception) {
+                    callback(null)
+                }
+            }
+            getLastLocation(locationCallback)
+        }
+    }
+
+    open fun askForLocationPermissions() {
+        // Should we show an explanation?
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this@TestingActivity,
+                        Manifest.permission.ACCESS_FINE_LOCATION)) {
+            AlertDialog.Builder(this@TestingActivity)
+                    .setTitle("Location permessions needed")
+                    .setMessage("you need to allow this permission!")
+                    .setPositiveButton("Sure") { dialog, which ->
+                        ActivityCompat.requestPermissions(this@TestingActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                                Cyclopath.LOCATION_PERMISSION_REQUEST_CODE)
+                    }
+                    .setNegativeButton("Not now") { dialog, which ->
+                        //                                        //Do nothing
+                    }
+                    .show()
+
+            // Show an expanation to the user *asynchronously* -- don't block
+            // this thread waiting for the user's response! After the user
+            // sees the explanation, try again to request the permission.
+        } else if (ActivityCompat.shouldShowRequestPermissionRationale(this@TestingActivity,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            AlertDialog.Builder(this@TestingActivity)
+                    .setTitle("Location permessions needed")
+                    .setMessage("you need to allow this permission!")
+                    .setPositiveButton("Sure") { dialog, which ->
+                        ActivityCompat.requestPermissions(this@TestingActivity, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                                Cyclopath.LOCATION_PERMISSION_REQUEST_CODE)
+                    }
+                    .setNegativeButton("Not now") { dialog, which ->
+                        //                                        //Do nothing
+                    }
+                    .show()
+
+        } else {
+            // No explanation needed, we can request the permission.
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    Cyclopath.LOCATION_PERMISSION_REQUEST_CODE)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                    Cyclopath.LOCATION_PERMISSION_REQUEST_CODE)
+
+            // MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        }
+    }
+
+    private fun addAnnotationToMap(point : Point) {
+        bitmapFromDrawableRes(
+                this@TestingActivity,
+                R.drawable.red_marker
+        )?.let {
+            println("DRAW")
+            val annotationApi = viewBinding.mapView.annotations
+            val pointAnnotationManager = annotationApi?.createPointAnnotationManager(viewBinding.mapView)
+            val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                    .withPoint(point)
+                    .withIconImage(it)
+            pointAnnotationManager?.create(pointAnnotationOptions)
+            val cameraPosition = CameraOptions.Builder()
+                    .zoom(14.0)
+                    .center(point)
+                    .build()
+            viewBinding.mapView.getMapboxMap().setCamera(cameraPosition)
+            println("REACH")
+            println(viewBinding.mapView.getMapboxMap().cameraState.center.longitude())
+            println(viewBinding.mapView.getMapboxMap().cameraState.center.latitude())
+        }
+    }
+    private fun bitmapFromDrawableRes(context: Context, @DrawableRes resourceId: Int) =
+            convertDrawableToBitmap(AppCompatResources.getDrawable(context, resourceId))
+
+    private fun convertDrawableToBitmap(sourceDrawable: Drawable?): Bitmap? {
+        if (sourceDrawable == null) {
+            return null
+        }
+        return if (sourceDrawable is BitmapDrawable) {
+            sourceDrawable.bitmap
+        } else {
+// copying drawable object to not manipulate on the same reference
+            val constantState = sourceDrawable.constantState ?: return null
+            val drawable = constantState.newDrawable().mutate()
+            val bitmap: Bitmap = Bitmap.createBitmap(
+                    drawable.intrinsicWidth, drawable.intrinsicHeight,
+                    Bitmap.Config.ARGB_8888
+            )
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            bitmap
+        }
     }
 
     override fun onDestroy() {
@@ -539,7 +961,7 @@ class TestingActivity : AppCompatActivity() {
         mapboxReplayer.finish()
         routeLineView.cancel()
         routeLineApi.cancel()
-        locationComponent.removeOnIndicatorPositionChangedListener(onPositionChangedListener)
+        //locationComponent.removeOnIndicatorPositionChangedListener(onPositionChangedListener)
         searchRequestTask.cancel()
     }
 }
