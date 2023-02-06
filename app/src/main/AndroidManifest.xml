@@ -5,18 +5,18 @@
     android:versionName="2.0.11">
 
     <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="8" />
+        android:minSdkVersion="23"
+        android:targetSdkVersion="32" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name=".CyclopathApplication"
@@ -24,14 +24,7 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.Cyclopath">
         <activity
-            android:name=".t1Activity"
-            android:exported="true">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
-        </activity>
-        <activity
-            android:name=".TestingActivity"
+            android:name="com.example.cyclopath.ShowCurrentLocationActivity"
             android:exported="true">
             <meta-data
                 android:name="android.app.lib_name"
@@ -43,18 +36,37 @@
 <!--            </intent-filter>-->
         </activity>
         <activity
-            android:name=".SearchActivity"
+            android:name="com.example.cyclopath.LocationTrackingActivity"
             android:exported="true">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".SearchRouteActivity"
+            android:name="com.example.cyclopath.t2Activity"
             android:exported="true">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.example.cyclopath.TestingActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name="com.example.cyclopath.Cyclopath"
+            android:debuggable="false"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
@@ -62,33 +74,6 @@
 
             <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             <!-- </intent-filter> -->
-        </activity> <!-- <activity -->
-        <!-- android:name=".DirectionActivity" -->
-        <!-- android:exported="false"> -->
-        <!-- <meta-data -->
-        <!-- android:name="android.app.lib_name" -->
-        <!-- android:value="" /> -->
-        <!-- </activity> -->
-        <!-- <activity -->
-        <!-- android:name=".NavigationActivity" -->
-        <!-- android:exported="false"> -->
-        <!-- <meta-data -->
-        <!-- android:name="android.app.lib_name" -->
-        <!-- android:value="" /> -->
-        <!-- </activity> -->
-        <activity
-            android:name=".Cyclopath"
-            android:debuggable="false"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:launchMode="singleTask">
-
-             <intent-filter>
-             <action android:name="android.intent.action.MAIN" />
-
-
-             <category android:name="android.intent.category.LAUNCHER" />
-             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -105,43 +90,43 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TrackManager"
+            android:name="com.example.cyclopath.TrackManager"
             android:label="@string/saved_tracks" />
         <activity
-            android:name=".RouteLibrary"
+            android:name="com.example.cyclopath.RouteLibrary"
             android:label="@string/route_library" />
         <activity
-            android:name=".LoginActivity"
+            android:name="com.example.cyclopath.LoginActivity"
             android:label="@string/login"
             android:theme="@android:style/Theme.Dialog" />
         <activity
-            android:name=".UserAgreement"
+            android:name="com.example.cyclopath.UserAgreement"
             android:label="@string/terms_of_service" />
         <activity
-            android:name=".FindRouteActivity"
+            android:name="com.example.cyclopath.FindRouteActivity"
             android:configChanges="orientation"
             android:label="@string/route_finder" />
         <activity
-            android:name=".AddressChooseActivity"
+            android:name="com.example.cyclopath.AddressChooseActivity"
             android:configChanges="orientation"
             android:label="@string/address_choose" />
         <activity
-            android:name=".DirectionsActivity"
+            android:name="com.example.cyclopath.DirectionsActivity"
             android:label="@string/directions" />
         <activity
-            android:name=".ItemDetailsActivity"
+            android:name="com.example.cyclopath.ItemDetailsActivity"
             android:label="@string/item_details" />
         <activity
-            android:name=".NoteActivity"
+            android:name="com.example.cyclopath.NoteActivity"
             android:label="@string/note_details" />
         <activity
-            android:name=".TrackDetailsActivity"
+            android:name="com.example.cyclopath.TrackDetailsActivity"
             android:label="@string/track_details" />
         <activity
-            android:name=".ExperimentAgreement"
+            android:name="com.example.cyclopath.ExperimentAgreement"
             android:label="New Feature Testing" />
         <activity
-            android:name=".NavigationActivity"
+            android:name="com.example.cyclopath.NavigationActivity"
             android:exported="true"
             android:label="NavigationActivity">
 
@@ -153,10 +138,10 @@
             <!-- </intent-filter> -->
         </activity>
 
-        <service android:name=".TrackingService" />
+        <service android:name="com.example.cyclopath.TrackingService" />
 
         <receiver
-            android:name=".net.NetworkListener"
+            android:name="com.example.cyclopath.net.NetworkListener"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
