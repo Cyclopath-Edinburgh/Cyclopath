@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_search">
+
+    <fragment
+        android:id="@+id/navigation_search"
+        android:name="com.example.cyclopath.ui.search.SearchFragment"
+        android:label="search"
+        tools:layout="@layout/fragment_search" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_library"
+        android:name="com.example.cyclopath.ui.library.LibraryFragment"
+        android:label="library"
+        tools:layout="@layout/fragment_library" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_history"
+        android:name="com.example.cyclopath.ui.history.HistoryFragment"
+        android:label="history"
+        tools:layout="@layout/fragment_history" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.cyclopath.ui.profile.ProfileFragment"
+        android:label="profile"
+        tools:layout="@layout/fragment_profile" >
+    </fragment>
+
+</navigation>

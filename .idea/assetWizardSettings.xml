@@ -24,8 +24,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="/private/var/folders/rv/y80bg2pn52j4gfkpwf_vx09c0000gp/T/baseline_bookmark_24.xml" />
-                                                <entry key="opacityPercent" value="80" />
+                                                <entry key="imagePath" value="/private/var/folders/rv/y80bg2pn52j4gfkpwf_vx09c0000gp/T/baseline_emergency_recording_24.xml" />
+                                                <entry key="opacityPercent" value="60" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -36,7 +36,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="file:$USER_HOME$/Library/Android/sdk/icons/material/materialicons/bookmark/baseline_bookmark_24.xml" />
+                                                <entry key="url" value="file:$USER_HOME$/Library/Android/sdk/icons/material/materialicons/emergency_recording/baseline_emergency_recording_24.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -68,9 +68,7 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="red_marker" />
-                                      <entry key="theme" value="CUSTOM" />
-                                      <entry key="themeColor" value="e53333" />
+                                      <entry key="outputName" value="record" />
                                     </map>
                                   </option>
                                 </PersistentState>

@@ -50,6 +50,7 @@ import android.widget.ZoomControls;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.navigation.NavController;
 
 import com.example.cyclopath.conf.Conf;
 import com.example.cyclopath.conf.Constants;
@@ -90,9 +91,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mapbox.maps.MapView;
 import com.mapbox.maps.Style;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.app.AlertDialog;
 
@@ -443,6 +447,129 @@ public class Cyclopath<LOCATION_PERMISSION_REQUEST_CODE>  extends AppCompatActiv
          mapView = findViewById(R.id.mapView);
          mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS);
          System.out.println("Mapview" + mapView);
+
+         // make the map canvas more easily accessible
+         G.map = (MapSurface) findViewById(R.id.map_canvas);
+         // retrieve bundle information
+         if (in_state != null) {
+            G.map.new_map_x = in_state.getDouble("map_center_x");
+            G.map.new_map_y = in_state.getDouble("map_center_y");
+         }
+
+//         this.setLoggedInTitle(false);
+//
+//         this.user_settings_editor = G.cookie_anon.edit();
+//
+//         this.is_recording =
+//                 G.cookie_anon.getBoolean(Constants.COOKIE_IS_RECORDING, false);
+//
+//         // Landmarks Experiment
+//         findViewById(R.id.experiment_help_btn).setOnClickListener(this);
+//         findViewById(R.id.experiment_no_btn).setOnClickListener(this);
+//         findViewById(R.id.experiment_stop_btn).setOnClickListener(this);
+//         findViewById(R.id.experiment_landmark_done_btn)
+//                 .setOnClickListener(this);
+//         findViewById(R.id.experiment_landmark_done_later_btn)
+//                 .setOnClickListener(this);
+//         findViewById(R.id.experiment_prompt_text).setOnClickListener(this);
+//         findViewById(R.id.prev_direction_landmark).setOnClickListener(this);
+//         findViewById(R.id.next_direction_landmark).setOnClickListener(this);
+//
+//         ZoomControls zoom = (ZoomControls) findViewById(R.id.zoomcontrols);
+//         zoom.setOnZoomInClickListener(this.zoomInListener);
+//         zoom.setOnZoomOutClickListener(this.zoomOutListener);
+//
+//         // Set up throbber.
+//         ImageView throbberImage = (ImageView) findViewById(R.id.throbber_view);
+//         throbberImage.setBackgroundResource(R.anim.throbber_anim);
+//         throbber_anim = (AnimationDrawable) throbberImage.getBackground();
+//         G.cyclopath_handler = new CyclopathHandler(this);
+//         this.updateThrobber();
+//
+//         // Set up direction buttons
+//         findViewById(R.id.directions_btn).setOnClickListener(this);
+//         findViewById(R.id.direction_text).setOnClickListener(this);
+//         findViewById(R.id.prev_direction).setOnClickListener(this);
+//         findViewById(R.id.next_direction).setOnClickListener(this);
+//
+//         this.directionsView = findViewById(R.id.directions_panel);
+//
+//         // Set up back_to_map button
+//         G.map.back_to_map = (Button) findViewById(R.id.back_to_map_btn);
+//         G.map.back_to_map.setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//               G.map.panto(G.map.xform_x_map2cv(Constants.MAP_CENTER_X),
+//                       G.map.xform_y_map2cv(Constants.MAP_CENTER_Y));
+//               G.map.update();
+//               G.map.back_to_map.setVisibility(View.GONE);
+//               G.map.back_to_map.setEnabled(false);
+//            }
+//         });
+//
+//         // Set up context button
+//         contextButton = (ImageButton) findViewById(R.id.context_button);
+//         registerForContextMenu(contextButton);
+//         registerForContextMenu(G.map);
+//         contextButton.setOnClickListener(this);
+//
+//         // If we came from the tracking notification, show the track
+//         if (getIntent().getAction().equals(Constants.ACTION_SHOW_TRACK_END)) {
+//            if (G.current_track == null) {
+//               // This happens when the main activity was force closed, but the
+//               // service notification was never removed.
+//               NotificationManager notification_manager = (NotificationManager)
+//                       getSystemService(Context.NOTIFICATION_SERVICE);
+//               notification_manager.cancel(
+//                       TrackingService.TRACKING_NOTIFICATION_ID);
+//            } else {
+//               this.showTrackEnd();
+//            }
+//         } else if (getIntent().getAction().equals(
+//                 Constants.ACTION_SHOW_LANDMARK_NEED)
+//                 && G.LANDMARKS_EXP_ON
+//                 && G.isLandmarkConditionNow()) {
+//            this.showLandmarkPrompt();
+//         } else if (getIntent().getAction().equals(
+//                 Constants.ACTION_VIEW)) {
+//            this.viewHandle();
+//         }
+//
+//         this.accelerationValues = new float[3];
+//         this.magneticFieldValues = new float[3];
+//         this.mSensorManager =
+//                 (SensorManager) getSystemService(Activity.SENSOR_SERVICE);
+//         this.accelerometerSensor =
+//                 this.mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+//         this.magneticFieldSensor =
+//                 this.mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+//
+//         if (!G.track_save_attempted) {
+//            G.saveUnsavedTracks(this);
+//         }
+//
+//         // If there is an unsaved track, ask the user if they want to save it.
+//         Track track = G.db.getForceClosedTrack();
+//         if (G.current_track == null
+//                 && track != null) {
+//            this.is_recording = false;
+//            if (track.points.isEmpty()) {
+//               G.db.deleteTrack(track);
+//            } else {
+//               this.showSaveForceClosedTrackDialog();
+//            }
+//         }
+//
+//         // Display "What's new" dialog if needed.
+//         ChangeLog cl = new ChangeLog(this);
+//         if (cl.firstRun() && has_agreed) {
+//            AlertDialog log_dialog = cl.getLogDialog();
+//            if (log_dialog != null) {
+//               log_dialog.show();
+//            }
+//         }
+//
+//         this.stop_recording_msg_sent = false;
       }
 
    }//onCreate
