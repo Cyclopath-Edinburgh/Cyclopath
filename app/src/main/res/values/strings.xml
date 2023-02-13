@@ -479,5 +479,10 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 
+    <string name="forget_password"><u>Forget password?</u></string>
+    <string name="signup"><u>Sign Up</u></string>
+
+    <string name="webclientID">311764064674-trb86n5mk72kf3chqmvg2i04jtvj77n0.apps.googleusercontent.com</string>
+
 
 </resources>

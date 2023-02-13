@@ -278,7 +278,7 @@ public class Base {
     * Shows the reauthentication activity.
     */
    public void showReauthenticationDialog() {
-      Intent intent = new Intent(this.act, LoginActivity.class);
+      Intent intent = new Intent(this.act, LoginActivity2.class);
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       this.act.startActivity(intent);
    }

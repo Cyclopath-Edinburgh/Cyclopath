@@ -1,58 +1,91 @@
 package com.example.cyclopath.ui.profile
 
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.PopupWindow
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.Fragment
 import com.example.cyclopath.R
+import com.example.cyclopath.ui.login.LoginActivity
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var name : TextView
+    private lateinit var logout : Button
+    private var sp : SharedPreferences? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false)
-    }
+        val root = inflater.inflate(R.layout.fragment_profile, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ProfileFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-                ProfileFragment().apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_PARAM1, param1)
-                        putString(ARG_PARAM2, param2)
-                    }
-                }
+        val lay = root.findViewById<ConstraintLayout>(R.id.constraintLayout)
+        lay.foreground.alpha = 0
+
+        sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
+
+        name = root.findViewById(R.id.username)
+        logout = root.findViewById(R.id.logout)
+
+        name.text = sp!!.getString("username","user")
+
+        var loginActivity = LoginActivity()
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("311764064674-trb86n5mk72kf3chqmvg2i04jtvj77n0.apps.googleusercontent.com") //you can also use R.string.default_web_client_id
+                .requestEmail()
+                .build()
+
+        logout.setOnClickListener{
+            val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            val popupView: View = inflater.inflate(R.layout.popup_logout, null)
+
+            val popupWindow = PopupWindow(popupView, 700, 400)
+
+            lay.foreground.alpha = 120
+
+            popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+
+            val yesb = popupWindow.contentView.findViewById<Button>(R.id.logout_yes)
+            yesb.setOnClickListener {
+                popupWindow.dismiss()
+                sp!!.edit().clear().apply()
+                FirebaseAuth.getInstance().signOut()
+                Firebase.auth.signOut()
+                activity?.let { it1 -> GoogleSignIn.getClient(it1,gso).signOut() }
+
+                val intent = Intent(context, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+
+            val nob = popupWindow.contentView.findViewById<Button>(R.id.logout_no)
+            nob.setOnClickListener {
+                popupWindow.dismiss()
+                lay.foreground.alpha = 0
+            }
+
+        }
+
+        return root
+
     }
 }

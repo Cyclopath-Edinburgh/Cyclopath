@@ -7,98 +7,44 @@ package com.example.cyclopath;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Message;
-import android.provider.Settings;
-import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ZoomControls;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.navigation.NavController;
 
-import com.example.cyclopath.conf.Conf;
 import com.example.cyclopath.conf.Constants;
-import com.example.cyclopath.conf.ItemType;
-import com.example.cyclopath.gwis.GWIS_Checkout;
-import com.example.cyclopath.gwis.GWIS_CheckoutCallback;
 import com.example.cyclopath.gwis.GWIS_Commit;
-import com.example.cyclopath.gwis.GWIS_LandmarkExpActiveGet;
-import com.example.cyclopath.gwis.GWIS_LandmarkTrialGet;
-import com.example.cyclopath.gwis.GWIS_LandmarkTrialGetCallback;
-import com.example.cyclopath.gwis.GWIS_RouteGetByHash;
-import com.example.cyclopath.gwis.GWIS_RouteGetCallback;
-import com.example.cyclopath.gwis.GWIS_ValueMapGet;
-import com.example.cyclopath.gwis.QueryFilters;
 import com.example.cyclopath.items.ConflationJob;
-import com.example.cyclopath.items.DirectionStep;
-import com.example.cyclopath.items.Feature;
 import com.example.cyclopath.items.Geopoint;
 import com.example.cyclopath.items.ItemUserAccess;
 import com.example.cyclopath.items.LandmarkNeed;
-import com.example.cyclopath.items.MapPointer;
-import com.example.cyclopath.items.Route;
-import com.example.cyclopath.items.Tile;
-import com.example.cyclopath.items.Track;
-import com.example.cyclopath.items.TrackPoint;
-import com.example.cyclopath.util.ChangeLog;
-import com.example.cyclopath.util.PointD;
-import com.example.cyclopath.util.TrackDeletionHandler;
 import com.example.cyclopath.util.TrackExporter;
-import com.example.cyclopath.util.XmlUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mapbox.maps.MapView;
 import com.mapbox.maps.Style;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
-
-import android.app.AlertDialog;
 
 /**
  * Main Class for Cyclopath Mobile. <br>
@@ -653,7 +599,7 @@ public class Cyclopath<LOCATION_PERMISSION_REQUEST_CODE>  extends AppCompatActiv
 //                    this.setLoggedInTitle(true);
 //                    this.clearMap();
                 } else {
-                    Intent intent = new Intent(this, LoginActivity.class);
+                    Intent intent = new Intent(this, LoginActivity2.class);
                     startActivityForResult(intent, LOGIN_ACTIVITY_REQUEST_CODE);
                 }
                 invalidateOptionsMenu();
