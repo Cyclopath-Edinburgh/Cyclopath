@@ -58,7 +58,7 @@ public class ExperimentAgreement extends BaseActivity
             this.setAgree(true);
             this.finish();
          } else {
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, LoginActivity2.class);
             startActivityForResult(intent, 0);
          }
       } else {

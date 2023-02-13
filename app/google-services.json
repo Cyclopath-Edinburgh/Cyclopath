@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "311764064674-9325gfadegjnh58gbjufvhhe5dnfl2op.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cyclopath",
+            "certificate_hash": "003397980c7ec6c3568bff924cdfc8c43a4c80bd"
+          }
+        },
+        {
           "client_id": "311764064674-trb86n5mk72kf3chqmvg2i04jtvj77n0.apps.googleusercontent.com",
           "client_type": 3
         }
