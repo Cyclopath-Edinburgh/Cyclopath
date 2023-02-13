@@ -1,7 +1,9 @@
 package com.example.cyclopath.ui.login
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
 import android.view.View
@@ -63,6 +65,10 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         google = findViewById(R.id.google)
         signup = findViewById(R.id.su)
 
+        if (!isNetworkAvailable(this)) {
+            Toast.makeText(this@LoginActivity, "Please connect to the Internet.", Toast.LENGTH_LONG).show()
+        }
+
         userList = ArrayList<Array<String>>()
         emailPasswordActivity = EmailPasswordActivity()
         db = FirebaseFirestore.getInstance()
@@ -81,15 +87,25 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         }
 
         login.setOnClickListener{
-            val username = usernametext.text.toString()
-            val password = passwordtext.text.toString()
-            if (username.length == 0) {
-                Toast.makeText(applicationContext, "Please insert username.", Toast.LENGTH_SHORT).show()
-            } else if (password.length == 0) {
-                Toast.makeText(applicationContext, "Please insert password.", Toast.LENGTH_SHORT).show()
+            if (!isNetworkAvailable(this)) {
+                Toast.makeText(this@LoginActivity, "Please connect to the Internet.", Toast.LENGTH_LONG).show()
             } else {
-                login(username, password)
+                val username = usernametext.text.toString()
+                val password = passwordtext.text.toString()
+                if (username.length == 0) {
+                    Toast.makeText(applicationContext, "Please insert username.", Toast.LENGTH_SHORT).show()
+                } else if (password.length == 0) {
+                    Toast.makeText(applicationContext, "Please insert password.", Toast.LENGTH_SHORT).show()
+                } else {
+                    login(username, password)
+                }
             }
+        }
+
+        signup.setOnClickListener{
+            var intent = Intent(this,SignUpActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         }
 
         firebaseAuth = FirebaseAuth.getInstance()
@@ -104,7 +120,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
             }
         }
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("311764064674-trb86n5mk72kf3chqmvg2i04jtvj77n0.apps.googleusercontent.com") //you can also use R.string.default_web_client_id
+                .requestIdToken(getString(R.string.webclientID)) //you can also use R.string.default_web_client_id
                 .requestEmail()
                 .build()
         googleApiClient = GoogleApiClient.Builder(this)
@@ -242,6 +258,11 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         if (authStateListener != null) {
             firebaseAuth!!.removeAuthStateListener(authStateListener!!)
         }
+    }
+
+    fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnected
     }
 
 //    TODO, facebook, google

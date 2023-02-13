@@ -1,6 +1,8 @@
 package com.example.cyclopath.ui.login
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Patterns
@@ -38,6 +40,10 @@ class SignUpActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
+        if (!isNetworkAvailable(this)) {
+            Toast.makeText(this@SignUpActivity, "Please connect to the Internet.", Toast.LENGTH_LONG).show()
+        }
+
         userList = ArrayList<Array<String>>()
         emailPasswordActivity = EmailPasswordActivity()
         db = FirebaseFirestore.getInstance()
@@ -54,25 +60,29 @@ class SignUpActivity : AppCompatActivity() {
         resend = findViewById(R.id.resend)
 
         submit.setOnClickListener{
-            val username = usernametext.text.toString()
-            val email = emailtext.text.toString()
-            val password = passwordtext.text.toString()
-            if ((username.length < 5) or (username.length > 20)) {
-                Toast.makeText(this, "Username should be 5-20 characters.", Toast.LENGTH_SHORT).show()
-            } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(this, "The email address is invalid.", Toast.LENGTH_SHORT).show()
-            } else if ((password.length < 5) or (password.length > 20)) {
-                Toast.makeText(this, "Password should be 5-20 characters.", Toast.LENGTH_SHORT).show()
-            } else if (!password.matches("^(?=.*[a-z])(?=.*[0-9])[a-z0-9]+$".toRegex())) {
-                Toast.makeText(this, "Password must contains letter and number.", Toast.LENGTH_SHORT).show()
-            } else if (!checkbox.isChecked) {
-                Toast.makeText(this, "Please agree to the terms and conditions.", Toast.LENGTH_SHORT).show()
-            } else if (!checkUsername(username)) {
-                Toast.makeText(this, "The username has been used.", Toast.LENGTH_SHORT).show()
-            } else if (!checkEmail(email)) {
-                Toast.makeText(this, "The email has been used.", Toast.LENGTH_SHORT).show()
+            if (!isNetworkAvailable(this)) {
+                Toast.makeText(this@SignUpActivity, "Please connect to the Internet.", Toast.LENGTH_LONG).show()
             } else {
-                signup(username,email,password)
+                val username = usernametext.text.toString()
+                val email = emailtext.text.toString()
+                val password = passwordtext.text.toString()
+                if ((username.length < 5) or (username.length > 20)) {
+                    Toast.makeText(this, "Username should be 5-20 characters.", Toast.LENGTH_SHORT).show()
+                } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    Toast.makeText(this, "The email address is invalid.", Toast.LENGTH_SHORT).show()
+                } else if ((password.length < 5) or (password.length > 20)) {
+                    Toast.makeText(this, "Password should be 5-20 characters.", Toast.LENGTH_SHORT).show()
+                } else if (!password.matches("^(?=.*[a-z])(?=.*[0-9])[a-z0-9]+$".toRegex())) {
+                    Toast.makeText(this, "Password must contains letter and number.", Toast.LENGTH_SHORT).show()
+                } else if (!checkbox.isChecked) {
+                    Toast.makeText(this, "Please agree to the terms and conditions.", Toast.LENGTH_SHORT).show()
+                } else if (!checkUsername(username)) {
+                    Toast.makeText(this, "The username has been used.", Toast.LENGTH_SHORT).show()
+                } else if (!checkEmail(email)) {
+                    Toast.makeText(this, "The email has been used.", Toast.LENGTH_SHORT).show()
+                } else {
+                    signup(username,email,password)
+                }
             }
         }
 
@@ -169,6 +179,11 @@ class SignUpActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnected
     }
 
 }
