@@ -1,5 +1,6 @@
 package com.example.cyclopath.ui.search
 
+import LocationPermissionHelper
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -12,35 +13,29 @@ import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.webkit.WebView.findAddress
-import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.cyclopath.Cyclopath
+import com.example.cyclopath.G
 import com.example.cyclopath.R
-import com.example.cyclopath.ui.search.SearchFragment.Companion.hideKeyboard
-import com.example.cyclopath.databinding.ActivityT2Binding
 import com.example.cyclopath.databinding.FragmentSearchBinding
-import com.example.cyclopath.items.Route
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineProvider
@@ -53,6 +48,8 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Point
 import com.mapbox.maps.*
+import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
+import com.mapbox.maps.plugin.LocationPuck2D
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.annotation.AnnotationPlugin
@@ -63,16 +60,12 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.gestures
-import com.mapbox.maps.plugin.locationcomponent.LocationComponentPlugin
-import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListener
-import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
-import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.maps.plugin.locationcomponent.*
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.base.route.*
 import com.mapbox.navigation.core.MapboxNavigation
-import com.mapbox.navigation.core.RoutesSetCallback
 import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationObserver
@@ -100,9 +93,8 @@ import com.mapbox.search.ui.view.CommonSearchViewConfiguration
 import com.mapbox.search.ui.view.DistanceUnitType
 import com.mapbox.search.ui.view.SearchResultsView
 import java.lang.ref.WeakReference
-import java.security.KeyStore.TrustedCertificateEntry
-import java.sql.SQLOutput
 import java.util.*
+
 
 class SearchFragment : Fragment() {
 
@@ -299,31 +291,31 @@ class SearchFragment : Fragment() {
                     mapboxNavigation.unregisterRouteProgressObserver(replayProgressObserver)
                 }
             },
-//            onInitialize = this::initNavigation
+            onInitialize = this::initNavigation
     )
 
-//    private lateinit var locationPermissionHelper: LocationPermissionHelper
-//
-//    private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
-//        mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
-//    }
-//
-//    private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
-//        mapboxMap.setCamera(CameraOptions.Builder().center(it).build())
-//        mapView.gestures.focalPoint = mapView.getMapboxMap().pixelForCoordinate(it)
-//    }
-//
-//    private val onMoveListener = object : OnMoveListener {
-//        override fun onMoveBegin(detector: MoveGestureDetector) {
-//            onCameraTrackingDismissed()
-//        }
-//
-//        override fun onMove(detector: MoveGestureDetector): Boolean {
-//            return false
-//        }
-//
-//        override fun onMoveEnd(detector: MoveGestureDetector) {}
-//    }
+    private lateinit var locationPermissionHelper: LocationPermissionHelper
+
+    private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
+        mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
+    }
+
+    private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
+        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(it).build())
+        mapView.gestures.focalPoint = mapView.getMapboxMap().pixelForCoordinate(it)
+    }
+
+    private val onMoveListener = object : OnMoveListener {
+        override fun onMoveBegin(detector: MoveGestureDetector) {
+            onCameraTrackingDismissed()
+        }
+
+        override fun onMove(detector: MoveGestureDetector): Boolean {
+            return false
+        }
+
+        override fun onMoveEnd(detector: MoveGestureDetector) {}
+    }
 
     private lateinit var binding: FragmentSearchBinding
     private lateinit var addressAutofill: AddressAutofill
@@ -335,6 +327,8 @@ class SearchFragment : Fragment() {
 
     private lateinit var originText: EditText
     private lateinit var destinationText: EditText
+    private lateinit var origin_focus : ImageView
+    private lateinit var destination_focus : ImageView
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
@@ -356,6 +350,8 @@ class SearchFragment : Fragment() {
     private var first : Boolean = true
 
     private lateinit var route : DirectionsRoute
+
+    private lateinit var current : Point
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -391,18 +387,17 @@ class SearchFragment : Fragment() {
             askForLocationPermissions()
         }
 
-        LocationEngineProvider.getBestLocationEngine(requireContext()).lastKnownLocationOrNull(requireContext()) { point ->
-            point?.let {
-                println(point)
-                mapView.getMapboxMap().setCamera(
-                        CameraOptions.Builder()
-                                .center(point)
-                                .zoom(9.0)
-                                .build()
-                )
-                ignoreNextMapIdleEvent = true
-            }
-        }
+//        LocationEngineProvider.getBestLocationEngine(requireContext()).lastKnownLocationOrNull(requireContext()) { point ->
+//            point?.let {
+//                mapView.getMapboxMap().setCamera(
+//                        CameraOptions.Builder()
+//                                .center(point)
+//                                .zoom(9.0)
+//                                .build()
+//                )
+//                ignoreNextMapIdleEvent = true
+//            }
+//        }
 
         if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
@@ -426,13 +421,20 @@ class SearchFragment : Fragment() {
 
         originText = root.findViewById(R.id.origin)
         destinationText = root.findViewById(R.id.destination)
+        origin_focus = root.findViewById(R.id.origin_focus)
+        destination_focus = root.findViewById(R.id.destination_focus)
         mapView = root.findViewById(R.id.mapView)
         mapboxMap = mapView.getMapboxMap()
         mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
         searchResultsViewOrigin = root.findViewById(R.id.search_results_view_origin)
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
 
-        initNavigation()
+//        initNavigation()
+
+        locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+        locationPermissionHelper.checkPermissions {
+            onMapReady()
+        }
 
         annotationApi = mapView.annotations
         pointAnnotationManager = annotationApi?.createPointAnnotationManager(mapView)
@@ -585,6 +587,56 @@ class SearchFragment : Fragment() {
             }
         }
 
+        origin_focus.setOnClickListener{
+            isOrigin = true
+            ignoreNextMapIdleEvent = true
+            mapboxMap.setCamera(
+                    CameraOptions.Builder()
+                            .center(current)
+                            .zoom(16.0)
+                            .build()
+            )
+            origin = current
+            ignoreNextQueryTextUpdateOrigin = true
+
+            addAnnotationToMap(current)
+
+            originText.setText("Your Location")
+            originText.clearFocus()
+            searchResultsViewOrigin.isVisible = false
+            searchResultsViewOrigin.hideKeyboard()
+
+            if (this::origin.isInitialized && this::destination.isInitialized) {
+                fetchARoute(origin, destination)
+            }
+
+        }
+
+        destination_focus.setOnClickListener{
+            isOrigin = false
+            ignoreNextMapIdleEvent = true
+            mapboxMap.setCamera(
+                    CameraOptions.Builder()
+                            .center(current)
+                            .zoom(16.0)
+                            .build()
+            )
+            destination = current
+            ignoreNextQueryTextUpdateDestination = true
+
+            addAnnotationToMap(current)
+
+            destinationText.setText("Your Location")
+            destinationText.clearFocus()
+            searchResultsViewDestination.isVisible = false
+            searchResultsViewDestination.hideKeyboard()
+
+            if (this::origin.isInitialized && this::destination.isInitialized) {
+                fetchARoute(origin, destination)
+            }
+
+        }
+
         return root
     }
 
@@ -596,12 +648,12 @@ class SearchFragment : Fragment() {
                         .locationEngine(replayLocationEngine)
                         .build()
         )
-        mapView.location.apply {
-            setLocationProvider(navigationLocationProvider)
-            enabled = true
-        }
+//        mapView.location.apply {
+//            setLocationProvider(navigationLocationProvider)
+//            enabled = true
+//        }
 
-//        locationComponent = viewBinding.mapView.location.apply {
+//        locationComponent = mapView.location.apply {
 //            setLocationProvider(navigationLocationProvider)
 //            addOnIndicatorPositionChangedListener(onPositionChangedListener)
 //            enabled = true
@@ -793,7 +845,6 @@ class SearchFragment : Fragment() {
     }
 
     open fun askForLocationPermissions() {
-        println("aaaaaskfor")
         if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),
                         Manifest.permission.ACCESS_FINE_LOCATION)) {
             AlertDialog.Builder(requireContext())
@@ -844,7 +895,6 @@ class SearchFragment : Fragment() {
                     pointAnnotationManager.delete(annotationOrigin)
                 }
                 annotationOrigin = pointAnnotationManager?.create(pointAnnotationOptions)
-                println(annotationOrigin)
             } else {
                 if (this::annotationDestination.isInitialized) {
                     pointAnnotationManager.delete(annotationDestination)
@@ -877,8 +927,85 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private fun onMapReady() {
+        mapView.getMapboxMap().setCamera(
+                CameraOptions.Builder()
+                        .zoom(14.0)
+                        .build()
+        )
+        mapView.getMapboxMap().loadStyleUri(
+                Style.MAPBOX_STREETS
+        ) {
+            initLocationComponent()
+            setupGesturesListener()
+        }
+    }
+
+    private fun setupGesturesListener() {
+        mapView.gestures.addOnMoveListener(onMoveListener)
+    }
+
+    private fun initLocationComponent() {
+        val locationComponentPlugin = mapView.location
+        locationComponentPlugin.updateSettings {
+            this.enabled = true
+            this.locationPuck = LocationPuck2D(
+                    bearingImage = AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.current,
+                    ),
+                    shadowImage = AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.circle,
+                    ),
+                    scaleExpression = interpolate {
+                        linear()
+                        zoom()
+                        stop {
+                            literal(0.0)
+                            literal(0.6)
+                        }
+                        stop {
+                            literal(20.0)
+                            literal(1.0)
+                        }
+                    }.toJson()
+            )
+        }
+        locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
+        locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
+        Handler().postDelayed({
+            current = Point.fromLngLat(
+                    mapboxMap.cameraState.center.longitude(), mapboxMap.cameraState.center.latitude()
+            )
+        }, 1000)
+    }
+
+    private fun onCameraTrackingDismissed() {
+        Toast.makeText(context, "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show()
+        mapView.location
+                .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
+        mapView.location
+                .removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
+        mapView.gestures.removeOnMoveListener(onMoveListener)
+    }
+
+    override fun onRequestPermissionsResult(
+            requestCode: Int,
+            permissions: Array<String>,
+            grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        locationPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
    @Override
    override fun onDestroy() {
        super.onDestroy()
+       mapView.location
+               .removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
+       mapView.location
+               .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
+       mapView.gestures.removeOnMoveListener(onMoveListener)
    }
 }

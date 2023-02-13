@@ -664,7 +664,6 @@ public class GWIS extends Thread
             msg.sendToTarget();
          }
       } catch (IOException e) {
-         System.out.println("HERE");
          Message msg = Message.obtain();
          msg.what = Constants.GWIS_IO_ERROR;
          msg.obj = e;
@@ -691,7 +690,6 @@ public class GWIS extends Thread
     * to throb.
     */
    public void throbberAttach() {
-      System.out.println("Hello");
       if (this.throb) {
          G.incrementThrobber();
       }

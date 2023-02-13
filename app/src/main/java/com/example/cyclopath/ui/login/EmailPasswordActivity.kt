@@ -43,7 +43,6 @@ class EmailPasswordActivity : AppCompatActivity() {
                                         success = true
                                     }
                                 })
-
                     } else {
                         success = false
                     }
