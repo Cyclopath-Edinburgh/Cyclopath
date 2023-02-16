@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.PopupWindow
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -33,6 +34,7 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var resend : Button
     private lateinit var userList : ArrayList<Array<String>>
     private lateinit var emailPasswordActivity: EmailPasswordActivity
+    private lateinit var bar : ProgressBar
     private var signed = false
     private var done = false
 
@@ -58,6 +60,7 @@ class SignUpActivity : AppCompatActivity() {
         checkbox = findViewById(R.id.checkbox)
         submit = findViewById(R.id.signup)
         resend = findViewById(R.id.resend)
+        bar = findViewById(R.id.progressBar)
 
         submit.setOnClickListener{
             if (!isNetworkAvailable(this)) {
@@ -142,6 +145,7 @@ class SignUpActivity : AppCompatActivity() {
     fun signup(username : String?, email: String, password: String) {
         emailPasswordActivity.createAccount(username, email, password)
         signed = true
+        bar.visibility = View.VISIBLE
         Handler().postDelayed({
             done = emailPasswordActivity.getSuccess()
             if (done) {
@@ -150,6 +154,7 @@ class SignUpActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "Successfully sign up!", Toast.LENGTH_SHORT).show()
                 Toast.makeText(applicationContext, "An activation email has been sent to your email address.", Toast.LENGTH_SHORT).show()
                 Handler().postDelayed({
+                    bar.visibility = View.INVISIBLE
                     done = emailPasswordActivity.getSuccess()
                     if (done) {
                         val user: MutableMap<String, Any> = HashMap()

@@ -5,6 +5,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -14,12 +15,14 @@ import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
@@ -32,8 +35,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.cyclopath.Cyclopath
-import com.example.cyclopath.G
+import com.example.cyclopath.*
 import com.example.cyclopath.R
 import com.example.cyclopath.databinding.FragmentSearchBinding
 import com.mapbox.android.core.location.LocationEngine
@@ -77,6 +79,8 @@ import com.mapbox.navigation.core.replay.route.ReplayRouteMapper
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+import com.mapbox.navigation.ui.maps.NavigationStyles
+import com.mapbox.navigation.ui.maps.camera.view.MapboxRecenterButton
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
 import com.mapbox.navigation.ui.maps.route.RouteLayerConstants
 import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
@@ -264,6 +268,7 @@ class SearchFragment : Fragment() {
                     enhancedLocation,
                     locationMatcherResult.keyPoints,
             )
+            println("UPDATEHERE")
             updateCamera(
                     Point.fromLngLat(
                             enhancedLocation.longitude, enhancedLocation.latitude
@@ -303,6 +308,9 @@ class SearchFragment : Fragment() {
     private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
         mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(it).build())
         mapView.gestures.focalPoint = mapView.getMapboxMap().pixelForCoordinate(it)
+        current = it
+        println("current")
+        println(current)
     }
 
     private val onMoveListener = object : OnMoveListener {
@@ -329,6 +337,9 @@ class SearchFragment : Fragment() {
     private lateinit var destinationText: EditText
     private lateinit var origin_focus : ImageView
     private lateinit var destination_focus : ImageView
+    private lateinit var navigate : Button
+    private lateinit var recenter : MapboxRecenterButton
+    private lateinit var swap : ImageView
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
@@ -355,13 +366,13 @@ class SearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = FragmentSearchBinding.inflate(layoutInflater)
+//        binding = FragmentSearchBinding.inflate(layoutInflater)
 
         addressAutofill = AddressAutofill.create(getString(R.string.matoken))
 
-        mapView = binding.mapView
-        mapboxMap = mapView.getMapboxMap()
-        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
+//        mapView = binding.mapView
+//        mapboxMap = mapView.getMapboxMap()
+//        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
 
 //        locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
 //        locationPermissionHelper.checkPermissions {
@@ -423,6 +434,9 @@ class SearchFragment : Fragment() {
         destinationText = root.findViewById(R.id.destination)
         origin_focus = root.findViewById(R.id.origin_focus)
         destination_focus = root.findViewById(R.id.destination_focus)
+        navigate = root.findViewById(R.id.navigate)
+        recenter = root.findViewById(R.id.recenter)
+        swap = root.findViewById(R.id.swap)
         mapView = root.findViewById(R.id.mapView)
         mapboxMap = mapView.getMapboxMap()
         mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
@@ -590,12 +604,6 @@ class SearchFragment : Fragment() {
         origin_focus.setOnClickListener{
             isOrigin = true
             ignoreNextMapIdleEvent = true
-            mapboxMap.setCamera(
-                    CameraOptions.Builder()
-                            .center(current)
-                            .zoom(16.0)
-                            .build()
-            )
             origin = current
             ignoreNextQueryTextUpdateOrigin = true
 
@@ -615,12 +623,6 @@ class SearchFragment : Fragment() {
         destination_focus.setOnClickListener{
             isOrigin = false
             ignoreNextMapIdleEvent = true
-            mapboxMap.setCamera(
-                    CameraOptions.Builder()
-                            .center(current)
-                            .zoom(16.0)
-                            .build()
-            )
             destination = current
             ignoreNextQueryTextUpdateDestination = true
 
@@ -635,6 +637,40 @@ class SearchFragment : Fragment() {
                 fetchARoute(origin, destination)
             }
 
+        }
+
+        navigate.setOnClickListener {
+            if (this::route.isInitialized) {
+                var intent = Intent(activity,NavigationActivity::class.java)
+                intent.putExtra("origin",origin)
+                intent.putExtra("route",route)
+                startActivity(intent)
+            } else {
+                Toast.makeText(context, "Please specify your origin and destination.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        recenter.setOnClickListener {
+            mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+        }
+
+        swap.setOnClickListener {
+            val temp = origin
+            val temptext = originText.text
+            origin = destination
+            originText.setText(destinationText.text)
+            destination = temp
+            destinationText.setText(temptext)
+            originText.clearFocus()
+            searchResultsViewOrigin.isVisible = false
+            searchResultsViewOrigin.hideKeyboard()
+            destinationText.clearFocus()
+            searchResultsViewDestination.isVisible = false
+            searchResultsViewDestination.hideKeyboard()
+            isOrigin = true
+            addAnnotationToMap(origin)
+            isOrigin = false
+            addAnnotationToMap(destination)
         }
 
         return root
@@ -772,7 +808,6 @@ class SearchFragment : Fragment() {
 
         addAnnotationToMap(suggestion.coordinate)
 
-
         if (isOrigin) {
             originText.setText(
                     listOfNotNull(
@@ -882,24 +917,33 @@ class SearchFragment : Fragment() {
     }
 
     private fun addAnnotationToMap(point : Point) {
-
-        bitmapFromDrawableRes(
-                requireContext(),
-                R.drawable.red_marker
-        )?.let {
-            val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
-                    .withPoint(point)
-                    .withIconImage(it)
-            if (isOrigin) {
+        if (isOrigin) {
+            bitmapFromDrawableRes(
+                    requireContext(),
+                    R.drawable.start
+            )?.let {
+                val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                        .withPoint(point)
+                        .withIconImage(it)
                 if (this::annotationOrigin.isInitialized) {
                     pointAnnotationManager.delete(annotationOrigin)
                 }
                 annotationOrigin = pointAnnotationManager?.create(pointAnnotationOptions)
-            } else {
+                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(origin).build())
+            }
+        } else {
+            bitmapFromDrawableRes(
+                    requireContext(),
+                    R.drawable.red_marker
+            )?.let {
+                val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                        .withPoint(point)
+                        .withIconImage(it)
                 if (this::annotationDestination.isInitialized) {
                     pointAnnotationManager.delete(annotationDestination)
                 }
                 annotationDestination = pointAnnotationManager?.create(pointAnnotationOptions)
+                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(destination).build())
             }
         }
     }
@@ -943,6 +987,43 @@ class SearchFragment : Fragment() {
 
     private fun setupGesturesListener() {
         mapView.gestures.addOnMoveListener(onMoveListener)
+        mapView.gestures.addOnMapLongClickListener { point ->
+            if (!this::origin.isInitialized) {
+                origin = point
+                isOrigin = true
+                ignoreNextMapIdleEvent = true
+                ignoreNextQueryTextUpdateOrigin = true
+                addAnnotationToMap(origin)
+                isOrigin = false
+                originText.setText(point.latitude().toString()+","+point.longitude().toString())
+                originText.clearFocus()
+            } else if (!this::destination.isInitialized) {
+                destination = point
+                isOrigin = false
+                ignoreNextMapIdleEvent = true
+                ignoreNextQueryTextUpdateDestination = true
+                addAnnotationToMap(destination)
+                isOrigin = true
+                destinationText.setText(point.latitude().toString()+","+point.longitude().toString())
+                destinationText.clearFocus()
+            } else {
+                origin = point
+                isOrigin = true
+                ignoreNextMapIdleEvent = true
+                ignoreNextQueryTextUpdateOrigin = true
+                addAnnotationToMap(origin)
+                isOrigin = false
+                originText.setText(point.latitude().toString()+","+point.longitude().toString())
+                originText.clearFocus()
+            }
+
+            if (this::origin.isInitialized && this::destination.isInitialized) {
+                fetchARoute(origin, destination)
+            }
+
+            true // TODO, if origin fit origin
+        }
+
     }
 
     private fun initLocationComponent() {
@@ -974,15 +1055,15 @@ class SearchFragment : Fragment() {
         }
         locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
-        Handler().postDelayed({
-            current = Point.fromLngLat(
-                    mapboxMap.cameraState.center.longitude(), mapboxMap.cameraState.center.latitude()
-            )
-        }, 1000)
+//        Handler().postDelayed({
+//            current = Point.fromLngLat(
+//                    mapboxMap.cameraState.center.longitude(), mapboxMap.cameraState.center.latitude()
+//            )
+//        }, 1000)
     }
 
     private fun onCameraTrackingDismissed() {
-        Toast.makeText(context, "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show()
+//        Toast.makeText(context, "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show()
         mapView.location
                 .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         mapView.location

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.NonNull
@@ -44,6 +45,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     private lateinit var signup : TextView
     private lateinit var userList : ArrayList<Array<String>>
     private lateinit var emailPasswordActivity: EmailPasswordActivity
+    private lateinit var bar : ProgressBar
     private var done = false
 
     private var firebaseAuth: FirebaseAuth? = null
@@ -64,6 +66,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         facebook = findViewById(R.id.facebook)
         google = findViewById(R.id.google)
         signup = findViewById(R.id.su)
+        bar = findViewById(R.id.progressBar)
 
         if (!isNetworkAvailable(this)) {
             Toast.makeText(this@LoginActivity, "Please connect to the Internet.", Toast.LENGTH_LONG).show()
@@ -141,7 +144,9 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                 val document = task.result
                 if (document.exists()) {
                     emailPasswordActivity.signAccount(document.get("email").toString(), password)
+                    bar.visibility = View.VISIBLE
                     Handler().postDelayed({
+                        bar.visibility = View.INVISIBLE
                         done = emailPasswordActivity.getLogin()
                         if (done) {
                             val user = Firebase.auth.currentUser
@@ -265,5 +270,5 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnected
     }
 
-//    TODO, facebook, google
+//    TODO, facebook
 }

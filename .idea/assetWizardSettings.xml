@@ -24,7 +24,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="/private/var/folders/rv/y80bg2pn52j4gfkpwf_vx09c0000gp/T/baseline_center_focus_strong_24.xml" />
+                                                <entry key="imagePath" value="/private/var/folders/rv/y80bg2pn52j4gfkpwf_vx09c0000gp/T/baseline_circle_24.xml" />
                                                 <entry key="opacityPercent" value="60" />
                                               </map>
                                             </option>
@@ -36,7 +36,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="file:$USER_HOME$/Library/Android/sdk/icons/material/materialicons/center_focus_strong/baseline_center_focus_strong_24.xml" />
+                                                <entry key="url" value="file:$USER_HOME$/Library/Android/sdk/icons/material/materialicons/circle/baseline_circle_24.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -68,7 +68,7 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="startfrom" />
+                                      <entry key="outputName" value="start" />
                                     </map>
                                   </option>
                                 </PersistentState>

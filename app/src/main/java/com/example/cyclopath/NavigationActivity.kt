@@ -1,12 +1,14 @@
 package com.example.cyclopath
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.location.Location
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.mapbox.api.directions.v5.models.Bearing
@@ -24,10 +26,6 @@ import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
 import com.mapbox.navigation.base.formatter.DistanceFormatterOptions
 import com.mapbox.navigation.base.options.NavigationOptions
-import com.mapbox.navigation.base.route.NavigationRoute
-import com.mapbox.navigation.base.route.NavigationRouterCallback
-import com.mapbox.navigation.base.route.RouterFailure
-import com.mapbox.navigation.base.route.RouterOrigin
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.formatter.MapboxDistanceFormatter
@@ -45,6 +43,9 @@ import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver
 //import com.mapbox.navigation.examples.R
 import com.mapbox.navigation.R
 import com.example.cyclopath.databinding.ActivityNavigationBinding
+import com.example.cyclopath.ui.login.LoginActivity
+import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.navigation.base.route.*
 //import com.mapbox.navigation.examples.databinding.MapboxActivityTurnByTurnExperienceBinding
 import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer
 import com.mapbox.navigation.ui.maneuver.api.MapboxManeuverApi
@@ -309,6 +310,8 @@ class NavigationActivity : AppCompatActivity() {
                     keyPoints = locationMatcherResult.keyPoints,
             )
 
+            println("NEWLOCATION")
+
             // update camera position to account for new location
             viewportDataSource.onLocationChanged(enhancedLocation)
             viewportDataSource.evaluate()
@@ -331,6 +334,7 @@ class NavigationActivity : AppCompatActivity() {
      */
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
         // update the camera position to account for the progressed fragment of the route
+
         viewportDataSource.onRouteProgressChanged(routeProgress)
         viewportDataSource.evaluate()
 
@@ -429,6 +433,8 @@ class NavigationActivity : AppCompatActivity() {
             onInitialize = this::initNavigation
     )
 
+    private lateinit var origin : Point
+
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -499,12 +505,12 @@ class NavigationActivity : AppCompatActivity() {
         speechApi = MapboxSpeechApi(
                 this,
                 "sk.eyJ1IjoiY3ljbG9wYXRoIiwiYSI6ImNsY3M5ZzV6ZDBpZjczdm53NnAyOHAwbDEifQ.7qLVoLnrTaP18Tc0L9Mrsw",
-                Locale.US.language
+                Locale.UK.language
         )
         voiceInstructionsPlayer = MapboxVoiceInstructionsPlayer(
                 this,
                 "sk.eyJ1IjoiY3ljbG9wYXRoIiwiYSI6ImNsY3M5ZzV6ZDBpZjczdm53NnAyOHAwbDEifQ.7qLVoLnrTaP18Tc0L9Mrsw",
-                Locale.US.language
+                Locale.UK.language
         )
 
         // initialize route line, the withRouteLineBelowLayerId is specified to place
@@ -521,13 +527,13 @@ class NavigationActivity : AppCompatActivity() {
         val routeArrowOptions = RouteArrowOptions.Builder(this).build()
         routeArrowView = MapboxRouteArrowView(routeArrowOptions)
 
+
+        origin = intent.getSerializableExtra("origin") as Point
+        var route = intent.getSerializableExtra("route") as DirectionsRoute
+
         // load map style
         binding.mapView.getMapboxMap().loadStyleUri(NavigationStyles.NAVIGATION_DAY_STYLE) {
-            // add long click listener that search for a route to the clicked destination
-            binding.mapView.gestures.addOnMapLongClickListener { point ->
-                findRoute(point)
-                true
-            }
+            setRouteAndStartNavigation(listOf(route).toNavigationRoutes(RouterOrigin.Offboard))
         }
 
         // initialize view interactions
@@ -549,6 +555,13 @@ class NavigationActivity : AppCompatActivity() {
 
         // set initial sounds button state
         binding.soundButton.unmute()
+
+//        var callback: OnBackPressedCallback = object : OnBackPressedCallback(true /* enabled by default */) {
+//            override fun handleOnBackPressed() {
+//                onBackPressed()
+//            }
+//        }
+//        onBackPressedDispatcher.addCallback(this, callback)
     }
 
     override fun onDestroy() {
@@ -566,7 +579,7 @@ class NavigationActivity : AppCompatActivity() {
                 NavigationOptions.Builder(this)
                         .accessToken("sk.eyJ1IjoiY3ljbG9wYXRoIiwiYSI6ImNsY3M5ZzV6ZDBpZjczdm53NnAyOHAwbDEifQ.7qLVoLnrTaP18Tc0L9Mrsw")
                         // comment out the location engine setting block to disable simulation
-                        .locationEngine(replayLocationEngine)
+//                        .locationEngine(replayLocationEngine)
                         .build()
         )
 
@@ -590,7 +603,8 @@ class NavigationActivity : AppCompatActivity() {
                 listOf(
                         ReplayRouteMapper.mapToUpdateLocation(
                                 Date().time.toDouble(),
-                                Point.fromLngLat(-122.39726512303575, 37.785128345296805)
+                                origin
+//                                Point.fromLngLat(-122.39726512303575, 37.785128345296805)
                         )
                 )
         )
@@ -598,7 +612,7 @@ class NavigationActivity : AppCompatActivity() {
         mapboxReplayer.playbackSpeed(3.0)
     }
 
-    private fun findRoute(destination: Point) {
+    private fun findRoute(origin: Point, destination: Point) {
         val originLocation = navigationLocationProvider.lastLocation
         val originPoint = originLocation?.let {
             Point.fromLngLat(it.longitude, it.latitude)
@@ -613,13 +627,14 @@ class NavigationActivity : AppCompatActivity() {
                 RouteOptions.builder()
                         .applyDefaultNavigationOptions()
                         .applyLanguageAndVoiceUnitOptions(this)
-                        .coordinatesList(listOf(originPoint, destination))
+                        .coordinatesList(listOf(origin, destination))
                         // provide the bearing for the origin of the request to ensure
                         // that the returned route faces in the direction of the current user movement
                         .bearingsList(
                                 listOf(
                                         Bearing.builder()
-                                                .angle(originLocation.bearing.toDouble())
+                                                .angle(0.0)
+//                                                .angle(originLocation.bearing.toDouble())
                                                 .degrees(45.0)
                                                 .build(),
                                         null
@@ -657,7 +672,7 @@ class NavigationActivity : AppCompatActivity() {
         binding.tripProgressCard.visibility = View.VISIBLE
 
         // move the camera to overview when new route is available
-        navigationCamera.requestNavigationCameraToOverview()
+//        navigationCamera.requestNavigationCameraToOverview()
     }
 
     private fun clearRouteAndStopNavigation() {
@@ -673,4 +688,6 @@ class NavigationActivity : AppCompatActivity() {
         binding.routeOverview.visibility = View.INVISIBLE
         binding.tripProgressCard.visibility = View.INVISIBLE
     }
+
+    // TODO back button of navigation
 }

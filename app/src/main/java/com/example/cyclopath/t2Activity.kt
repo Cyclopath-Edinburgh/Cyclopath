@@ -30,7 +30,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.example.cyclopath.t2Activity.Companion.hideKeyboard
 import com.example.cyclopath.databinding.ActivityT2Binding
-import com.example.cyclopath.databinding.ActivityTestingBinding
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineProvider
