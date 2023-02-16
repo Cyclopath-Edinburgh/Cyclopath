@@ -24,6 +24,12 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
+            android:name="com.example.cyclopath.NavigationActivity"
+            android:exported="true"
+            android:label="NavigationActivity">
+
+        </activity>
+        <activity
             android:name="com.example.cyclopath.ui.login.ForgetPasswordActivity"
             android:exported="false">
             <meta-data
@@ -51,6 +57,11 @@
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.example.cyclopath.ui.record.RecordActivity"
@@ -67,11 +78,6 @@
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name="com.example.cyclopath.t2Activity"
@@ -86,13 +92,6 @@
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask">
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
-
-
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -144,18 +143,6 @@
         <activity
             android:name="com.example.cyclopath.ExperimentAgreement"
             android:label="New Feature Testing" />
-        <activity
-            android:name="com.example.cyclopath.NavigationActivity"
-            android:exported="true"
-            android:label="NavigationActivity">
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
-
-
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
-        </activity>
 
         <service android:name="com.example.cyclopath.TrackingService" />
 
