@@ -14,8 +14,6 @@ import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -29,6 +27,7 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -38,9 +37,10 @@ import androidx.lifecycle.lifecycleScope
 import com.example.cyclopath.*
 import com.example.cyclopath.R
 import com.example.cyclopath.databinding.FragmentSearchBinding
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
-import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.location.LocationEngineResult
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.android.gestures.MoveGestureDetector
@@ -48,6 +48,8 @@ import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.Bearing
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.*
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
@@ -65,6 +67,7 @@ import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.*
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
+import com.mapbox.navigation.base.options.HistoryRecorderOptions
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.base.route.*
 import com.mapbox.navigation.core.MapboxNavigation
@@ -79,7 +82,6 @@ import com.mapbox.navigation.core.replay.route.ReplayRouteMapper
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
-import com.mapbox.navigation.ui.maps.NavigationStyles
 import com.mapbox.navigation.ui.maps.camera.view.MapboxRecenterButton
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
 import com.mapbox.navigation.ui.maps.route.RouteLayerConstants
@@ -96,7 +98,11 @@ import com.mapbox.search.ui.adapter.autofill.AddressAutofillUiAdapter
 import com.mapbox.search.ui.view.CommonSearchViewConfiguration
 import com.mapbox.search.ui.view.DistanceUnitType
 import com.mapbox.search.ui.view.SearchResultsView
+import java.io.ByteArrayOutputStream
 import java.lang.ref.WeakReference
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -309,8 +315,19 @@ class SearchFragment : Fragment() {
         mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(it).build())
         mapView.gestures.focalPoint = mapView.getMapboxMap().pixelForCoordinate(it)
         current = it
-        println("current")
-        println(current)
+        if (isRecord) {
+            if (routeCoordinates.size > 0) {
+                val startPoint = Location("start")
+                startPoint.latitude = routeCoordinates.last().latitude()
+                startPoint.longitude = routeCoordinates.last().longitude()
+                val endPoint = Location("end")
+                endPoint.latitude = it.latitude()
+                endPoint.longitude = it.longitude()
+                val dist = startPoint.distanceTo(endPoint).toDouble()
+                distance += dist
+            }
+            routeCoordinates.add(it)
+        }
     }
 
     private val onMoveListener = object : OnMoveListener {
@@ -340,6 +357,8 @@ class SearchFragment : Fragment() {
     private lateinit var navigate : Button
     private lateinit var recenter : MapboxRecenterButton
     private lateinit var swap : ImageView
+    private lateinit var record : ImageView
+    private lateinit var upload : ImageView
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
@@ -359,10 +378,19 @@ class SearchFragment : Fragment() {
     private lateinit var annotationDestination : PointAnnotation
 
     private var first : Boolean = true
+    private var isRecord : Boolean = false
 
     private lateinit var route : DirectionsRoute
 
     private lateinit var current : Point
+
+    private var routeCoordinates = ArrayList<Point>()
+
+    private var storage = Firebase.storage
+
+    private lateinit var start : LocalDateTime
+    private lateinit var end : LocalDateTime
+    private var distance = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -437,11 +465,13 @@ class SearchFragment : Fragment() {
         navigate = root.findViewById(R.id.navigate)
         recenter = root.findViewById(R.id.recenter)
         swap = root.findViewById(R.id.swap)
+        record = root.findViewById(R.id.record)
         mapView = root.findViewById(R.id.mapView)
         mapboxMap = mapView.getMapboxMap()
         mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
         searchResultsViewOrigin = root.findViewById(R.id.search_results_view_origin)
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
+        upload = root.findViewById(R.id.upload)
 
 //        initNavigation()
 
@@ -641,7 +671,7 @@ class SearchFragment : Fragment() {
 
         navigate.setOnClickListener {
             if (this::route.isInitialized) {
-                var intent = Intent(activity,NavigationActivity::class.java)
+                var intent = Intent(activity, NavigationActivity::class.java)
                 intent.putExtra("origin",origin)
                 intent.putExtra("route",route)
                 startActivity(intent)
@@ -673,6 +703,64 @@ class SearchFragment : Fragment() {
             addAnnotationToMap(destination)
         }
 
+        record.setOnClickListener {
+            if (isRecord) {
+                Toast.makeText(context, "Stop recording", Toast.LENGTH_SHORT).show()
+                isRecord = false
+                record.setImageResource(R.drawable.startrecording)
+
+                val current = LocalDateTime.now()
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                val formatted = current.format(formatter)
+
+                val lineString = LineString.fromLngLats(routeCoordinates)
+                val feature = Feature.fromGeometry(lineString)
+
+                var sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
+                val name = sp!!.getString("username","empty")
+                var filepath = "history/$name/$formatted.geojson"
+                var storageRef = storage.reference
+                var dataRef = storageRef.child(filepath)
+
+                val baos = ByteArrayOutputStream()
+                baos.write(feature.toJson().toByteArray())
+                val data = baos.toByteArray()
+                dataRef.putBytes(data)
+
+                end = current
+                var d = Duration.between(start.toLocalTime(), end.toLocalTime()).toString().substring(2)
+                var infopath = "history/$name/$formatted.txt"
+                var infoRef = storageRef.child(infopath)
+
+                val baos2 = ByteArrayOutputStream()
+                val first = "origin="+routeCoordinates.first().latitude().toString()+","+routeCoordinates.first().longitude().toString()
+                val second = "destination="+routeCoordinates.last().latitude().toString()+","+routeCoordinates.last().longitude().toString()
+                val third = "duration=$d"
+                val fourth = "distance="+String.format("%.2f",distance).toString()+"M"
+                baos2.write(first.toByteArray())
+                baos2.write("\n".toByteArray())
+                baos2.write(second.toByteArray())
+                baos2.write("\n".toByteArray())
+                baos2.write(third.toByteArray())
+                baos2.write("\n".toByteArray())
+                baos2.write(fourth.toByteArray())
+                baos2.write("\n".toByteArray())
+                val data2 = baos2.toByteArray()
+                infoRef.putBytes(data2)
+            } else {
+                Toast.makeText(context, "Start recording", Toast.LENGTH_SHORT).show()
+                isRecord = true
+                record.setImageResource(R.drawable.stoprecording)
+                start = LocalDateTime.now()
+            }
+        }
+
+        upload.setOnClickListener {
+            if (this::route.isInitialized) {
+                // TODO route is the DirectionRoute
+            }
+        }
+
         return root
     }
 
@@ -682,6 +770,11 @@ class SearchFragment : Fragment() {
                         .accessToken(getString(R.string.matoken))
                         // comment out the location engine setting block to disable simulation
                         .locationEngine(replayLocationEngine)
+                        .historyRecorderOptions(
+                                HistoryRecorderOptions.Builder()
+//                                        .fileDirectory("/data")
+                                        .build()
+                        )
                         .build()
         )
 //        mapView.location.apply {
@@ -1021,7 +1114,7 @@ class SearchFragment : Fragment() {
                 fetchARoute(origin, destination)
             }
 
-            true // TODO, if origin fit origin
+            true
         }
 
     }
