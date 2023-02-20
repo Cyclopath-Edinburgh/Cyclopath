@@ -16,18 +16,27 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.cyclopath.G
 import com.example.cyclopath.MainActivity
 import com.example.cyclopath.R
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.facebook.login.widget.LoginButton
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInResult
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import java.util.*
+
 
 class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
 
@@ -43,9 +52,11 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     private lateinit var facebook : Button
     private lateinit var google : Button
     private lateinit var signup : TextView
+    private lateinit var loginButton: LoginButton
     private lateinit var userList : ArrayList<Array<String>>
     private lateinit var emailPasswordActivity: EmailPasswordActivity
     private lateinit var bar : ProgressBar
+    private lateinit var callbackManager : CallbackManager
     private var done = false
 
     private var firebaseAuth: FirebaseAuth? = null
@@ -78,18 +89,18 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         getUserData(db!!)
         sp = getSharedPreferences("user_data", MODE_PRIVATE)
 
-        if (sp!!.getString("username","empt") != "empt") {
+        if (sp!!.getString("username", "empt") != "empt") {
             val intent = Intent(this@LoginActivity, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
 
-        forgetpassword.setOnClickListener{
+        forgetpassword.setOnClickListener {
             val intent = Intent(this@LoginActivity, ForgetPasswordActivity::class.java)
             startActivity(intent)
         }
 
-        login.setOnClickListener{
+        login.setOnClickListener {
             if (!isNetworkAvailable(this)) {
                 Toast.makeText(this@LoginActivity, "Please connect to the Internet.", Toast.LENGTH_LONG).show()
             } else {
@@ -105,8 +116,8 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
             }
         }
 
-        signup.setOnClickListener{
-            var intent = Intent(this,SignUpActivity::class.java)
+        signup.setOnClickListener {
+            var intent = Intent(this, SignUpActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
@@ -135,7 +146,62 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
             startActivityForResult(intent, RC_SIGN_IN)
         })
 
+        callbackManager = CallbackManager.Factory.create()
+
+        loginButton = findViewById<View>(R.id.facebook) as LoginButton
+        loginButton.setReadPermissions("email", "public_profile")
+
+        loginButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+            override fun onSuccess(loginResult: LoginResult) {
+                println("0")
+                handleFacebookAccessToken(loginResult.accessToken)
+            }
+
+            override fun onCancel() {
+                println("1")
+            }
+
+            override fun onError(error: FacebookException) {
+                println("2")
+            }
+        })
     }
+
+    private fun handleFacebookAccessToken(token: AccessToken) {
+        val credential = FacebookAuthProvider.getCredential(token.token)
+        auth.signInWithCredential(credential)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        val user = auth.currentUser
+                        val name = user!!.displayName
+                        val email = user!!.email
+                        val docRef = db!!.collection("users").document(name!!)
+                        docRef.get().addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val document = task.result
+                                if (!document.exists()) {
+                                    val user: MutableMap<String, Any> = HashMap()
+                                    user["email"] = email!!
+                                    db!!.collection("users").document(name!!)
+                                            .set(user)
+                                            .addOnSuccessListener {
+                                                G.user.name = name
+                                                G.user.isLoggedIn
+                                            }
+                                            .addOnFailureListener { }
+                                }
+                                sp!!.edit().putString("username", name).apply()
+                                sp!!.edit().putString("email", email).apply()
+                                Toast.makeText(this@LoginActivity, "Successfully login!", Toast.LENGTH_SHORT).show()
+                                gotoMain()
+                    } else {
+                        Toast.makeText(this@LoginActivity, "Login failed.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
 
     fun login(username: String?, password: String) {
         val docRef = db!!.collection("users").document(username!!)
@@ -191,6 +257,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
             val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data!!)
             handleSignInResult(result)
         }
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     private fun handleSignInResult(result: GoogleSignInResult?) {
@@ -222,7 +289,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
             }
         } else {
             // Google Sign In failed, update UI appropriately
-            Toast.makeText(this, "Login Unsuccessful", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Login failed.", Toast.LENGTH_SHORT).show()
         }
     }
 

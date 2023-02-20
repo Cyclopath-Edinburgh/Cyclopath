@@ -1,6 +1,5 @@
 package com.example.cyclopath.ui.search
 
-import LocationPermissionHelper
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -20,10 +19,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
@@ -359,6 +355,7 @@ class SearchFragment : Fragment() {
     private lateinit var swap : ImageView
     private lateinit var record : ImageView
     private lateinit var upload : ImageView
+    private lateinit var dropdown : Spinner
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
@@ -402,7 +399,7 @@ class SearchFragment : Fragment() {
 //        mapboxMap = mapView.getMapboxMap()
 //        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
 
-//        locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
+//        locationPermissionHelper = com.example.cyclopath.ui.search.LocationPermissionHelper(WeakReference(this))
 //        locationPermissionHelper.checkPermissions {
 //            onMapReady()
 //        }
@@ -472,6 +469,7 @@ class SearchFragment : Fragment() {
         searchResultsViewOrigin = root.findViewById(R.id.search_results_view_origin)
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
         upload = root.findViewById(R.id.upload)
+        dropdown = root.findViewById(R.id.dropdown)
 
 //        initNavigation()
 
@@ -828,7 +826,7 @@ class SearchFragment : Fragment() {
                 // If you want to specify waypoints you can pass list of points instead of null
                 .coordinatesList(listOf(origin, destination))
                 // set it to true if you want to receive alternate routes to your destination
-                .alternatives(false)
+                .alternatives(true)
                 .profile("cycling")
                 // provide the bearing for the origin of the request to ensure
                 // that the returned route faces in the direction of the current user movement
@@ -865,15 +863,47 @@ class SearchFragment : Fragment() {
                             routerOrigin: RouterOrigin
                     ) {
 
+                        var strlist : ArrayList<String> = ArrayList<String>()
                         for (i in routes) {
+                            println("routessss")
                             println(i)
+                            val hours = i.directionsRoute.duration() / 3600;
+                            val minutes = (i.directionsRoute.duration() % 3600) / 60;
+                            val seconds = i.directionsRoute.duration() % 60;
+
+                            var timeString = ""
+                            if (hours >= 1) {
+                                timeString = String.format("%.0fH %.0fM %.0fS", hours, minutes, seconds)
+                            } else if (minutes >= 1) {
+                                timeString = String.format("%.0fM %.0fS", minutes, seconds)
+                            } else {
+                                timeString = String.format("%.0fS", seconds)
+                            }
+                            val distance = String.format("%.2f",i.directionsRoute.distance()/1000)
+                            strlist.add("$distance KM ($timeString)")
                         }
 
                         route = routes[0].directionsRoute
 
-                        mapboxNavigation.setNavigationRoutes(
-                                listOf(route).toNavigationRoutes(RouterOrigin.Offboard)
-                        )
+                        val adapter: ArrayAdapter<String> = ArrayAdapter<String>(context!!,
+                                android.R.layout.simple_spinner_item, strlist)
+
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        dropdown.isClickable = true
+                        dropdown.setAdapter(adapter)
+                        dropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+                            override fun onNothingSelected(parent: AdapterView<*>?) {
+                                mapboxNavigation.setNavigationRoutes(
+                                        listOf(route).toNavigationRoutes(RouterOrigin.Offboard)
+                                )
+                            }
+                            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                                mapboxNavigation.setNavigationRoutes(
+                                        listOf(routes[position].directionsRoute).toNavigationRoutes(RouterOrigin.Offboard)
+                                )
+                            }
+                        }
+
                     }
                 }
         )

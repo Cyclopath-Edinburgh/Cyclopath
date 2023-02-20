@@ -109,6 +109,13 @@ dependencies {
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation 'com.google.firebase:firebase-storage-ktx'
 
+//    implementation 'com.google.firebase:firebase-core:21.1.1'
+//    implementation 'com.google.firevase:firebase-auth:19.1.0'
+    implementation 'com.facebook.android:facebook-login:16.0.0'
+    implementation 'com.facebook.android:facebook-android-sdk:16.0.0'
+
+    implementation "androidx.browser:browser:1.4.0"
+
 //    implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation:0.19.0-SNAPSHOT'
 
 //    implementation("com.mapbox.navigation:ui-androidauto:0.8.0")

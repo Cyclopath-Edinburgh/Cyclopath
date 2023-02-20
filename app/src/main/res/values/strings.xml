@@ -467,22 +467,16 @@
     <string name="address_autofill_error_pin_correction">Unable to locate selected coordinate</string>
     <string name="matoken">sk.eyJ1IjoiY3ljbG9wYXRoIiwiYSI6ImNsY3M5ZzV6ZDBpZjczdm53NnAyOHAwbDEifQ.7qLVoLnrTaP18Tc0L9Mrsw</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_main">MainActivity</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-
     <string name="forget_password"><u>Forget password?</u></string>
     <string name="signup"><u>Sign Up</u></string>
 
     <string name="webclientID">311764064674-trb86n5mk72kf3chqmvg2i04jtvj77n0.apps.googleusercontent.com</string>
+
+    <string name="facebook_app_id">899459411302830</string>
+    <string name="fb_login_protocol_scheme">fb1234</string>
+    <string name="facebook_client_token">41ea06b31996e8a96d3b49d71037865d</string>
+
+
 
 
 </resources>
