@@ -45,11 +45,11 @@ class MainActivity : AppCompatActivity() {
         val bottom_nav = findViewById<BottomNavigationView>(R.id.nav_view)
         bottom_nav.itemIconTintList = null
 
-        recordButton = findViewById<FloatingActionButton>(R.id.main_centralButton)
-        recordButton.setOnClickListener {
-            val intent = Intent(this, RecordActivity::class.java)
-            startActivity(intent)
-        }
+//        recordButton = findViewById<FloatingActionButton>(R.id.main_centralButton)
+//        recordButton.setOnClickListener {
+//            val intent = Intent(this, RecordActivity::class.java)
+//            startActivity(intent)
+//        }
 
     }
 }

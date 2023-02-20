@@ -14,10 +14,10 @@
         android:title="Library"
         />
 
-    <item
-        android:id="@+id/itemEmpty"
-        android:title=""
-        />
+<!--    <item-->
+<!--        android:id="@+id/itemEmpty"-->
+<!--        android:title=""-->
+<!--        />-->
 
     <item
         android:id="@+id/navigation_history"
