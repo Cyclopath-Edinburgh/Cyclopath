@@ -35,6 +35,7 @@ import com.example.cyclopath.items.ConflationJob;
 import com.example.cyclopath.items.Geopoint;
 import com.example.cyclopath.items.ItemUserAccess;
 import com.example.cyclopath.items.LandmarkNeed;
+import com.example.cyclopath.ui.search.NavigationActivity;
 import com.example.cyclopath.util.TrackExporter;
 
 import java.lang.reflect.InvocationTargetException;
