@@ -893,11 +893,13 @@ class SearchFragment : Fragment() {
                         dropdown.setAdapter(adapter)
                         dropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                             override fun onNothingSelected(parent: AdapterView<*>?) {
+                                route = routes[0].directionsRoute
                                 mapboxNavigation.setNavigationRoutes(
                                         listOf(route).toNavigationRoutes(RouterOrigin.Offboard)
                                 )
                             }
                             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                                route = routes[position].directionsRoute
                                 mapboxNavigation.setNavigationRoutes(
                                         listOf(routes[position].directionsRoute).toNavigationRoutes(RouterOrigin.Offboard)
                                 )
