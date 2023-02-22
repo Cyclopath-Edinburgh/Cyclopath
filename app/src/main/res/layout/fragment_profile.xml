@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:foreground="@color/black"
     android:id="@+id/constraintLayout"
+    android:foreground="@color/black"
     tools:context=".ui.profile.ProfileFragment">
 
     <ImageView
@@ -17,7 +17,6 @@
         android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
         android:id="@+id/icon"/>
-
 
     <TextView
         android:id="@+id/username"
@@ -37,10 +36,22 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tnc"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="32dp"
         android:text="Logout"/>
+
+    <TextView
+        android:id="@+id/tnc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="#2291CE"
+        android:text="@string/tnc"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.cyclopath.G
 import com.example.cyclopath.R
+import com.example.cyclopath.ui.TncActivity
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -35,6 +37,7 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var userList : ArrayList<Array<String>>
     private lateinit var emailPasswordActivity: EmailPasswordActivity
     private lateinit var bar : ProgressBar
+    private lateinit var info : ImageView
     private var signed = false
     private var done = false
 
@@ -61,6 +64,7 @@ class SignUpActivity : AppCompatActivity() {
         submit = findViewById(R.id.signup)
         resend = findViewById(R.id.resend)
         bar = findViewById(R.id.progressBar)
+        info = findViewById(R.id.info)
 
         submit.setOnClickListener{
             if (!isNetworkAvailable(this)) {
@@ -122,6 +126,11 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
         onBackPressedDispatcher.addCallback(this, callback)
+
+        info.setOnClickListener {
+            val intent = Intent(this@SignUpActivity, TncActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     fun checkUsername(username: String): Boolean {

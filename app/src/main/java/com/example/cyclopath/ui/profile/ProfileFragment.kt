@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.example.cyclopath.R
+import com.example.cyclopath.ui.TncActivity
 import com.example.cyclopath.ui.login.LoginActivity
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -28,6 +29,7 @@ class ProfileFragment : Fragment() {
 
     private lateinit var name : TextView
     private lateinit var logout : Button
+    private lateinit var tnc : TextView
     private var sp : SharedPreferences? = null
 
     override fun onCreateView(
@@ -44,6 +46,7 @@ class ProfileFragment : Fragment() {
 
         name = root.findViewById(R.id.username)
         logout = root.findViewById(R.id.logout)
+        tnc = root.findViewById(R.id.tnc)
 
         name.text = sp!!.getString("username","user")
 
@@ -83,6 +86,11 @@ class ProfileFragment : Fragment() {
                 lay.foreground.alpha = 0
             }
 
+        }
+
+        tnc.setOnClickListener {
+            val intent = Intent(context, TncActivity::class.java)
+            startActivity(intent)
         }
 
         return root
