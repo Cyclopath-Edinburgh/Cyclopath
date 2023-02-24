@@ -23,6 +23,13 @@ import com.example.cyclopath.R
 import com.example.cyclopath.ui.TncActivity
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -40,6 +47,8 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var info : ImageView
     private var signed = false
     private var done = false
+
+    var storage = Firebase.storage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,15 +175,24 @@ class SignUpActivity : AppCompatActivity() {
                     bar.visibility = View.INVISIBLE
                     done = emailPasswordActivity.getSuccess()
                     if (done) {
+                        val sdf = SimpleDateFormat("yyyy.MM.dd")
+                        val cal = Calendar.getInstance()
+                        val today = sdf.format(cal.time).toString()
                         val user: MutableMap<String, Any> = HashMap()
                         user["email"] = email
+                        user["startdate"] = today
                         db!!.collection("users").document(username!!)
                                 .set(user)
                                 .addOnSuccessListener {
                                     G.user.name = username
                                     G.user.isLoggedIn
                                 }
-                                .addOnFailureListener { }
+                        val storageRef = storage.reference
+                        val dataRef = storageRef.child("distanceData/$username.txt")
+                        val data = ByteArrayOutputStream()
+                        data.write("\n".toByteArray())
+                        val ddata = data.toByteArray()
+                        dataRef.putBytes(ddata)
                     }
                 }, 1000)
             } else {
