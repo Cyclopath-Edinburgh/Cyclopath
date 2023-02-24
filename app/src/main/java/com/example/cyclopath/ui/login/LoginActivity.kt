@@ -32,6 +32,7 @@ import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -150,16 +151,13 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
         loginButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
-                println("0")
                 handleFacebookAccessToken(loginResult.accessToken)
             }
 
             override fun onCancel() {
-                println("1")
             }
 
             override fun onError(error: FacebookException) {
-                println("2")
             }
         })
     }
@@ -218,6 +216,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                                 Toast.makeText(applicationContext, "Successfully login!", Toast.LENGTH_SHORT).show()
                                 sp!!.edit().putString("username", username).apply()
                                 sp!!.edit().putString("email", document.get("email").toString()).apply()
+                                sp!!.edit().putString("startdate",document.get("startdate").toString()).apply()
                                 val intent = Intent(this, MainActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 startActivity(intent)
@@ -267,9 +266,13 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
             docRef.get().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val document = task.result
+                    val sdf = SimpleDateFormat("yyyy.MM.dd")
+                    val cal = Calendar.getInstance()
+                    val today = sdf.format(cal.time).toString()
                     if (!document.exists()) {
                         val user: MutableMap<String, Any> = HashMap()
                         user["email"] = email!!
+                        user["startdate"] = today
                         db!!.collection("users").document(name!!)
                                 .set(user)
                                 .addOnSuccessListener {
@@ -280,6 +283,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                     }
                     sp!!.edit().putString("username", name).apply()
                     sp!!.edit().putString("email", email).apply()
+                    sp!!.edit().putString("startdate", today).apply()
                     val credential = GoogleAuthProvider.getCredential(idToken, null)
                     firebaseAuthWithGoogle(credential)
                 }

@@ -91,9 +91,20 @@ class ViewHistoryActivity : AppCompatActivity() {
                         destinationLat = strs[0].toDouble()
                         destinationLong = strs[1].toDouble()
                     } else if ("duration" in it) {
-                        duration = it.substring(9)
+                        var d = it.substring(9).toFloat()
+                        val hours = d / 3600
+                        val minutes = (d % 3600) / 60
+                        val seconds = d % 60
+                        if (hours >= 1) {
+                            duration = String.format("%.0fH %.0fM %.0fS", hours, minutes, seconds)
+                        } else if (minutes >= 1) {
+                            duration = String.format("%.0fM %.0fS", minutes, seconds)
+                        } else {
+                            duration = String.format("%.2fS", seconds)
+                        }
                     } else if ("distance" in it) {
-                        distance = it.substring(9)
+                        var d = it.substring(9).toFloat()
+                        distance = String.format("%.3f KM",d/1000)
                     }
                 }
             }

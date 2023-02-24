@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -96,6 +97,7 @@ import com.mapbox.search.ui.view.DistanceUnitType
 import com.mapbox.search.ui.view.SearchResultsView
 import java.io.ByteArrayOutputStream
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -389,6 +391,15 @@ class SearchFragment : Fragment() {
     private lateinit var end : LocalDateTime
     private var distance = 0.0
 
+    var sdf = SimpleDateFormat("yyyy.MM.dd")
+    lateinit var today : String
+    val ONE_MEGABYTE: Long = 1024 * 1024
+    private var sp : SharedPreferences? = null
+    private lateinit var name : String
+    
+    var distanceList: HashMap<String, String> = hashMapOf<String, String>()
+    var durationList: HashMap<String, String> = hashMapOf<String, String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        binding = FragmentSearchBinding.inflate(layoutInflater)
@@ -470,6 +481,10 @@ class SearchFragment : Fragment() {
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
         upload = root.findViewById(R.id.upload)
         dropdown = root.findViewById(R.id.dropdown)
+
+        
+        sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
+        name = sp!!.getString("username", "user")!!
 
 //        initNavigation()
 
@@ -596,6 +611,7 @@ class SearchFragment : Fragment() {
 
         if (first) {
             first = false
+            retrieveDistance()
 
         } else {
             if (this::origin.isInitialized) {
@@ -703,13 +719,16 @@ class SearchFragment : Fragment() {
 
         record.setOnClickListener {
             if (isRecord) {
+                val cal: Calendar = Calendar.getInstance()
+                today = sdf.format(cal.time)
+
                 Toast.makeText(context, "Stop recording", Toast.LENGTH_SHORT).show()
                 isRecord = false
                 record.setImageResource(R.drawable.startrecording)
 
-                val current = LocalDateTime.now()
+                val curr = LocalDateTime.now()
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                val formatted = current.format(formatter)
+                val formatted = curr.format(formatter)
 
                 val lineString = LineString.fromLngLats(routeCoordinates)
                 val feature = Feature.fromGeometry(lineString)
@@ -725,16 +744,34 @@ class SearchFragment : Fragment() {
                 val data = baos.toByteArray()
                 dataRef.putBytes(data)
 
-                end = current
-                var d = Duration.between(start.toLocalTime(), end.toLocalTime()).toString().substring(2)
+                end = curr
+                var duration = Duration.between(start.toLocalTime(), end.toLocalTime())
+                var d = duration.toString().substring(2).dropLast(1)
                 var infopath = "history/$name/$formatted.txt"
                 var infoRef = storageRef.child(infopath)
 
+                if (distanceList.keys.contains(today)) {
+                    distanceList[today] = (distanceList[today]!!.toFloat() + distance).toString()
+                    durationList[today] = (durationList[today]!!.toFloat()+d.toFloat()).toString()
+                } else {
+                    distanceList[today] = distance.toString()
+                    durationList[today] = d
+                }
+
+                uploadDistance()
+
                 val baos2 = ByteArrayOutputStream()
-                val first = "origin="+routeCoordinates.first().latitude().toString()+","+routeCoordinates.first().longitude().toString()
-                val second = "destination="+routeCoordinates.last().latitude().toString()+","+routeCoordinates.last().longitude().toString()
+                var first = ""
+                var second = ""
+                if (routeCoordinates.size == 0) {
+                    first = "origin=" + current.latitude().toString() + "," + current.longitude().toString()
+                    second = "destination=" + current.latitude().toString() + "," + current.longitude().toString()
+                } else {
+                    first = "origin=" + routeCoordinates.first().latitude().toString() + "," + routeCoordinates.first().longitude().toString()
+                    second = "destination=" + routeCoordinates.last().latitude().toString() + "," + routeCoordinates.last().longitude().toString()
+                }
                 val third = "duration=$d"
-                val fourth = "distance="+String.format("%.2f",distance).toString()+"M"
+                val fourth = "distance="+String.format("%.2f",distance)
                 baos2.write(first.toByteArray())
                 baos2.write("\n".toByteArray())
                 baos2.write(second.toByteArray())
@@ -745,6 +782,9 @@ class SearchFragment : Fragment() {
                 baos2.write("\n".toByteArray())
                 val data2 = baos2.toByteArray()
                 infoRef.putBytes(data2)
+
+                distance = 0.0
+                routeCoordinates = ArrayList<Point>()
             } else {
                 Toast.makeText(context, "Start recording", Toast.LENGTH_SHORT).show()
                 isRecord = true
@@ -865,8 +905,6 @@ class SearchFragment : Fragment() {
 
                         var strlist : ArrayList<String> = ArrayList<String>()
                         for (i in routes) {
-                            println("routessss")
-                            println(i)
                             val hours = i.directionsRoute.duration() / 3600;
                             val minutes = (i.directionsRoute.duration() % 3600) / 60;
                             val seconds = i.directionsRoute.duration() % 60;
@@ -1149,6 +1187,47 @@ class SearchFragment : Fragment() {
             true
         }
 
+    }
+
+    fun getTime(): String {
+        val current = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val formatted = current.format(formatter)
+        return formatted
+    }
+
+    fun retrieveDistance() {
+        distanceList = HashMap<String, String>()
+        durationList = HashMap<String, String>()
+        val storageRef = storage.reference
+        var dataRef = storageRef.child("distanceData/$name.txt")
+        dataRef.getBytes(ONE_MEGABYTE).addOnSuccessListener { it ->
+            val data = String(it).lines()
+            data.forEach{
+                if (it != "") {
+                    val strs = it.split(",").toTypedArray()
+                    distanceList[strs[0]] = strs[1]
+                    durationList[strs[0]] = strs[2]
+                }
+            }
+        }.addOnFailureListener {
+            // Handle any errors
+        }
+    }
+
+    fun uploadDistance() {
+        val storageRef = storage.reference
+        val dataRef = storageRef.child("distanceData/$name.txt")
+        val baos = ByteArrayOutputStream()
+        for ((key, item) in distanceList) {
+            val d = key
+            val s = item
+            val c = durationList[key]
+            baos.write("$d,$s,$c".toByteArray())
+            baos.write("\n".toByteArray())
+        }
+        val data = baos.toByteArray()
+        dataRef.putBytes(data)
     }
 
     private fun initLocationComponent() {
