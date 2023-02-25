@@ -16,7 +16,7 @@
         app:contentInsetStart="0dp"
         app:fabCradleMargin="10dp"
         app:fabCradleRoundedCornerRadius="10dp"
-        android:backgroundTint="@color/black"
+        android:backgroundTint="@color/themegreen"
         app:titleTextColor="@color/white">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/background_transparent"
-            app:itemIconTint="@color/black"
+            app:itemIconTint="@color/themegreen"
             app:menu="@menu/bottom_navigation_bar"
             app:itemTextColor="@color/white"/>
 

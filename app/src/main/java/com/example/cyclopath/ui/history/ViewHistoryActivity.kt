@@ -27,6 +27,9 @@ class ViewHistoryActivity : AppCompatActivity() {
     private lateinit var mapboxMap : MapboxMap
     private lateinit var ttt: TextView
     private lateinit var td: TextView
+    private lateinit var aspeed: TextView
+    private lateinit var s: TextView
+    private lateinit var e: TextView
     private lateinit var pb: ProgressBar
 
     private val ZOOM = 14.0
@@ -37,6 +40,9 @@ class ViewHistoryActivity : AppCompatActivity() {
     private var destinationLat = 0.0
     private var duration = "0H0M0S"
     private var distance = "0M"
+    private var speed = "0KM/H"
+    private var start = "HH:MM:SS"
+    private var end = "HH:MM:SS"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +56,9 @@ class ViewHistoryActivity : AppCompatActivity() {
         text.setText(name)
         ttt = findViewById(R.id.ttt)
         td = findViewById(R.id.td)
+        aspeed = findViewById(R.id.`as`)
+        s = findViewById(R.id.start)
+        e = findViewById(R.id.end)
 
         val sharedPreferences = this.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
         val username = sharedPreferences?.getString("username", "user")
@@ -92,6 +101,7 @@ class ViewHistoryActivity : AppCompatActivity() {
                         destinationLong = strs[1].toDouble()
                     } else if ("duration" in it) {
                         var d = it.substring(9).toFloat()
+                        speed = (d/3600).toString()
                         val hours = d / 3600
                         val minutes = (d % 3600) / 60
                         val seconds = d % 60
@@ -105,6 +115,13 @@ class ViewHistoryActivity : AppCompatActivity() {
                     } else if ("distance" in it) {
                         var d = it.substring(9).toFloat()
                         distance = String.format("%.3f KM",d/1000)
+                        speed = ((d/1000)/speed.toFloat()).toString()+" KM/H"
+                    } else if ("start" in it) {
+                        var s = it.substring(6)
+                        start = s
+                    } else if ("end" in it) {
+                        var e = it.substring(4)
+                        end = e
                     }
                 }
             }
@@ -112,6 +129,9 @@ class ViewHistoryActivity : AppCompatActivity() {
             val midLong = (originLong+destinationLong)/2
             ttt.setText("Total Time Taken: $duration")
             td.setText("Total Distance: $distance")
+            aspeed.setText("Average Speed: $speed")
+            s.setText("Start Time: $start")
+            e.setText("End Time: $end")
 
             mapView.getMapboxMap().setCamera(
                     CameraOptions.Builder().center(

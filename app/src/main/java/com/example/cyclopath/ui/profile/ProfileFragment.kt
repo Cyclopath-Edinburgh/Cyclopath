@@ -99,7 +99,9 @@ class ProfileFragment : Fragment() {
 
             val popupWindow = PopupWindow(popupView, 700, 400)
 
-            lay.foreground.alpha = 120
+            popupWindow.isFocusable = true
+
+//            lay.foreground.alpha = 120
 
             popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
 
@@ -262,7 +264,7 @@ class ProfileFragment : Fragment() {
                 distanceData.addEntry(distanceList[sdf.format(temp_cal.time)]?.let {
                     Entry(
                             i.toFloat(),
-                            it.toFloat()
+                            it.toFloat()/1000
                     )
                 })
             } else {
@@ -276,7 +278,7 @@ class ProfileFragment : Fragment() {
         dataSetsRes.add(distanceData)
 
         alldistanceData = LineData(dataSetsRes)
-        alldistanceData.setValueFormatter(DataFormatter())
+//        alldistanceData.setValueFormatter(DataFormatter())
         distanceChart.data = alldistanceData
         distanceChart.xAxis.valueFormatter = xFormatter(day)
 
@@ -327,7 +329,7 @@ class ProfileFragment : Fragment() {
                 durationData.addEntry(dulist[sdf.format(temp_cal.time)]?.let {
                     Entry(
                             i.toFloat(),
-                            it.toFloat()
+                            it.toFloat()/60
                     )
                 })
             } else {

@@ -11,11 +11,12 @@
         android:id="@+id/login_logo"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:src="@drawable/logo"
+        android:src="@drawable/app"
         app:layout_constraintBottom_toTopOf="@+id/input1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="48dp"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input1"
@@ -28,14 +29,15 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeColor="@color/black"
-        android:textColorHint="@color/black"
+        app:boxStrokeColor="@color/themegreen"
+        android:textColorHint="@color/themegreen"
         >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/username_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/arbutus_slab"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -52,8 +54,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeColor="@color/black"
-        android:textColorHint="@color/black"
+        app:boxStrokeColor="@color/themegreen"
+        android:textColorHint="@color/themegreen"
         app:passwordToggleEnabled="true"
         >
 
@@ -62,6 +64,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
+            android:fontFamily="@font/arbutus_slab"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -88,7 +91,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="24dp"
-        android:text="Log In"/>
+        android:text="Log In"
+        android:fontFamily="@font/arbutus_slab"/>
 
     <LinearLayout
         android:id="@+id/layout1"
@@ -105,7 +109,7 @@
         <View
             android:layout_width="40dp"
             android:layout_height="1dp"
-            android:background="@color/black"
+            android:background="@color/themegreen"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"/>
 
@@ -122,7 +126,7 @@
         <View
             android:layout_width="40dp"
             android:layout_height="1dp"
-            android:background="@color/black"
+            android:background="@color/themegreen"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"/>
 
@@ -146,8 +150,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Don't have an account?"
-            android:textColor="@color/black"
+            android:textColor="@color/themegreen"
             android:paddingRight="4dp"
+            android:fontFamily="@font/arbutus_slab"
             />
 
         <TextView
@@ -157,36 +162,37 @@
             android:clickable="true"
             android:text="@string/signup"
             android:textColor="#2291CE"
-            tools:ignore="TouchTargetSizeCheck" />
+            tools:ignore="TouchTargetSizeCheck"
+            android:fontFamily="@font/arbutus_slab"/>
 
     </LinearLayout>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardview"
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:layout_gravity="center"
-        app:cardCornerRadius="5dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout1"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp">
+<!--    <androidx.cardview.widget.CardView-->
+<!--        android:id="@+id/cardview"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="44dp"-->
+<!--        android:layout_gravity="center"-->
+<!--        app:cardCornerRadius="5dp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/layout1"-->
+<!--        android:layout_marginTop="24dp"-->
+<!--        android:layout_marginStart="16dp"-->
+<!--        android:layout_marginEnd="16dp">-->
 
-        <com.facebook.login.widget.LoginButton
-            xmlns:facebook="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/facebook"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textSize="16dp"
-            facebook:com_facebook_login_text="CONTINUE WITH FACEBOOK"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:fontFamily="@font/arbutus_slab"
-            />
+<!--        <com.facebook.login.widget.LoginButton-->
+<!--            xmlns:facebook="http://schemas.android.com/apk/res-auto"-->
+<!--            android:id="@+id/facebook"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:textSize="16dp"-->
+<!--            facebook:com_facebook_login_text="CONTINUE WITH FACEBOOK"-->
+<!--            android:paddingTop="12dp"-->
+<!--            android:paddingBottom="12dp"-->
+<!--            android:fontFamily="@font/arbutus_slab"-->
+<!--            />-->
 
-    </androidx.cardview.widget.CardView>
+<!--    </androidx.cardview.widget.CardView>-->
 
     <Button
         android:id="@+id/google"
@@ -194,17 +200,19 @@
         android:layout_height="56dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardview"
+        app:layout_constraintTop_toBottomOf="@+id/layout1"
+        android:layout_marginTop="24dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="#DB4437"
+        android:backgroundTint="@color/white"
         android:drawableLeft="@drawable/google_small"
-        android:paddingStart="4dp"
+        android:paddingStart="16dp"
         android:text="Continue with Google"
         android:textSize="16dp"
         android:paddingEnd="32dp"
         android:textStyle="bold"
+        android:textColor="@color/themegreen"
+        android:fontFamily="@font/arbutus_slab"
         />
 
     <ProgressBar
@@ -213,7 +221,7 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:indeterminate="true"
-        android:indeterminateTint="@color/black"
+        android:indeterminateTint="@color/themegreen"
         android:visibility="invisible"
         android:layout_marginBottom="16dp"
         app:layout_constraintStart_toStartOf="parent"

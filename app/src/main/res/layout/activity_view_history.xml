@@ -12,7 +12,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:text="YYYYDDMM:HHMMSS"
-        android:textColor="@color/black"
+        android:textColor="@color/themegreen"
         android:textSize="24dp"
         android:fontFamily="@font/arbutus_slab"
         android:id="@+id/title"
@@ -30,6 +30,19 @@
         android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@drawable/border"
+        app:layout_constraintTop_toBottomOf="@+id/mapView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="24dp"
+        />
+
 
     <TextView
         android:layout_width="wrap_content"
@@ -55,6 +68,45 @@
         android:fontFamily="@font/arbutus_slab"
         android:id="@+id/td"
         app:layout_constraintTop_toBottomOf="@+id/ttt"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Average Speed: 0KM/H"
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        android:fontFamily="@font/arbutus_slab"
+        android:id="@+id/as"
+        app:layout_constraintTop_toBottomOf="@+id/td"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Start Time: HH:MM:SS"
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        android:fontFamily="@font/arbutus_slab"
+        android:id="@+id/start"
+        app:layout_constraintTop_toBottomOf="@+id/as"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="End Time: HH:MM:SS"
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        android:fontFamily="@font/arbutus_slab"
+        android:id="@+id/end"
+        app:layout_constraintTop_toBottomOf="@+id/start"
         android:layout_marginTop="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

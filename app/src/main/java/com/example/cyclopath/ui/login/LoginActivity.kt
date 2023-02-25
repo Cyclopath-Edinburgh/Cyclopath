@@ -72,7 +72,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         passwordtext = findViewById(R.id.password_input)
         forgetpassword = findViewById(R.id.forget_password)
         login = findViewById(R.id.login)
-        facebook = findViewById(R.id.facebook)
+//        facebook = findViewById(R.id.facebook)
         google = findViewById(R.id.google)
         signup = findViewById(R.id.su)
         bar = findViewById(R.id.progressBar)
@@ -146,20 +146,20 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
         callbackManager = CallbackManager.Factory.create()
 
-        loginButton = findViewById<View>(R.id.facebook) as LoginButton
-        loginButton.setReadPermissions("email", "public_profile")
-
-        loginButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-            override fun onSuccess(loginResult: LoginResult) {
-                handleFacebookAccessToken(loginResult.accessToken)
-            }
-
-            override fun onCancel() {
-            }
-
-            override fun onError(error: FacebookException) {
-            }
-        })
+//        loginButton = findViewById<View>(R.id.facebook) as LoginButton
+//        loginButton.setReadPermissions("email", "public_profile")
+//
+//        loginButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+//            override fun onSuccess(loginResult: LoginResult) {
+//                handleFacebookAccessToken(loginResult.accessToken)
+//            }
+//
+//            override fun onCancel() {
+//            }
+//
+//            override fun onError(error: FacebookException) {
+//            }
+//        })
     }
 
     private fun handleFacebookAccessToken(token: AccessToken) {

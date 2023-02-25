@@ -24,7 +24,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="/private/var/folders/rv/y80bg2pn52j4gfkpwf_vx09c0000gp/T/baseline_arrow_right_24.xml" />
+                                                <entry key="imagePath" value="/private/var/folders/rv/y80bg2pn52j4gfkpwf_vx09c0000gp/T/baseline_navigation_24.xml" />
                                                 <entry key="opacityPercent" value="80" />
                                               </map>
                                             </option>
@@ -36,7 +36,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="file:$USER_HOME$/Library/Android/sdk/icons/material/materialicons/arrow_right/baseline_arrow_right_24.xml" />
+                                                <entry key="url" value="file:$USER_HOME$/Library/Android/sdk/icons/material/materialicons/navigation/baseline_navigation_24.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -68,7 +68,7 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="right" />
+                                      <entry key="outputName" value="recenter" />
                                       <entry key="theme" value="CUSTOM" />
                                       <entry key="themeColor" value="000000" />
                                     </map>
