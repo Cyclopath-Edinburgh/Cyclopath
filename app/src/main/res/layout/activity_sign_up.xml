@@ -16,7 +16,7 @@
         android:textSize="30dp"
         android:textStyle="bold"
         android:fontFamily="@font/arbutus_slab"
-        android:textColor="@color/black"
+        android:textColor="@color/themegreen"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginStart="16dp"
@@ -29,7 +29,7 @@
         android:text="Create a new account."
         android:textSize="20dp"
         android:fontFamily="@font/arbutus_slab"
-        android:textColor="@color/black"
+        android:textColor="@color/themegreen"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/signup1"
         android:layout_marginStart="16dp"/>
@@ -45,8 +45,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeColor="@color/black"
-        android:textColorHint="@color/black"
+        app:boxStrokeColor="@color/themegreen"
+        android:textColorHint="@color/themegreen"
         android:layout_marginTop="24dp"
         >
 
@@ -54,6 +54,7 @@
             android:id="@+id/username_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/arbutus_slab"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -70,14 +71,15 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeColor="@color/black"
-        android:textColorHint="@color/black"
+        app:boxStrokeColor="@color/themegreen"
+        android:textColorHint="@color/themegreen"
         >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/arbutus_slab"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -94,8 +96,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeColor="@color/black"
-        android:textColorHint="@color/black"
+        app:boxStrokeColor="@color/themegreen"
+        android:textColorHint="@color/themegreen"
         app:passwordToggleEnabled="true"
         >
 
@@ -104,6 +106,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
+            android:fontFamily="@font/arbutus_slab"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -123,12 +126,14 @@
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/black"
+            android:backgroundTint="@color/themegreen"
             android:clickable="true"
             android:id="@+id/checkbox"
+            android:textColor="@color/themegreen"
             android:text="I agree to the terms and conditions."
             android:focusable="true"
-            android:buttonTint="@color/black"
+            android:buttonTint="@color/themegreen"
+            android:fontFamily="@font/arbutus_slab"
             android:textSize="12dp"/>
 
         <ImageView
@@ -138,7 +143,8 @@
             android:src="@drawable/information"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="4dp"
-            android:clickable="true"/>
+            android:clickable="true"
+            app:tint="@color/themegreen"/>
 
     </LinearLayout>
 
@@ -152,7 +158,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="24dp"
-        android:text="Sign Up"/>
+        android:text="Sign Up"
+        android:fontFamily="@font/arbutus_slab"/>
 
     <Button
         android:id="@+id/resend"
@@ -165,7 +172,8 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
         android:text="Resend Activation Email"
-        android:visibility="invisible"/>
+        android:visibility="invisible"
+        android:fontFamily="@font/arbutus_slab"/>
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -173,7 +181,7 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:indeterminate="true"
-        android:indeterminateTint="@color/black"
+        android:indeterminateTint="@color/themegreen"
         android:visibility="invisible"
         android:layout_marginBottom="36dp"
         app:layout_constraintStart_toStartOf="parent"

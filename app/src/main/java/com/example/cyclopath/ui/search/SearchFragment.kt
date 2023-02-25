@@ -9,13 +9,18 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,15 +31,27 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.cyclopath.*
 import com.example.cyclopath.R
 import com.example.cyclopath.databinding.FragmentSearchBinding
+import com.example.cyclopath.ui.history.HistoryAdapter
+import com.example.cyclopath.ui.login.LoginActivity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.component1
+import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
@@ -102,6 +119,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class SearchFragment : Fragment() {
@@ -272,13 +290,15 @@ class SearchFragment : Fragment() {
                     enhancedLocation,
                     locationMatcherResult.keyPoints,
             )
-            println("UPDATEHERE")
-            updateCamera(
-                    Point.fromLngLat(
-                            enhancedLocation.longitude, enhancedLocation.latitude
-                    ),
-                    enhancedLocation.bearing.toDouble()
-            )
+            mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(Point.fromLngLat(
+                    enhancedLocation.longitude, enhancedLocation.latitude
+            )).bearing(enhancedLocation.bearing.toDouble()).build())
+//            updateCamera(
+//                    Point.fromLngLat(
+//                            enhancedLocation.longitude, enhancedLocation.latitude
+//                    ),
+//                    enhancedLocation.bearing.toDouble()
+//            )
         }
     }
 
@@ -353,11 +373,12 @@ class SearchFragment : Fragment() {
     private lateinit var origin_focus : ImageView
     private lateinit var destination_focus : ImageView
     private lateinit var navigate : Button
-    private lateinit var recenter : MapboxRecenterButton
+    private lateinit var recenter : FloatingActionButton
     private lateinit var swap : ImageView
     private lateinit var record : ImageView
-    private lateinit var upload : ImageView
+    private lateinit var upload : FloatingActionButton
     private lateinit var dropdown : Spinner
+    private lateinit var text : TextView
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
@@ -396,9 +417,12 @@ class SearchFragment : Fragment() {
     val ONE_MEGABYTE: Long = 1024 * 1024
     private var sp : SharedPreferences? = null
     private lateinit var name : String
+    private lateinit var nameList : ArrayList<String>
     
     var distanceList: HashMap<String, String> = hashMapOf<String, String>()
     var durationList: HashMap<String, String> = hashMapOf<String, String>()
+
+    private var isPopup = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -481,6 +505,16 @@ class SearchFragment : Fragment() {
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
         upload = root.findViewById(R.id.upload)
         dropdown = root.findViewById(R.id.dropdown)
+        text = root.findViewById(R.id.routetext2)
+
+        val lay = root.findViewById<ConstraintLayout>(R.id.constraintLayout)
+
+        lay.foreground.alpha = 0
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            if (!isPopup) {
+//
+//            }
+//        }, 100)
 
         
         sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
@@ -690,7 +724,7 @@ class SearchFragment : Fragment() {
                 intent.putExtra("route",route)
                 startActivity(intent)
             } else {
-                Toast.makeText(context, "Please specify your origin and destination.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Please specify your route.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -699,92 +733,137 @@ class SearchFragment : Fragment() {
         }
 
         swap.setOnClickListener {
-            val temp = origin
-            val temptext = originText.text
-            origin = destination
-            originText.setText(destinationText.text)
-            destination = temp
-            destinationText.setText(temptext)
-            originText.clearFocus()
-            searchResultsViewOrigin.isVisible = false
-            searchResultsViewOrigin.hideKeyboard()
-            destinationText.clearFocus()
-            searchResultsViewDestination.isVisible = false
-            searchResultsViewDestination.hideKeyboard()
-            isOrigin = true
-            addAnnotationToMap(origin)
-            isOrigin = false
-            addAnnotationToMap(destination)
+            if (this::origin.isInitialized && this::destination.isInitialized) {
+                val temp = origin
+                val temptext = originText.text
+                origin = destination
+                originText.setText(destinationText.text)
+                destination = temp
+                destinationText.setText(temptext)
+                originText.clearFocus()
+                searchResultsViewOrigin.isVisible = false
+                searchResultsViewOrigin.hideKeyboard()
+                destinationText.clearFocus()
+                searchResultsViewDestination.isVisible = false
+                searchResultsViewDestination.hideKeyboard()
+                isOrigin = true
+                addAnnotationToMap(origin)
+                isOrigin = false
+                addAnnotationToMap(destination)
+            }
         }
 
         record.setOnClickListener {
             if (isRecord) {
+
+                retrieveData()
+
+                isPopup = true
+
+                val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                val popupView: View = inflater.inflate(R.layout.popup_record, null)
+
+                val popupWindow = PopupWindow(popupView, 1000, 600)
+                popupWindow.isFocusable = true
+
+//                lay.foreground.alpha = 120
+
+                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+
                 val cal: Calendar = Calendar.getInstance()
                 today = sdf.format(cal.time)
-
-                Toast.makeText(context, "Stop recording", Toast.LENGTH_SHORT).show()
-                isRecord = false
-                record.setImageResource(R.drawable.startrecording)
 
                 val curr = LocalDateTime.now()
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 val formatted = curr.format(formatter)
 
-                val lineString = LineString.fromLngLats(routeCoordinates)
-                val feature = Feature.fromGeometry(lineString)
+                val formattedstart = start.format(formatter)
 
-                var sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
-                val name = sp!!.getString("username","empty")
-                var filepath = "history/$name/$formatted.geojson"
-                var storageRef = storage.reference
-                var dataRef = storageRef.child(filepath)
+                val textinput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.filename_input)
+                textinput.setText(formattedstart)
 
-                val baos = ByteArrayOutputStream()
-                baos.write(feature.toJson().toByteArray())
-                val data = baos.toByteArray()
-                dataRef.putBytes(data)
+                val yesb = popupWindow.contentView.findViewById<Button>(R.id.record_save)
+                yesb.setOnClickListener {
+                    if (!nameList.contains(textinput.text.toString())) {
+                        popupWindow.dismiss()
+                        lay.foreground.alpha = 0
 
-                end = curr
-                var duration = Duration.between(start.toLocalTime(), end.toLocalTime())
-                var d = duration.toString().substring(2).dropLast(1)
-                var infopath = "history/$name/$formatted.txt"
-                var infoRef = storageRef.child(infopath)
+                        Toast.makeText(context, "Stop recording", Toast.LENGTH_SHORT).show()
+                        isRecord = false
+                        record.setImageResource(R.drawable.startrecording)
 
-                if (distanceList.keys.contains(today)) {
-                    distanceList[today] = (distanceList[today]!!.toFloat() + distance).toString()
-                    durationList[today] = (durationList[today]!!.toFloat()+d.toFloat()).toString()
-                } else {
-                    distanceList[today] = distance.toString()
-                    durationList[today] = d
+                        val filename = textinput.text
+
+                        val lineString = LineString.fromLngLats(routeCoordinates)
+                        val feature = Feature.fromGeometry(lineString)
+
+                        var sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
+                        val name = sp!!.getString("username","empty")
+                        var filepath = "history/$name/$filename.geojson"
+                        var storageRef = storage.reference
+                        var dataRef = storageRef.child(filepath)
+
+                        val baos = ByteArrayOutputStream()
+                        baos.write(feature.toJson().toByteArray())
+                        val data = baos.toByteArray()
+                        dataRef.putBytes(data)
+
+                        end = curr
+                        var duration = Duration.between(start.toLocalTime(), end.toLocalTime())
+                        var d = duration.toString().substring(2).dropLast(1)
+                        var infopath = "history/$name/$filename.txt"
+                        var infoRef = storageRef.child(infopath)
+
+                        if (distanceList.keys.contains(today)) {
+                            distanceList[today] = (distanceList[today]!!.toFloat() + distance).toString()
+                            durationList[today] = (durationList[today]!!.toFloat()+d.toFloat()).toString()
+                        } else {
+                            distanceList[today] = distance.toString()
+                            durationList[today] = d
+                        }
+
+                        uploadDistance()
+
+                        val baos2 = ByteArrayOutputStream()
+                        var first = ""
+                        var second = ""
+                        if (routeCoordinates.size == 0) {
+                            first = "origin=" + current.latitude().toString() + "," + current.longitude().toString()
+                            second = "destination=" + current.latitude().toString() + "," + current.longitude().toString()
+                        } else {
+                            first = "origin=" + routeCoordinates.first().latitude().toString() + "," + routeCoordinates.first().longitude().toString()
+                            second = "destination=" + routeCoordinates.last().latitude().toString() + "," + routeCoordinates.last().longitude().toString()
+                        }
+                        val third = "duration=$d"
+                        val fourth = "distance="+String.format("%.2f",distance)
+                        val fifth = "start=$formattedstart"
+                        val sixth = "end=$formatted"
+                        baos2.write(first.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(second.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(third.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(fourth.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(fifth.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(sixth.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        val data2 = baos2.toByteArray()
+                        infoRef.putBytes(data2)
+
+                        distance = 0.0
+                        routeCoordinates = ArrayList<Point>()
+                    } else {
+                        Toast.makeText(context,"This name has been used.", Toast.LENGTH_SHORT).show()
+                    }
                 }
-
-                uploadDistance()
-
-                val baos2 = ByteArrayOutputStream()
-                var first = ""
-                var second = ""
-                if (routeCoordinates.size == 0) {
-                    first = "origin=" + current.latitude().toString() + "," + current.longitude().toString()
-                    second = "destination=" + current.latitude().toString() + "," + current.longitude().toString()
-                } else {
-                    first = "origin=" + routeCoordinates.first().latitude().toString() + "," + routeCoordinates.first().longitude().toString()
-                    second = "destination=" + routeCoordinates.last().latitude().toString() + "," + routeCoordinates.last().longitude().toString()
+                val nob = popupWindow.contentView.findViewById<Button>(R.id.record_discard)
+                nob.setOnClickListener {
+                    popupWindow.dismiss()
+                    lay.foreground.alpha = 0
                 }
-                val third = "duration=$d"
-                val fourth = "distance="+String.format("%.2f",distance)
-                baos2.write(first.toByteArray())
-                baos2.write("\n".toByteArray())
-                baos2.write(second.toByteArray())
-                baos2.write("\n".toByteArray())
-                baos2.write(third.toByteArray())
-                baos2.write("\n".toByteArray())
-                baos2.write(fourth.toByteArray())
-                baos2.write("\n".toByteArray())
-                val data2 = baos2.toByteArray()
-                infoRef.putBytes(data2)
-
-                distance = 0.0
-                routeCoordinates = ArrayList<Point>()
             } else {
                 Toast.makeText(context, "Start recording", Toast.LENGTH_SHORT).show()
                 isRecord = true
@@ -796,6 +875,8 @@ class SearchFragment : Fragment() {
         upload.setOnClickListener {
             if (this::route.isInitialized) {
                 // TODO route is the DirectionRoute
+            } else {
+                Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -927,17 +1008,21 @@ class SearchFragment : Fragment() {
                                 android.R.layout.simple_spinner_item, strlist)
 
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        text.visibility = View.INVISIBLE
+                        dropdown.visibility = View.VISIBLE
                         dropdown.isClickable = true
                         dropdown.setAdapter(adapter)
                         dropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                             override fun onNothingSelected(parent: AdapterView<*>?) {
                                 route = routes[0].directionsRoute
+                                (parent!!.getChildAt(0) as TextView).setTextColor(Color.WHITE)
                                 mapboxNavigation.setNavigationRoutes(
                                         listOf(route).toNavigationRoutes(RouterOrigin.Offboard)
                                 )
                             }
                             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                                 route = routes[position].directionsRoute
+                                (parent!!.getChildAt(position) as TextView).setTextColor(Color.WHITE)
                                 mapboxNavigation.setNavigationRoutes(
                                         listOf(routes[position].directionsRoute).toNavigationRoutes(RouterOrigin.Offboard)
                                 )
@@ -1215,6 +1300,22 @@ class SearchFragment : Fragment() {
         }
     }
 
+    fun retrieveData() {
+        nameList = ArrayList<String>()
+        val storageRef = storage.reference
+        var dataRef = storageRef.child("history/$name")
+        dataRef.listAll()
+                .addOnSuccessListener { (items, prefixes) ->
+                    items.forEach { item ->
+                        if (item.name.endsWith(".geojson")) {
+                            nameList.add(item.name.dropLast(8))
+                        }
+                    }
+                }
+                .addOnFailureListener {
+                }
+    }
+
     fun uploadDistance() {
         val storageRef = storage.reference
         val dataRef = storageRef.child("distanceData/$name.txt")
@@ -1235,13 +1336,17 @@ class SearchFragment : Fragment() {
         locationComponentPlugin.updateSettings {
             this.enabled = true
             this.locationPuck = LocationPuck2D(
+                    topImage = AppCompatResources.getDrawable(
+                            requireContext(),
+                            com.mapbox.maps.plugin.locationcomponent.R.drawable.mapbox_user_icon
+                    ),
                     bearingImage = AppCompatResources.getDrawable(
                             requireContext(),
-                            R.drawable.current,
+                            com.mapbox.maps.plugin.locationcomponent.R.drawable.mapbox_user_bearing_icon
                     ),
                     shadowImage = AppCompatResources.getDrawable(
                             requireContext(),
-                            R.drawable.circle,
+                            com.mapbox.maps.plugin.locationcomponent.R.drawable.mapbox_user_stroke_icon
                     ),
                     scaleExpression = interpolate {
                         linear()
