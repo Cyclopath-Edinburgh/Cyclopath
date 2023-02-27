@@ -232,4 +232,11 @@
         android:layout_marginTop="32dp"
         android:layout_marginStart="8dp"/>
 
+    <include
+        layout="@layout/weather_plugin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view"
+        />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

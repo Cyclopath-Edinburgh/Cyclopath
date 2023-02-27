@@ -1,5 +1,6 @@
 package com.example.cyclopath.ui.search
 
+import RouteObj
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -53,6 +54,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
+import com.google.gson.Gson
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineResult
@@ -761,7 +763,7 @@ class SearchFragment : Fragment() {
                 isPopup = true
 
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                val popupView: View = inflater.inflate(R.layout.popup_record, null)
+                val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
 
                 val popupWindow = PopupWindow(popupView, 1000, 600)
                 popupWindow.isFocusable = true
@@ -873,9 +875,52 @@ class SearchFragment : Fragment() {
         }
 
         upload.setOnClickListener {
-            if (this::route.isInitialized) {
+            if (this::route.isInitialized|| true) {
                 // TODO route is the DirectionRoute
-            } else {
+                retrieveData()
+
+                val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
+
+                val popupWindow = PopupWindow(popupView, 1000, 600)
+                popupWindow.isFocusable = true
+
+                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+
+                val cal: Calendar = Calendar.getInstance()
+                today = sdf.format(cal.time)
+
+                val curr = LocalDateTime.now()
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                val formatted = curr.format(formatter)
+
+                val formattedstart = start.format(formatter)
+
+                val routeNameInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.route_name_input)
+                routeNameInput.setText(formattedstart)
+
+                val descriptionInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.description_input)
+                descriptionInput.setText(formattedstart)
+
+                popupWindow.contentView.findViewById<Button>(R.id.share_to_library).setOnClickListener {
+                    // TODO store all the info
+                    val temp = RouteObj()
+                    temp.dr = route
+                    temp.route_name_text = routeNameInput.toString()
+                    temp.route_description_text = descriptionInput.toString()
+
+                    val gson = Gson()
+                    val routeObjJson = gson.toJson(temp)
+
+                    val storageRef = Firebase.storage.reference
+                    val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
+                    routeRef.putBytes(routeObjJson.toByteArray())
+
+                }
+
+                }
+
+            else {
                 Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
             }
         }

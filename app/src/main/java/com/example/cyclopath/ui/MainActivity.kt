@@ -9,6 +9,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.example.cyclopath.R
 import com.example.cyclopath.databinding.ActivityMainBinding
+import com.example.cyclopath.ui.library.Testa
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -41,11 +42,15 @@ class MainActivity : AppCompatActivity() {
         val bottom_nav = findViewById<BottomNavigationView>(R.id.nav_view)
         bottom_nav.itemIconTintList = null
 
+
 //        recordButton = findViewById<FloatingActionButton>(R.id.main_centralButton)
 //        recordButton.setOnClickListener {
 //            val intent = Intent(this, RecordActivity::class.java)
 //            startActivity(intent)
 //        }
+
+
+
 
     }
 }

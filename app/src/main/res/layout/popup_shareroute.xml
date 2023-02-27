@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/share_route"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/popup_signup_border">
+
+    <TextView
+        android:id="@+id/textViewSR"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/arbutus_slab"
+        android:shadowColor="#FFFFFF"
+        android:text="Share Route"
+        android:textColor="@color/themegreen"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/route_description"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description"
+        android:textColorHint="@color/themegreen"
+        app:boxStrokeColor="@color/themegreen"
+        app:layout_constraintTop_toBottomOf="@+id/route_name"
+        app:layout_constraintBottom_toTopOf="@id/share_to_library"
+        tools:layout_editor_absoluteX="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/description_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/arbutus_slab"
+            android:text="Description"
+            android:textColor="@color/themegreen" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/route_name"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Filename"
+        android:textColorHint="@color/themegreen"
+        app:boxStrokeColor="@color/themegreen"
+        app:layout_constraintTop_toBottomOf="@id/textViewSR"
+        tools:layout_editor_absoluteX="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/route_name_input"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:fontFamily="@font/arbutus_slab"
+            android:text="Date:Time"
+            android:textColor="@color/themegreen" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/share_to_library"
+        android:layout_width="110dp"
+        android:layout_height="35dp"
+        android:layout_marginBottom="20dp"
+        android:backgroundTint="@color/themegreen"
+        android:fontFamily="@font/arbutus_slab"
+        android:text="Share"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/record_discard"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/record_discard"
+        android:layout_width="110dp"
+        android:layout_height="35dp"
+        android:layout_marginBottom="20dp"
+        android:backgroundTint="@color/themegreen"
+        android:fontFamily="@font/arbutus_slab"
+        android:text="Cancel"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/share_to_library" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
