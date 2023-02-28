@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 //        supportActionBar?.setDisplayShowCustomEnabled(true)
 //        supportActionBar?.setCustomView(R.layout.action_bar)
 
+
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment?
         val navController: NavController
         navController = navHostFragment?.navController

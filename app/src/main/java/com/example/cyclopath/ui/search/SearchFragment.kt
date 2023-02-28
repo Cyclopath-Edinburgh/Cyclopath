@@ -875,7 +875,7 @@ class SearchFragment : Fragment() {
         }
 
         upload.setOnClickListener {
-            if (this::route.isInitialized|| true) {
+            if (this::route.isInitialized) {
                 // TODO route is the DirectionRoute
                 retrieveData()
 
@@ -894,20 +894,22 @@ class SearchFragment : Fragment() {
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 val formatted = curr.format(formatter)
 
-                val formattedstart = start.format(formatter)
+                val formattedstart = LocalDateTime.now().format(formatter)
 
                 val routeNameInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.route_name_input)
                 routeNameInput.setText(formattedstart)
 
                 val descriptionInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.description_input)
-                descriptionInput.setText(formattedstart)
+                descriptionInput.setText("write your descriptions here")
 
                 popupWindow.contentView.findViewById<Button>(R.id.share_to_library).setOnClickListener {
                     // TODO store all the info
                     val temp = RouteObj()
-                    temp.dr = route
-                    temp.route_name_text = routeNameInput.toString()
-                    temp.route_description_text = descriptionInput.toString()
+//                    temp.dr = route
+                    temp.route_name_text = routeNameInput.text.toString()
+                    println(temp.route_name_text)
+                    temp.route_description_text = descriptionInput.text.toString()
+                    println(temp.route_description_text)
 
                     val gson = Gson()
                     val routeObjJson = gson.toJson(temp)
