@@ -1,5 +1,6 @@
 package com.example.cyclopath.ui.search
 
+import RouteObj
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -44,6 +45,10 @@ import com.example.cyclopath.R
 import com.example.cyclopath.databinding.FragmentSearchBinding
 import com.example.cyclopath.ui.history.HistoryAdapter
 import com.example.cyclopath.ui.login.LoginActivity
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
@@ -53,6 +58,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
+import com.google.gson.Gson
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineResult
@@ -65,6 +71,8 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
+import com.mapbox.geojson.utils.PolylineUtils
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.maps.*
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
@@ -377,6 +385,7 @@ class SearchFragment : Fragment() {
     private lateinit var swap : ImageView
     private lateinit var record : ImageView
     private lateinit var upload : FloatingActionButton
+    private lateinit var elevation : FloatingActionButton
     private lateinit var dropdown : Spinner
     private lateinit var text : TextView
 
@@ -504,6 +513,7 @@ class SearchFragment : Fragment() {
         searchResultsViewOrigin = root.findViewById(R.id.search_results_view_origin)
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
         upload = root.findViewById(R.id.upload)
+//        elevation = root.findViewById(R.id.elevation)
         dropdown = root.findViewById(R.id.dropdown)
         text = root.findViewById(R.id.routetext2)
 
@@ -809,8 +819,8 @@ class SearchFragment : Fragment() {
                         dataRef.putBytes(data)
 
                         end = curr
-                        var duration = Duration.between(start.toLocalTime(), end.toLocalTime())
-                        var d = duration.toString().substring(2).dropLast(1)
+                        var duration = (end.hour-start.hour)*3600 + (end.minute - start.minute)*60 + (end.second-start.second)
+                        var d = duration.toString()
                         var infopath = "history/$name/$filename.txt"
                         var infoRef = storageRef.child(infopath)
 
@@ -872,16 +882,125 @@ class SearchFragment : Fragment() {
             }
         }
 
+//        elevation.setOnClickListener{
+//            if (this::route.isInitialized) {
+//                // TODO route is the DirectionRoute
+//                val profileClient = MapboxElevationProfile.builder()
+//                    .accessToken("YOUR_MAPBOX_ACCESS_TOKEN")
+//                    .coordinates(route.geometry()!!.coordinates())
+//                    .build()
+//
+//                profileClient.enqueueCall(object : Callback<List<Point>> {
+//                    override fun onResponse(
+//                        call: Call<List<Point>>,
+//                        response: Response<List<Point>>
+//                    ) {
+//                        if (response.isSuccessful) {
+//                            // The response contains a list of Point objects with elevation data
+//                            val pointsWithElevation = response.body()
+//
+//                            // Create a Bitmap image of the elevation profile
+//                            val bitmap = ElevationProfileBitmapFactory.createElevationProfileImage(
+//                                context,
+//                                pointsWithElevation,
+//                                ElevationProfileGradient.GreenToRed,
+//                                400,
+//                                200
+//                            )
+//
+//                            // Display the image in an ImageView or save it to a file
+//                            imageView.setImageBitmap(bitmap)
+//                        } else {
+//                            // Handle the error
+//                        }
+//                    }
+//
+//                    override fun onFailure(call: Call<List<Point>>, t: Throwable) {
+//                        // Handle the error
+//                    }
+//                })
+//
+//            }
+//
+//            else {
+//                Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
+//            }
+//
+//        }
+
         upload.setOnClickListener {
             if (this::route.isInitialized) {
                 // TODO route is the DirectionRoute
-            } else {
+                val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
+
+                val popupWindow = PopupWindow(popupView, 1000, 600)
+                popupWindow.isFocusable = true
+
+                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+                var sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
+                val name = sp!!.getString("username","empty")
+                val form = DateTimeFormatter.ofPattern(" yyyy-MM-dd")
+                val routetime = "Route "+LocalDateTime.now().format(form)
+
+                val routeNameInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.route_name_input)
+                routeNameInput.setText(name+routetime)
+
+                val descriptionInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.description_input)
+                descriptionInput.setText("write your descriptions here")
+
+                popupWindow.contentView.findViewById<Button>(R.id.share_to_library).setOnClickListener {
+                    // TODO store all the info
+                    val temp = RouteObj()
+//                    temp.dr = route
+//                    val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
+//                    val feature = Feature.fromGeometry(routeGeometry)
+//                    temp.route_geojson = feature
+
+                    temp.route_name_text = routeNameInput.text.toString()
+                    temp.route_description_text = descriptionInput.text.toString()
+                    temp.route_duration = String.format("%.2f",route.duration()/60)+"mins"
+                    temp.difficulty = route.duration()/route.distance()
+                    temp.route_length_text = String.format("%.2f",route.distance()/1000)+"km"
+                    temp.geoJsonurl = "routegeojson/${temp.route_name_text}.geojson"
+
+                    val gson = Gson()
+                    val routeObjJson = gson.toJson(temp)
+
+                    val storageRef = Firebase.storage.reference
+                    val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
+                    routeRef.putBytes(routeObjJson.toByteArray())
+
+
+                    val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
+                    val feature = Feature.fromGeometry(routeGeometry)
+
+                    var filepath = "routegeojson/${temp.route_name_text}.geojson"
+                    var dataRef = storageRef.child(filepath)
+
+                    val featureData = feature.toJson().toByteArray()
+                    dataRef.putBytes(featureData)
+                    Toast.makeText(context, "Successfully login!", Toast.LENGTH_SHORT).show()
+                    }
+
+                val discard = popupWindow.contentView.findViewById<Button>(R.id.share_discard)
+                discard.setOnClickListener {
+                    popupWindow.dismiss()
+                    lay.foreground.alpha = 0
+                }
+
+
+                }
+
+            else {
                 Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
             }
         }
 
         return root
     }
+
+
 
     private fun initNavigation() {
         MapboxNavigationApp.setup(
@@ -986,9 +1105,9 @@ class SearchFragment : Fragment() {
 
                         var strlist : ArrayList<String> = ArrayList<String>()
                         for (i in routes) {
-                            val hours = i.directionsRoute.duration() / 3600;
-                            val minutes = (i.directionsRoute.duration() % 3600) / 60;
-                            val seconds = i.directionsRoute.duration() % 60;
+                            val hours = i.directionsRoute.duration() / 3600
+                            val minutes = (i.directionsRoute.duration() % 3600) / 60
+                            val seconds = i.directionsRoute.duration() % 60
 
                             var timeString = ""
                             if (hours >= 1) {
@@ -1005,7 +1124,7 @@ class SearchFragment : Fragment() {
                         route = routes[0].directionsRoute
 
                         val adapter: ArrayAdapter<String> = ArrayAdapter<String>(context!!,
-                                android.R.layout.simple_spinner_item, strlist)
+                                R.layout.spinner_item, strlist)
 
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         text.visibility = View.INVISIBLE
@@ -1022,7 +1141,7 @@ class SearchFragment : Fragment() {
                             }
                             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                                 route = routes[position].directionsRoute
-                                (parent!!.getChildAt(position) as TextView).setTextColor(Color.WHITE)
+//                                (parent!!.getChildAt(position) as TextView).setTextColor(Color.WHITE)
                                 mapboxNavigation.setNavigationRoutes(
                                         listOf(routes[position].directionsRoute).toNavigationRoutes(RouterOrigin.Offboard)
                                 )
