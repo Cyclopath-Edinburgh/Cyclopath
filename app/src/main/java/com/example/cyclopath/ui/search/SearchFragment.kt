@@ -1124,7 +1124,7 @@ class SearchFragment : Fragment() {
                         route = routes[0].directionsRoute
 
                         val adapter: ArrayAdapter<String> = ArrayAdapter<String>(context!!,
-                                android.R.layout.simple_spinner_item, strlist)
+                                R.layout.spinner_item, strlist)
 
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         text.visibility = View.INVISIBLE
@@ -1141,7 +1141,7 @@ class SearchFragment : Fragment() {
                             }
                             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                                 route = routes[position].directionsRoute
-                                (parent!!.getChildAt(position) as TextView).setTextColor(Color.WHITE)
+//                                (parent!!.getChildAt(position) as TextView).setTextColor(Color.WHITE)
                                 mapboxNavigation.setNavigationRoutes(
                                         listOf(routes[position].directionsRoute).toNavigationRoutes(RouterOrigin.Offboard)
                                 )
