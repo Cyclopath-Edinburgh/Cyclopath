@@ -110,7 +110,7 @@ class ViewHistoryActivity : AppCompatActivity() {
                         } else if (minutes >= 1) {
                             duration = String.format("%.0fM %.0fS", minutes, seconds)
                         } else {
-                            duration = String.format("%.2fS", seconds)
+                            duration = String.format("%.0fS", seconds)
                         }
                     } else if ("distance" in it) {
                         var d = it.substring(9).toFloat()

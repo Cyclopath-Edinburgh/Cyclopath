@@ -819,8 +819,8 @@ class SearchFragment : Fragment() {
                         dataRef.putBytes(data)
 
                         end = curr
-                        var duration = Duration.between(start.toLocalTime(), end.toLocalTime())
-                        var d = duration.toString().substring(2).dropLast(1)
+                        var duration = (end.hour-start.hour)*3600 + (end.minute - start.minute)*60 + (end.second-start.second)
+                        var d = duration.toString()
                         var infopath = "history/$name/$filename.txt"
                         var infoRef = storageRef.child(infopath)
 
@@ -1105,9 +1105,9 @@ class SearchFragment : Fragment() {
 
                         var strlist : ArrayList<String> = ArrayList<String>()
                         for (i in routes) {
-                            val hours = i.directionsRoute.duration() / 3600;
-                            val minutes = (i.directionsRoute.duration() % 3600) / 60;
-                            val seconds = i.directionsRoute.duration() % 60;
+                            val hours = i.directionsRoute.duration() / 3600
+                            val minutes = (i.directionsRoute.duration() % 3600) / 60
+                            val seconds = i.directionsRoute.duration() % 60
 
                             var timeString = ""
                             if (hours >= 1) {
