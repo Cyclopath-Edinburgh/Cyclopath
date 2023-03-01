@@ -19,13 +19,16 @@ import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
 import com.google.gson.*
+import com.mapbox.api.directions.v5.models.DirectionsResponse
 import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.geojson.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.lang.reflect.Type
 import java.util.concurrent.CountDownLatch
 import kotlinx.coroutines.launch
+import java.io.File
 
 /**
  * A simple [Fragment] subclass.
@@ -40,56 +43,39 @@ class LibraryFragment : Fragment() {
     // Connect to the Firebase storage
     var storage = Firebase.storage
 
-    fun getRoutes(): MutableList<RouteObj> {
-        val storageRef = storage.reference
-        var routeRef = storageRef.child("routes")
-
-        val gson = GsonBuilder()
-            .registerTypeAdapter(DirectionsRoute::class.java, object :
-                JsonDeserializer<DirectionsRoute> {
-                override fun deserialize(
-                    json: JsonElement?,
-                    typeOfT: Type?,
-                    context: JsonDeserializationContext?
-                ): DirectionsRoute {
-                    return DirectionsRoute.fromJson(json?.asJsonObject.toString())
-                }
-            })
-            .create()
-
-        routeRef.listAll()
-            .addOnSuccessListener { listResult ->
-                // Iterate over each item in the list and download its contents
-                listResult.items.forEach { item ->
-                    item.getBytes(Long.MAX_VALUE).addOnSuccessListener { bytes ->
-                        // Convert the downloaded bytes to a String
-                        println("winwinwin")
-                        val jsonString = String(bytes)
-
-                        // Parse the JSON String into a Route object
-                        val route = gson.fromJson(jsonString, RouteObj::class.java)
-
-                        // Add the Route object to the list
-                        routeObjList.add(route)
-                        println(routeObjList.size)
-                        println(route.toString())
-                    }.addOnFailureListener {
-                        // Handle any errors that occur while downloading the file
-                        Log.e(TAG, "Failed to download route: ${item.name}", it)
-                    }
-                }
-                println("111")
-                println("success")
-            }
-            .addOnFailureListener {
-                Log.e(TAG, "Failed to list routes", it)
-            }
-        return routeObjList
-
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    class GeoJsonTypeAdapter : JsonDeserializer<GeoJson>, JsonSerializer<GeoJson> {
+        override fun deserialize(
+            json: JsonElement?,
+            typeOfT: Type?,
+            context: JsonDeserializationContext?
+        ): GeoJson? {
+            json?.let {
+                val jsonObject = it.asJsonObject
+                val type = jsonObject.get("type").asString
+
+                return when (type) {
+                    "Feature" -> context?.deserialize<Feature>(jsonObject, Feature::class.java)
+                    "Point" -> context?.deserialize<Point>(jsonObject, Point::class.java)
+                    "LineString" -> context?.deserialize<LineString>(jsonObject, LineString::class.java)
+                    "Polygon" -> context?.deserialize<Polygon>(jsonObject, Polygon::class.java)
+                    // Add support for other GeoJson types as needed
+                    else -> throw IllegalArgumentException("Unsupported GeoJson type: $type")
+                }
+            }
+            return null
+        }
+
+        override fun serialize(
+            src: GeoJson?,
+            typeOfSrc: Type?,
+            context: JsonSerializationContext?
+        ): JsonElement {
+            return context!!.serialize(src)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -99,26 +85,27 @@ class LibraryFragment : Fragment() {
 
         val storageRef = storage.reference
         var routeRef = storageRef.child("routes")
+        var routeGeoRef = storageRef.child("routegeojson")
 
 
-
-//        // Create a Gson instance with the custom TypeAdapter registered
-//        val gson = GsonBuilder()
-//            .registerTypeAdapter(DirectionsRoute::class.java, DirectionsRouteAdapter())
-//            .create()
-
+        // Create a Gson instance with the custom TypeAdapter registered
         val gson = GsonBuilder()
-            .registerTypeAdapter(DirectionsRoute::class.java, object :
-                JsonDeserializer<DirectionsRoute> {
-                override fun deserialize(
-                    json: JsonElement?,
-                    typeOfT: Type?,
-                    context: JsonDeserializationContext?
-                ): DirectionsRoute {
-                    return DirectionsRoute.fromJson(json?.asJsonObject.toString())
-                }
-            })
+            .registerTypeAdapter(GeoJson::class.java, GeoJsonTypeAdapter())
             .create()
+
+//        val gson = GsonBuilder()
+//            .registerTypeAdapter(DirectionsRoute::class.java, object :
+//                JsonDeserializer<DirectionsRoute> {
+//                override fun deserialize(
+//                    json: JsonElement?,
+//                    typeOfT: Type?,
+//                    context: JsonDeserializationContext?
+//                ): DirectionsRoute {
+//                    val directionsResponse = DirectionsResponse.fromJson(json?.asJsonObject.toString())
+//                    return directionsResponse.routes()[0]
+//                }
+//            })
+//            .create()
 
 
         val adapter = RouteFrameAdapter(routeObjList)
@@ -137,8 +124,19 @@ class LibraryFragment : Fragment() {
                             // Parse the JSON String into a Route object
                             val route = gson.fromJson(jsonString, RouteObj::class.java)
 
+//                            var specificFileRef = routeGeoRef.child(route.route_name_text+".geojson")
+//
+//                            // Download the file to a local file
+//                            val localFile = File.createTempFile("filename", "json")
+//                            specificFileRef.getFile(localFile).addOnSuccessListener {
+//                                // Handle success case
+//                            }.addOnFailureListener {
+//                                // Handle failure case
+//                            }
+
                             // Add the Route object to the list
                             routeObjList.add(route)
+                            println(route)
                             // Update the RecyclerView on the main thread
                             view.post {
                                 adapter.notifyItemInserted(routeObjList.size - 1)

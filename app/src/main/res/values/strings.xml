@@ -49,6 +49,7 @@
     <string name="clear_map">Clear Map</string>
     <string name="manage_tracks">Manage Tracks</string>
     <string name="route_library">Route Library</string>
+    <string name="route_details">Route details</string>
     <string name="about">About</string>
     <string name="landmarks_exp">Help Us Test</string>
 

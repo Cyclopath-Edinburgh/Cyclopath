@@ -45,6 +45,10 @@ import com.example.cyclopath.R
 import com.example.cyclopath.databinding.FragmentSearchBinding
 import com.example.cyclopath.ui.history.HistoryAdapter
 import com.example.cyclopath.ui.login.LoginActivity
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
@@ -67,6 +71,8 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
+import com.mapbox.geojson.utils.PolylineUtils
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.maps.*
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
@@ -379,6 +385,7 @@ class SearchFragment : Fragment() {
     private lateinit var swap : ImageView
     private lateinit var record : ImageView
     private lateinit var upload : FloatingActionButton
+    private lateinit var elevation : FloatingActionButton
     private lateinit var dropdown : Spinner
     private lateinit var text : TextView
 
@@ -506,6 +513,7 @@ class SearchFragment : Fragment() {
         searchResultsViewOrigin = root.findViewById(R.id.search_results_view_origin)
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
         upload = root.findViewById(R.id.upload)
+//        elevation = root.findViewById(R.id.elevation)
         dropdown = root.findViewById(R.id.dropdown)
         text = root.findViewById(R.id.routetext2)
 
@@ -874,11 +882,55 @@ class SearchFragment : Fragment() {
             }
         }
 
+//        elevation.setOnClickListener{
+//            if (this::route.isInitialized) {
+//                // TODO route is the DirectionRoute
+//                val profileClient = MapboxElevationProfile.builder()
+//                    .accessToken("YOUR_MAPBOX_ACCESS_TOKEN")
+//                    .coordinates(route.geometry()!!.coordinates())
+//                    .build()
+//
+//                profileClient.enqueueCall(object : Callback<List<Point>> {
+//                    override fun onResponse(
+//                        call: Call<List<Point>>,
+//                        response: Response<List<Point>>
+//                    ) {
+//                        if (response.isSuccessful) {
+//                            // The response contains a list of Point objects with elevation data
+//                            val pointsWithElevation = response.body()
+//
+//                            // Create a Bitmap image of the elevation profile
+//                            val bitmap = ElevationProfileBitmapFactory.createElevationProfileImage(
+//                                context,
+//                                pointsWithElevation,
+//                                ElevationProfileGradient.GreenToRed,
+//                                400,
+//                                200
+//                            )
+//
+//                            // Display the image in an ImageView or save it to a file
+//                            imageView.setImageBitmap(bitmap)
+//                        } else {
+//                            // Handle the error
+//                        }
+//                    }
+//
+//                    override fun onFailure(call: Call<List<Point>>, t: Throwable) {
+//                        // Handle the error
+//                    }
+//                })
+//
+//            }
+//
+//            else {
+//                Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
+//            }
+//
+//        }
+
         upload.setOnClickListener {
             if (this::route.isInitialized) {
                 // TODO route is the DirectionRoute
-                retrieveData()
-
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
 
@@ -886,18 +938,13 @@ class SearchFragment : Fragment() {
                 popupWindow.isFocusable = true
 
                 popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
-
-                val cal: Calendar = Calendar.getInstance()
-                today = sdf.format(cal.time)
-
-                val curr = LocalDateTime.now()
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                val formatted = curr.format(formatter)
-
-                val formattedstart = LocalDateTime.now().format(formatter)
+                var sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
+                val name = sp!!.getString("username","empty")
+                val formatter = DateTimeFormatter.ofPattern(" yyyy-MM-dd")
+                val formattedstart = "Route "+LocalDateTime.now().format(formatter)
 
                 val routeNameInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.route_name_input)
-                routeNameInput.setText(formattedstart)
+                routeNameInput.setText(name+formattedstart)
 
                 val descriptionInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.description_input)
                 descriptionInput.setText("write your descriptions here")
@@ -906,10 +953,16 @@ class SearchFragment : Fragment() {
                     // TODO store all the info
                     val temp = RouteObj()
 //                    temp.dr = route
+//                    val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
+//                    val feature = Feature.fromGeometry(routeGeometry)
+//                    temp.route_geojson = feature
+
                     temp.route_name_text = routeNameInput.text.toString()
-                    println(temp.route_name_text)
                     temp.route_description_text = descriptionInput.text.toString()
-                    println(temp.route_description_text)
+                    temp.route_duration = String.format("%.2f",route.duration()/60)+"mins"
+                    temp.difficulty = route.duration()/route.distance()
+                    temp.route_length_text = String.format("%.2f",route.distance()/1000)+"km"
+                    temp.geoJsonurl = "routegeojson/${temp.route_name_text}.geojson"
 
                     val gson = Gson()
                     val routeObjJson = gson.toJson(temp)
@@ -917,6 +970,16 @@ class SearchFragment : Fragment() {
                     val storageRef = Firebase.storage.reference
                     val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
                     routeRef.putBytes(routeObjJson.toByteArray())
+
+
+                    val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
+                    val feature = Feature.fromGeometry(routeGeometry)
+
+                    var filepath = "routegeojson/${temp.route_name_text}.geojson"
+                    var dataRef = storageRef.child(filepath)
+
+                    val featureData = feature.toJson().toByteArray()
+                    dataRef.putBytes(featureData)
 
                 }
 
@@ -929,6 +992,8 @@ class SearchFragment : Fragment() {
 
         return root
     }
+
+
 
     private fun initNavigation() {
         MapboxNavigationApp.setup(

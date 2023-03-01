@@ -150,6 +150,9 @@
             android:name="com.example.cyclopath.RouteLibrary"
             android:label="@string/route_library" />
         <activity
+            android:name="com.example.cyclopath.ui.library.RouteDetailsActivity"
+            android:label="@string/route_details" />
+        <activity
             android:name="com.example.cyclopath.LoginActivity2"
             android:label="@string/login"
             android:theme="@android:style/Theme.Dialog" />

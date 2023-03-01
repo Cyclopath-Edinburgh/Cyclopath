@@ -5,10 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="150dp"
     android:orientation="vertical"
-    android:layout_marginTop="10dp"
+    android:layout_marginTop="20dp"
     android:layout_marginBottom="10dp"
+    android:layout_marginLeft="10dp"
     android:padding="16dp"
-    android:background="@drawable/rounded_box">
+    android:background="@drawable/border">
 
     <ImageView
         android:id="@+id/route_image"
@@ -16,7 +17,7 @@
         android:layout_height="96dp"
         android:layout_alignParentEnd="true"
         android:scaleType="centerCrop"
-        android:src="@drawable/location_unknown"
+        android:src="@drawable/routeshow"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/route_item_clickable"
         app:layout_constraintTop_toTopOf="parent" />
@@ -47,17 +48,17 @@
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/route_elevation_text"
+            android:id="@+id/route_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Route Elevation"
+            android:text="Route duration"
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/route_popularity_text"
+            android:id="@+id/route_difficulty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Route Popularity"
+            android:text="Route Dificulty"
             android:textSize="14sp" />
     </LinearLayout>
 
