@@ -771,7 +771,7 @@ class SearchFragment : Fragment() {
                 isPopup = true
 
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
+                val popupView: View = inflater.inflate(R.layout.popup_record, null)
 
                 val popupWindow = PopupWindow(popupView, 1000, 600)
                 popupWindow.isFocusable = true
@@ -940,11 +940,11 @@ class SearchFragment : Fragment() {
                 popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
                 var sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
                 val name = sp!!.getString("username","empty")
-                val formatter = DateTimeFormatter.ofPattern(" yyyy-MM-dd")
-                val formattedstart = "Route "+LocalDateTime.now().format(formatter)
+                val form = DateTimeFormatter.ofPattern(" yyyy-MM-dd")
+                val routetime = "Route "+LocalDateTime.now().format(form)
 
                 val routeNameInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.route_name_input)
-                routeNameInput.setText(name+formattedstart)
+                routeNameInput.setText(name+routetime)
 
                 val descriptionInput = popupWindow.contentView.findViewById<TextInputEditText>(R.id.description_input)
                 descriptionInput.setText("write your descriptions here")
