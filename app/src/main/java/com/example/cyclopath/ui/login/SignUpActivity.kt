@@ -88,7 +88,7 @@ class SignUpActivity : AppCompatActivity() {
                     Toast.makeText(this, "The email address is invalid.", Toast.LENGTH_SHORT).show()
                 } else if ((password.length < 5) or (password.length > 20)) {
                     Toast.makeText(this, "Password should be 5-20 characters.", Toast.LENGTH_SHORT).show()
-                } else if (!password.matches("^(?=.*[a-z])(?=.*[0-9])[a-z0-9]+$".toRegex())) {
+                } else if (!password.matches("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$".toRegex())) {
                     Toast.makeText(this, "Password must contains letter and number.", Toast.LENGTH_SHORT).show()
                 } else if (!checkbox.isChecked) {
                     Toast.makeText(this, "Please agree to the terms and conditions.", Toast.LENGTH_SHORT).show()
