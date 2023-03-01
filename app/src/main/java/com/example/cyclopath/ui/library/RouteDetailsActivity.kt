@@ -77,7 +77,7 @@ class RouteDetailsActivity: AppCompatActivity() {
                             }
 
                             val cameraOptions = CameraOptions.Builder()
-                                .zoom(6.0)
+                                .zoom(10.0)
                                 .center(Point.fromLngLat(-3.195851,55.947145 ))
                                 .build()
 

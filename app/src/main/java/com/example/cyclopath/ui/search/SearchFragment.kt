@@ -980,8 +980,15 @@ class SearchFragment : Fragment() {
 
                     val featureData = feature.toJson().toByteArray()
                     dataRef.putBytes(featureData)
+                    Toast.makeText(context, "Successfully login!", Toast.LENGTH_SHORT).show()
+                    }
 
+                val discard = popupWindow.contentView.findViewById<Button>(R.id.share_discard)
+                discard.setOnClickListener {
+                    popupWindow.dismiss()
+                    lay.foreground.alpha = 0
                 }
+
 
                 }
 
