@@ -424,8 +424,6 @@ class SearchFragment : Fragment() {
         super.onCreate(savedInstanceState)
 //        binding = FragmentSearchBinding.inflate(layoutInflater)
 
-        println("true5")
-
         addressAutofill = AddressAutofill.create(getString(R.string.matoken))
 
 //        mapView = binding.mapView
@@ -469,6 +467,8 @@ class SearchFragment : Fragment() {
 //        }
 
         if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            println("this1")
+            firstnolocation = true
             ActivityCompat.requestPermissions(
                     requireActivity(),
                     arrayOf(
@@ -522,6 +522,7 @@ class SearchFragment : Fragment() {
 //        initNavigation()
 
         if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            println("this2")
             ActivityCompat.requestPermissions(
                     requireActivity(),
                     arrayOf(
@@ -540,8 +541,10 @@ class SearchFragment : Fragment() {
                 ContextCompat.checkSelfPermission(requireContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
+            println("this3")
             askForLocationPermissions()
         } else {
+            println("this4")
             firstnolocation = true
             val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -761,16 +764,17 @@ class SearchFragment : Fragment() {
             val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
-            if (gps_enabled) {
+            if (gps_enabled && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 if (firstnolocation) {
                     firstnolocation = false
                     locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
                     locationPermissionHelper.checkPermissions {
                         onMapReady()
                     }
+                    Toast.makeText(context,"Detecting current location.",Toast.LENGTH_SHORT).show()
                     Handler().postDelayed({
                         mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
-                    }, 1500)
+                    }, 3000)
                 } else {
                     mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
                 }
