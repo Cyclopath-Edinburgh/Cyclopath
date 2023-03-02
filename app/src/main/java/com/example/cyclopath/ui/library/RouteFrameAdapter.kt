@@ -48,20 +48,25 @@ class RouteFrameAdapter(
     }
 
     override fun onBindViewHolder(holder: RouteObjHolder, position: Int) {
-        val route = routes[position]
+        if (position<routes.size) {
+//            println(position)
+//            println(routes.size)
 
-        holder.routeNameText.text = route.route_name_text
-        holder.routeLengthText.text = route.route_length_text
-        holder.routeDurationText.text = route.route_duration
-        holder.routeDifficulty.text = route.difficulty.toString()
+            val route = routes[position]
 
-        // Set item click listener
-        holder.routeItemClickable.setOnClickListener {
-            // Handle item click event
-            val i = Intent(holder.itemView.context, RouteDetailsActivity::class.java)
-            i.putExtra("route",routes[position].route_name_text)
-            i.putExtra("url",routes[position].geoJsonurl)
-            holder.itemView.context.startActivity(i)
+            holder.routeNameText.text = route.route_name_text
+            holder.routeLengthText.text = route.route_length_text
+            holder.routeDurationText.text = route.route_duration
+            holder.routeDifficulty.text = route.difficulty.toString()
+
+            // Set item click listener
+            holder.routeItemClickable.setOnClickListener {
+                // Handle item click event
+                val i = Intent(holder.itemView.context, RouteDetailsActivity::class.java)
+                i.putExtra("route", routes[position].route_name_text)
+                i.putExtra("url", routes[position].geoJsonurl)
+                holder.itemView.context.startActivity(i)
+            }
         }
 
 

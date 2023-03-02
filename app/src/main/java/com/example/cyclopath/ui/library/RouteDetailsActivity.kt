@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,20 +43,7 @@ class RouteDetailsActivity: AppCompatActivity() {
         var btn : Button = findViewById(R.id.btnAddComment)
         var comment : TextView = findViewById(R.id.etTodoTitle)
 
-        btn.setOnClickListener {
-            val cmt = comment.text.toString()
-            if(cmt.isNotEmpty()) {
-                val gson = Gson()
-                val routeObjJson = gson.toJson(cmt)
-                val storageRef = Firebase.storage.reference
-                val curr = LocalDateTime.now()
-                val time = DateTimeFormatter.ofPattern("HH:mm:ss")
-                val randomName = name+" "+curr.format(time)
-                val routeRef = storageRef.child("route_comment/${name}/${randomName}.json")
-                routeRef.putBytes(routeObjJson.toByteArray())
-//                comment.text.clear()
-            }
-        }
+
 
 
 
@@ -77,7 +65,7 @@ class RouteDetailsActivity: AppCompatActivity() {
                             }
 
                             val cameraOptions = CameraOptions.Builder()
-                                .zoom(10.0)
+                                .zoom(13.0)
                                 .center(Point.fromLngLat(-3.195851,55.947145 ))
                                 .build()
 
@@ -90,47 +78,73 @@ class RouteDetailsActivity: AppCompatActivity() {
 
 
 
-//        val root = inflater.inflate(R.layout.fragment_library, container, false)
-//        val storageRef = storage.reference
-//        var routeRef = storageRef.child("routes")
-//
-//        // Create a Gson instance with the custom TypeAdapter registered
-//        val gson = GsonBuilder()
-//            .registerTypeAdapter(GeoJson::class.java, LibraryFragment.GeoJsonTypeAdapter())
-//            .create()
-//
-//        var commentList: ArrayList<String> = {"sad"}
-//        val adapter = CommentAdapter(commentList)
-//        val llm = LinearLayoutManager(context)
-//        val view = root.findViewById<RecyclerView>(R.id.r_view)
-//        view.layoutManager = llm
-//        view.adapter = adapter
-//        routeRef.listAll()
-//            .addOnSuccessListener { listResult ->
-//                // Iterate over each item in the list and download its contents
-//                listResult.items.forEach { item ->
-//                    item.getBytes(Long.MAX_VALUE).addOnSuccessListener { bytes ->
-//                        // Convert the downloaded bytes to a String
-//                        val jsonString = String(bytes)
-//
-//                        // Parse the JSON String into a Route object
-//                        val route = gson.fromJson(jsonString, RouteObj::class.java)
-//
-//                        // Add the Route object to the list
-//                        routeObjList.add(route)
-//                        println(route)
-//                        // Update the RecyclerView on the main thread
-//                        view.post {
-//                            adapter.notifyItemInserted(routeObjList.size - 1)
-//                        }
-//                    }.addOnFailureListener {
-//                        // Handle any errors that occur while downloading the file
-//                        Log.e(AccessTokenManager.TAG, "Failed to download route: ${item.name}", it)
-//                    }
-//                }
-//            }
-//            .addOnFailureListener {
-//                Log.e(AccessTokenManager.TAG, "Failed to list routes", it)
-//            }
+
+        var routeCmtRef = storageRef.child("route_comment/${name}")
+
+        // Create a Gson instance with the custom TypeAdapter registered
+        val gson = GsonBuilder()
+            .registerTypeAdapter(GeoJson::class.java, LibraryFragment.GeoJsonTypeAdapter())
+            .create()
+
+        var comments =arrayListOf<String>()
+        val adapter = CommentAdapter(comments)
+        val llm = LinearLayoutManager(this)
+        val view = findViewById<RecyclerView>(R.id.c_view)
+        view.layoutManager = llm
+        view.adapter = adapter
+        println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        routeCmtRef.listAll()
+            .addOnSuccessListener { listResult ->
+                println("ccccccccccccccccccccccccccccccccc")
+                // Iterate over each item in the list and download its contents
+                listResult.items.forEach { item ->
+                    item.getBytes(Long.MAX_VALUE).addOnSuccessListener { bytes ->
+                        // Convert the downloaded bytes to a String
+                        val jsonString = String(bytes)
+
+                        // Parse the JSON String into a String object
+                        val comment = gson.fromJson(jsonString, String::class.java)
+
+                        // Add the Route object to the list
+                        comments.add(comment)
+                        println("33333333333333333333333333333333333333")
+                        println(comment)
+                        // Update the RecyclerView on the main thread
+                        view.post {
+                            adapter.notifyItemInserted(comments.size - 1)
+                        }
+                    }.addOnFailureListener {
+                        // Handle any errors that occur while downloading the file
+                        Log.e(AccessTokenManager.TAG, "Failed to download route: ${item.name}", it)
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Log.e(AccessTokenManager.TAG, "Failed to list routes", it)
+            }
+
+
+        btn.setOnClickListener {
+            val cmt = comment.text.toString()
+            if(cmt.isNotEmpty()) {
+                val gson = Gson()
+                val routeObjJson = gson.toJson(cmt)
+                val storageRef = Firebase.storage.reference
+                val curr = LocalDateTime.now()
+                val time = DateTimeFormatter.ofPattern("HH:mm:ss")
+                val randomName = name+" "+curr.format(time)
+                val routeRef = storageRef.child("route_comment/${name}/${randomName}.json")
+                routeRef.putBytes(routeObjJson.toByteArray())
+//                comment.text.clear()
+                Toast.makeText(this, "Successfully comment!", Toast.LENGTH_SHORT).show()
+
+                comments.add(cmt)
+                view.post {
+                    adapter.notifyItemInserted(comments.size - 1)
+                }
+                comment.setText("")
+
+            }
+        }
     }
 }
