@@ -5,16 +5,17 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -38,22 +39,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.cyclopath.*
 import com.example.cyclopath.R
 import com.example.cyclopath.databinding.FragmentSearchBinding
-import com.example.cyclopath.ui.history.HistoryAdapter
-import com.example.cyclopath.ui.login.LoginActivity
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
@@ -71,8 +61,6 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
-import com.mapbox.geojson.utils.PolylineUtils
-import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.maps.*
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
@@ -89,7 +77,6 @@ import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.*
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
-import com.mapbox.navigation.base.options.HistoryRecorderOptions
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.base.route.*
 import com.mapbox.navigation.core.MapboxNavigation
@@ -104,7 +91,6 @@ import com.mapbox.navigation.core.replay.route.ReplayRouteMapper
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
-import com.mapbox.navigation.ui.maps.camera.view.MapboxRecenterButton
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
 import com.mapbox.navigation.ui.maps.route.RouteLayerConstants
 import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
@@ -120,14 +106,13 @@ import com.mapbox.search.ui.adapter.autofill.AddressAutofillUiAdapter
 import com.mapbox.search.ui.view.CommonSearchViewConfiguration
 import com.mapbox.search.ui.view.DistanceUnitType
 import com.mapbox.search.ui.view.SearchResultsView
+import org.apache.tools.ant.taskdefs.Length
 import java.io.ByteArrayOutputStream
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class SearchFragment : Fragment() {
@@ -433,9 +418,13 @@ class SearchFragment : Fragment() {
 
     private var isPopup = false
 
+    private var firstnolocation = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        binding = FragmentSearchBinding.inflate(layoutInflater)
+
+        println("true5")
 
         addressAutofill = AddressAutofill.create(getString(R.string.matoken))
 
@@ -457,15 +446,15 @@ class SearchFragment : Fragment() {
 //            findAddress(mapCenter)
 //        }
 
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                &&
-                ContextCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            askForLocationPermissions()
-        }
+//        if (ContextCompat.checkSelfPermission(requireContext(),
+//                        Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED
+//                &&
+//                ContextCompat.checkSelfPermission(requireContext(),
+//                        Manifest.permission.ACCESS_COARSE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            askForLocationPermissions()
+//        }
 
 //        LocationEngineProvider.getBestLocationEngine(requireContext()).lastKnownLocationOrNull(requireContext()) { point ->
 //            point?.let {
@@ -532,9 +521,39 @@ class SearchFragment : Fragment() {
 
 //        initNavigation()
 
-        locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
-        locationPermissionHelper.checkPermissions {
-            onMapReady()
+        if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    PERMISSIONS_REQUEST_LOCATION
+            )
+            firstnolocation = true
+        }
+
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                &&
+                ContextCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            askForLocationPermissions()
+        } else {
+            firstnolocation = true
+            val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            if (gps_enabled) {
+                locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+                locationPermissionHelper.checkPermissions {
+                    onMapReady()
+                }
+            } else {
+                Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
+            }
         }
 
         annotationApi = mapView.annotations
@@ -739,7 +758,25 @@ class SearchFragment : Fragment() {
         }
 
         recenter.setOnClickListener {
-            mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+            val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            if (gps_enabled) {
+                if (firstnolocation) {
+                    firstnolocation = false
+                    locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+                    locationPermissionHelper.checkPermissions {
+                        onMapReady()
+                    }
+                    Handler().postDelayed({
+                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+                    }, 1500)
+                } else {
+                    mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+                }
+            } else {
+                Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
+            }
         }
 
         swap.setOnClickListener {
@@ -1008,11 +1045,6 @@ class SearchFragment : Fragment() {
                         .accessToken(getString(R.string.matoken))
                         // comment out the location engine setting block to disable simulation
                         .locationEngine(replayLocationEngine)
-                        .historyRecorderOptions(
-                                HistoryRecorderOptions.Builder()
-//                                        .fileDirectory("/data")
-                                        .build()
-                        )
                         .build()
         )
 //        mapView.location.apply {
@@ -1280,6 +1312,10 @@ class SearchFragment : Fragment() {
         } else {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                     Cyclopath.LOCATION_PERMISSION_REQUEST_CODE)
+        }
+        locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+        locationPermissionHelper.checkPermissions {
+            onMapReady()
         }
     }
 
