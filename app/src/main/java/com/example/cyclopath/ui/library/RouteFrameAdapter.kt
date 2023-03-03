@@ -58,6 +58,7 @@ class RouteFrameAdapter(
             holder.routeLengthText.text = route.route_length_text
             holder.routeDurationText.text = route.route_duration
             holder.routeDifficulty.text = route.difficulty.toString()
+            holder.imageView.setImageBitmap(route.snapshot)
 
             // Set item click listener
             holder.routeItemClickable.setOnClickListener {
@@ -65,6 +66,12 @@ class RouteFrameAdapter(
                 val i = Intent(holder.itemView.context, RouteDetailsActivity::class.java)
                 i.putExtra("route", routes[position].route_name_text)
                 i.putExtra("url", routes[position].geoJsonurl)
+                i.putExtra("distance", routes[position].route_length_text)
+                i.putExtra("description", routes[position].route_description_text)
+                i.putExtra("difficulty", routes[position].difficulty)
+                i.putExtra("popularity", routes[position].route_popularity_text)
+                i.putExtra("elevation", routes[position].route_elevation_text)
+                i.putExtra("duration", routes[position].route_duration)
                 holder.itemView.context.startActivity(i)
             }
         }

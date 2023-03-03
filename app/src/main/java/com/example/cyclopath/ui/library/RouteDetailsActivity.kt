@@ -43,10 +43,21 @@ class RouteDetailsActivity: AppCompatActivity() {
         var btn : Button = findViewById(R.id.btnAddComment)
         var comment : TextView = findViewById(R.id.etTodoTitle)
 
+        var detail_name: TextView = findViewById(R.id.rd_name)
+        var detail_description: TextView = findViewById(R.id.rd_des)
+        var detail_duration: TextView = findViewById(R.id.rd_dur)
+        var detai_distance: TextView = findViewById(R.id.rd_dis)
+        var detail_rate: TextView = findViewById(R.id.rating)
+
+        //
+        detail_name.setText(intent.getStringExtra("route"))
+        detail_description.setText(intent.getStringExtra("description"))
+        detail_duration.setText(intent.getStringExtra("duration"))
+        detai_distance.setText(intent.getStringExtra("distance"))
 
 
 
-
+        // get the mapview
         val storageRef = Firebase.storage.reference
         var dataRef = url?.let { storageRef.child(it) }
         dataRef!!.downloadUrl.addOnSuccessListener {
@@ -78,7 +89,7 @@ class RouteDetailsActivity: AppCompatActivity() {
 
 
 
-
+        // get the comment recyclerview
         var routeCmtRef = storageRef.child("route_comment/${name}")
 
         // Create a Gson instance with the custom TypeAdapter registered

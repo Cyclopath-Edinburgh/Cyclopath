@@ -11,14 +11,11 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -38,23 +35,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.cyclopath.*
 import com.example.cyclopath.R
-import com.example.cyclopath.databinding.FragmentSearchBinding
-import com.example.cyclopath.ui.history.HistoryAdapter
-import com.example.cyclopath.ui.login.LoginActivity
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
@@ -71,8 +57,6 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
-import com.mapbox.geojson.utils.PolylineUtils
-import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.maps.*
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
@@ -104,7 +88,6 @@ import com.mapbox.navigation.core.replay.route.ReplayRouteMapper
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
-import com.mapbox.navigation.ui.maps.camera.view.MapboxRecenterButton
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
 import com.mapbox.navigation.ui.maps.route.RouteLayerConstants
 import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
@@ -123,11 +106,9 @@ import com.mapbox.search.ui.view.SearchResultsView
 import java.io.ByteArrayOutputStream
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class SearchFragment : Fragment() {
@@ -368,7 +349,6 @@ class SearchFragment : Fragment() {
         override fun onMoveEnd(detector: MoveGestureDetector) {}
     }
 
-    private lateinit var binding: FragmentSearchBinding
     private lateinit var addressAutofill: AddressAutofill
 
     private lateinit var searchResultsViewOrigin: SearchResultsView
@@ -964,14 +944,36 @@ class SearchFragment : Fragment() {
                     temp.route_length_text = String.format("%.2f",route.distance()/1000)+"km"
                     temp.geoJsonurl = "routegeojson/${temp.route_name_text}.geojson"
 
+
+                    // store routeObj.json
                     val gson = Gson()
                     val routeObjJson = gson.toJson(temp)
-
                     val storageRef = Firebase.storage.reference
                     val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
                     routeRef.putBytes(routeObjJson.toByteArray())
 
 
+
+//                    // store snapshot.jpg
+//                    val snapshot: Bitmap = mapView.snapshot()!!
+//                    val imagesRef = storageRef.child("map_snapshots/${temp.route_name_text}.jpg")
+//
+//                    if(snapshot==null){
+//                        println("222222222222222222222")
+//                    }
+//
+//                    val baos = ByteArrayOutputStream()
+//                    snapshot!!.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+//                    val data = baos.toByteArray()
+//
+//                    val uploadTask = imagesRef.putBytes(data)
+//                    uploadTask.addOnSuccessListener {
+//                        // The snapshot has been successfully uploaded to Firebase Storage
+//                    }.addOnFailureListener {
+//                        // Handle any errors that occurred during the upload
+//                    }
+
+                    // push route geojson
                     val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
                     val feature = Feature.fromGeometry(routeGeometry)
 
@@ -980,6 +982,8 @@ class SearchFragment : Fragment() {
 
                     val featureData = feature.toJson().toByteArray()
                     dataRef.putBytes(featureData)
+
+                    // return success message
                     Toast.makeText(context, "Successfully login!", Toast.LENGTH_SHORT).show()
                     }
 

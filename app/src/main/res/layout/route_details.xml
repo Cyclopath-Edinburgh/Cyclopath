@@ -49,19 +49,19 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:fontFamily="@font/arbutus_slab"
-        android:text="Total Distance: 0M"
+        android:text="Road description"
         android:textColor="@color/black"
         android:textSize="13dp"
         app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toBottomOf="@+id/rd_name" />
 
     <TextView
-        android:id="@+id/rd_len"
+        android:id="@+id/rd_dis"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:fontFamily="@font/arbutus_slab"
-        android:text="Road length"
+        android:text="Road distance"
         android:textColor="@color/black"
         android:textSize="13dp"
         app:layout_constraintStart_toStartOf="@+id/view2"
@@ -77,7 +77,7 @@
         android:textColor="@color/black"
         android:textSize="13dp"
         app:layout_constraintStart_toStartOf="@+id/view2"
-        app:layout_constraintTop_toBottomOf="@+id/rd_len" />
+        app:layout_constraintTop_toBottomOf="@+id/rd_dis" />
 
     <TextView
         android:id="@+id/rating"

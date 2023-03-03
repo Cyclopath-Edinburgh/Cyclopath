@@ -1,3 +1,4 @@
+import android.graphics.Bitmap
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.geojson.GeoJson
 
@@ -14,6 +15,7 @@ class RouteObj {
     var route_duration: String? = null
     var difficulty: Double?= null
     var geoJsonurl: String?= null
+    var snapshot: Bitmap? = null
 
     init {
         route_name_text = ""
