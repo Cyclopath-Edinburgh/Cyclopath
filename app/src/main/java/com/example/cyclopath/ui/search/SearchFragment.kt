@@ -14,8 +14,10 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -40,7 +42,6 @@ import com.example.cyclopath.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
@@ -73,7 +74,6 @@ import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.*
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
-import com.mapbox.navigation.base.options.HistoryRecorderOptions
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.base.route.*
 import com.mapbox.navigation.core.MapboxNavigation
@@ -413,6 +413,8 @@ class SearchFragment : Fragment() {
 
     private var isPopup = false
 
+    private var firstnolocation = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        binding = FragmentSearchBinding.inflate(layoutInflater)
@@ -437,15 +439,15 @@ class SearchFragment : Fragment() {
 //            findAddress(mapCenter)
 //        }
 
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                &&
-                ContextCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            askForLocationPermissions()
-        }
+//        if (ContextCompat.checkSelfPermission(requireContext(),
+//                        Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED
+//                &&
+//                ContextCompat.checkSelfPermission(requireContext(),
+//                        Manifest.permission.ACCESS_COARSE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            askForLocationPermissions()
+//        }
 
 //        LocationEngineProvider.getBestLocationEngine(requireContext()).lastKnownLocationOrNull(requireContext()) { point ->
 //            point?.let {
@@ -460,6 +462,8 @@ class SearchFragment : Fragment() {
 //        }
 
         if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            println("this1")
+            firstnolocation = true
             ActivityCompat.requestPermissions(
                     requireActivity(),
                     arrayOf(
@@ -512,9 +516,42 @@ class SearchFragment : Fragment() {
 
 //        initNavigation()
 
-        locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
-        locationPermissionHelper.checkPermissions {
-            onMapReady()
+        if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            println("this2")
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    PERMISSIONS_REQUEST_LOCATION
+            )
+            firstnolocation = true
+        }
+
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                &&
+                ContextCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            println("this3")
+            askForLocationPermissions()
+        } else {
+            println("this4")
+            firstnolocation = true
+            val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            if (gps_enabled) {
+                locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+                locationPermissionHelper.checkPermissions {
+                    onMapReady()
+                }
+            } else {
+                Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
+            }
         }
 
         annotationApi = mapView.annotations
@@ -719,7 +756,26 @@ class SearchFragment : Fragment() {
         }
 
         recenter.setOnClickListener {
-            mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+            val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            if (gps_enabled && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (firstnolocation) {
+                    firstnolocation = false
+                    locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+                    locationPermissionHelper.checkPermissions {
+                        onMapReady()
+                    }
+                    Toast.makeText(context,"Detecting current location.",Toast.LENGTH_SHORT).show()
+                    Handler().postDelayed({
+                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+                    }, 3000)
+                } else {
+                    mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+                }
+            } else {
+                Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
+            }
         }
 
         swap.setOnClickListener {
@@ -953,20 +1009,36 @@ class SearchFragment : Fragment() {
                     routeRef.putBytes(routeObjJson.toByteArray())
 
 
+//                    // snapshot
+//                    val snapShotOptions = com.mapbox.mapboxsdk.snapshotter.MapSnapshotter.Options(500, 500)
+//                    snapShotOptions.withRegion(mapboxMap.projection.visibleRegion.latLngBounds)
+//                    snapShotOptions.withStyle(mapboxMap.style!!.url)
+//                    val mapSnapshotter = MapSnapshotter(this, snapShotOptions)
+
+                    mapboxMap
+
+
 
 //                    // store snapshot.jpg
+//                    println("111111111111111111111")
 //                    val snapshot: Bitmap = mapView.snapshot()!!
+//                    println("111111111111111111111")
 //                    val imagesRef = storageRef.child("map_snapshots/${temp.route_name_text}.jpg")
-//
+////
 //                    if(snapshot==null){
-//                        println("222222222222222222222")
+//                        println("snapshot")
 //                    }
 //
+//                    println("111111111111111111111")
 //                    val baos = ByteArrayOutputStream()
+//                    println("111111111111111111111")
 //                    snapshot!!.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+//                    println("111111111111111111111")
 //                    val data = baos.toByteArray()
+//                    println("111111111111111111111")
 //
 //                    val uploadTask = imagesRef.putBytes(data)
+//                    println("111111111111111111111")
 //                    uploadTask.addOnSuccessListener {
 //                        // The snapshot has been successfully uploaded to Firebase Storage
 //                    }.addOnFailureListener {
@@ -1012,11 +1084,6 @@ class SearchFragment : Fragment() {
                         .accessToken(getString(R.string.matoken))
                         // comment out the location engine setting block to disable simulation
                         .locationEngine(replayLocationEngine)
-                        .historyRecorderOptions(
-                                HistoryRecorderOptions.Builder()
-//                                        .fileDirectory("/data")
-                                        .build()
-                        )
                         .build()
         )
 //        mapView.location.apply {
@@ -1285,6 +1352,10 @@ class SearchFragment : Fragment() {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                     Cyclopath.LOCATION_PERMISSION_REQUEST_CODE)
         }
+        locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+        locationPermissionHelper.checkPermissions {
+            onMapReady()
+        }
     }
 
     private fun addAnnotationToMap(point : Point) {
@@ -1521,4 +1592,6 @@ class SearchFragment : Fragment() {
                .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
        mapView.gestures.removeOnMoveListener(onMoveListener)
    }
+
+
 }
