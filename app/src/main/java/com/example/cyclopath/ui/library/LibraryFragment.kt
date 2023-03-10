@@ -1,12 +1,15 @@
 package com.example.cyclopath.ui.library
 
 import RouteObj
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +17,7 @@ import com.example.cyclopath.R
 import com.example.cyclopath.items.DirectionsRouteAdapter
 import com.example.cyclopath.ui.history.HistoryAdapter
 import com.facebook.AccessTokenManager.Companion.TAG
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
@@ -22,6 +26,7 @@ import com.google.gson.*
 import com.mapbox.api.directions.v5.models.DirectionsResponse
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.geojson.*
+import com.mapbox.maps.MapView
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -150,6 +155,12 @@ class LibraryFragment : Fragment() {
             .addOnFailureListener {
                 Log.e(TAG, "Failed to list routes", it)
             }
+
+        val myrouteBTN : FloatingActionButton = root.findViewById<FloatingActionButton>(R.id.myroutes)
+        myrouteBTN.setOnClickListener{
+            val intent = Intent(context, myRoutesActivity::class.java)
+            startActivity(intent)
+        }
 
         return root
     }

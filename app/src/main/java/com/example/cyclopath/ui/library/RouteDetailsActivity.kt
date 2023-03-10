@@ -186,6 +186,8 @@ class RouteDetailsActivity: AppCompatActivity() {
             val routeRef = storageRef.child("savedroutes/$name/${temp.route_name_text}.json")
             routeRef.putBytes(routeObjJson.toByteArray())
 
+            Toast.makeText(this, "You have bookmarked this route, you can find it from your favorite routes", Toast.LENGTH_SHORT).show()
+
 
         }
     }
