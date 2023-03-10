@@ -112,7 +112,16 @@ class ViewHistoryActivity : AppCompatActivity() {
                         } else {
                             duration = String.format("%.0fS", seconds)
                         }
-                    } else if ("distance" in it) {
+                    } else if ("distance" in it) {":?"
+
+
+
+
+
+
+
+
+
                         var d = it.substring(9).toFloat()
                         distance = String.format("%.3f KM",d/1000)
                         speed = ((d/1000)/speed.toFloat()).toString()+" KM/H"

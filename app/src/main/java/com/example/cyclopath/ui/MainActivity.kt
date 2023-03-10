@@ -12,6 +12,9 @@ import com.example.cyclopath.databinding.ActivityMainBinding
 import com.example.cyclopath.ui.library.Testa
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,11 +25,23 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+//        Mapbox.getInstance(this, "sk.eyJ1Ijoia2FuZ2NoZW5neXU1MjkiLCJhIjoiY2xleDZmbnJjMmg2NTNzcnY0b2YzdHR2dSJ9.L5DcbA65cohPI3X1jHRptQ")
+        Mapbox.getInstance(this,R.string.matoken.toString())
+//        if (Mapbox.getAccessToken() == null) {
+//            // Mapbox instance has not been initialized
+//            println("kkkkkkkkkkk")
+//        } else {
+//            // Mapbox instance has been initialized
+//            println("ppppppppppp")
+//        }
+
+
         setContentView(R.layout.activity_main)
 
 //        supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
 //        supportActionBar?.setDisplayShowCustomEnabled(true)
 //        supportActionBar?.setCustomView(R.layout.action_bar)
+
 
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment?
@@ -51,6 +66,17 @@ class MainActivity : AppCompatActivity() {
 //        }
 
 
+        val southwest = LatLng(55.942617, -3.361678)
+        val northeast = LatLng(55.985612, -3.176283)
+        val edinburghBounds = LatLngBounds.Builder().include(southwest).include(northeast).build()
+
+
+        val options = com.mapbox.mapboxsdk.snapshotter.MapSnapshotter.Options(500, 500)
+        options.withRegion(edinburghBounds)
+//
+////
+//        val mapSnapshotter = com.mapbox.mapboxsdk.snapshotter.MapSnapshotter(this,options)
+//
 
 
     }

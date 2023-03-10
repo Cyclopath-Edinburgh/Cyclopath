@@ -1,5 +1,6 @@
 package com.example.cyclopath.ui.library
 
+import RouteObj
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.cyclopath.G
+import com.example.cyclopath.G.user
 import com.example.cyclopath.R
 import com.facebook.AccessTokenManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -18,6 +21,9 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
+import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.geojson.GeoJson
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -30,6 +36,7 @@ import com.mapbox.maps.extension.style.layers.properties.generated.LineCap
 import com.mapbox.maps.extension.style.layers.properties.generated.LineJoin
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapbox.maps.extension.style.style
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -41,6 +48,7 @@ class RouteDetailsActivity: AppCompatActivity() {
         val url = intent.getStringExtra("url")
         var routelane : MapView = findViewById(R.id.routelane)
         var btn : Button = findViewById(R.id.btnAddComment)
+        var save : FloatingActionButton = findViewById(R.id.save_route)
         var comment : TextView = findViewById(R.id.etTodoTitle)
 
         var detail_name: TextView = findViewById(R.id.rd_name)
@@ -156,6 +164,29 @@ class RouteDetailsActivity: AppCompatActivity() {
                 comment.setText("")
 
             }
+        }
+
+        save.setOnClickListener {
+            val temp = RouteObj()
+
+            temp.route_name_text = intent.getStringExtra("route")
+            temp.route_description_text = intent.getStringExtra("description")
+            temp.route_duration = intent.getStringExtra("duration")
+            temp.difficulty = intent.getDoubleExtra("difficulty",0.0)
+            temp.route_length_text = intent.getStringExtra("distance")
+            temp.geoJsonurl = url
+
+            var sp = this.baseContext?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
+            val name = sp!!.getString("username","empty")
+
+            // store routeObj.json
+            val gson = Gson()
+            val routeObjJson = gson.toJson(temp)
+            val storageRef = Firebase.storage.reference
+            val routeRef = storageRef.child("savedroutes/$name/${temp.route_name_text}.json")
+            routeRef.putBytes(routeObjJson.toByteArray())
+
+
         }
     }
 }
