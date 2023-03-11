@@ -198,6 +198,21 @@
         android:layout_width="54dp"
         android:layout_height="54dp"
         android:backgroundTint="@color/white"
+        android:src="@drawable/elevation"
+        app:maxImageSize="24dp"
+        app:backgroundTint="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/recenter"
+        android:id="@+id/elevation"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        app:fabCustomSize="54dp"
+        />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:backgroundTint="@color/white"
         android:src="@drawable/recenter"
         app:maxImageSize="24dp"
         app:backgroundTint="@color/white"
@@ -222,6 +237,8 @@
         android:layout_marginBottom="8dp"
         app:fabCustomSize="54dp"
         />
+
+
 
 
     <ImageView

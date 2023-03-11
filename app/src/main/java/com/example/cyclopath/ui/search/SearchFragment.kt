@@ -40,6 +40,12 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.cyclopath.*
 import com.example.cyclopath.R
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.Chart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.ktx.Firebase
@@ -47,6 +53,7 @@ import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
+import com.google.maps.ElevationApi
 import com.google.maps.android.PolyUtil
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
@@ -110,14 +117,31 @@ import com.mapbox.search.ui.view.CommonSearchViewConfiguration
 import com.mapbox.search.ui.view.DistanceUnitType
 import com.mapbox.search.ui.view.SearchResultsView
 import okio.ByteString.Companion.encode
+import org.apache.http.HttpEntity
+import org.apache.http.HttpResponse
+import org.apache.http.client.ClientProtocolException
+import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.protocol.BasicHttpContext
+import org.apache.http.protocol.HttpContext
+import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.lang.ref.WeakReference
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-
-
+import com.google.maps.GeoApiContext
+import com.mapbox.maps.extension.style.expressions.dsl.generated.abs
+import com.mapbox.navigation.base.formatter.DistanceFormatter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class SearchFragment : Fragment() {
@@ -517,6 +541,7 @@ class SearchFragment : Fragment() {
         searchResultsViewOrigin = root.findViewById(R.id.search_results_view_origin)
         searchResultsViewDestination = root.findViewById(R.id.search_results_view_destination)
         upload = root.findViewById(R.id.upload)
+        elevation = root.findViewById(R.id.elevation)
 //        elevation = root.findViewById(R.id.elevation)
         dropdown = root.findViewById(R.id.dropdown)
         text = root.findViewById(R.id.routetext2)
@@ -955,7 +980,115 @@ class SearchFragment : Fragment() {
 //
 //        }
 
+        elevation.setOnClickListener{
+            if (this::route.isInitialized) {
+                val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                val popupView: View = inflater.inflate(R.layout.popup_elevation, null)
+
+                val popupWindow = PopupWindow(popupView, 1500, 600)
+                popupWindow.isFocusable = true
+
+                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+
+                val chart = popupWindow.contentView.findViewById<BarChart>(R.id.elevation_chart)
+                // Initialize the GeoApiContext
+                val geoApiContext = GeoApiContext()
+                geoApiContext.setApiKey("AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU")
+
+                GlobalScope.launch(Dispatchers.IO) {
+                    // Get the coordinates for each point along the route
+                    val points = mutableListOf<com.google.maps.model.LatLng>()
+                    for (leg in route.legs()!!) {
+                        for (step in leg.steps()!!) {
+                            val stepPoints = step.geometry()
+                            if (stepPoints!=null){
+                                val stepPoints = LineString.fromPolyline(stepPoints, 6).coordinates()
+                                stepPoints.forEach {
+                                    points.add(com.google.maps.model.LatLng(it.latitude(),it.longitude()))
+                                }
+                            }
+                        }
+                    }
+                    // Get the elevation data along the path
+                    val results = ElevationApi.getByPoints(geoApiContext, *points.toTypedArray() ).await()
+//                        print(ElevationApi.getByPoint(geoApiContext,com.google.maps.model.LatLng(36.24, -116.832)))
+                    println("success")
+                    // Print the elevation data
+                    results.forEach { result ->
+                        println("Location: ${result.location} - Elevation: ${result.elevation} meters")
+                    }
+                    // Calculate total up and down
+                    var totalUp = 0.0
+                    var totalDown = 0.0
+//                    for (i in 1 until results.size) {
+//                        val elevationDiff = results[i].elevation - results[i - 1].elevation
+//                        if (elevationDiff > 0) {
+//                            totalUp += elevationDiff
+//                        } else {
+//                            totalDown -= elevationDiff
+//                        }
+//                    }
+
+                    println("Total up: $totalUp meters")
+                    println("Total down: $totalDown meters")
+
+                    // Create a list of BarEntry objects to hold the elevation data
+                    val entries = ArrayList<BarEntry>()
+                    var lastElevation = results.first().elevation.toFloat()
+
+                    // Loop through the elevation results and add them to the BarEntry list
+                    results.forEach { result ->
+                        val elevation = result.elevation.toFloat()
+                        entries.add(BarEntry(entries.size.toFloat(), elevation))
+                        if (elevation > lastElevation) {
+                            totalUp += elevation - lastElevation
+                        } else {
+                            totalDown += lastElevation - elevation
+                        }
+                        lastElevation = elevation
+                    }
+
+                    // Create a BarDataSet from the BarEntry list
+                    val dataSet = BarDataSet(entries, "Elevation")
+
+                    // Set the colors of the bars
+                    dataSet.colors = listOf(Color.GREEN)
+
+                    // Create a BarData object from the BarDataSet
+                    val data = BarData(dataSet)
+                    // Set the data to the chart
+                    chart.data = data
+
+                    // Customize the chart
+                    chart.setDrawGridBackground(false)
+                    chart.setDrawBorders(false)
+                    chart.description.isEnabled = false
+                    chart.legend.isEnabled = false
+                    chart.axisLeft.axisMinimum = 0f
+                    chart.axisRight.isEnabled = false
+                    chart.xAxis.isEnabled = true
+
+//                    val xAxis = chart.xAxis
+////                    xAxis.valueFormatter = DistanceFormatter()
+//                    xAxis.position = XAxis.XAxisPosition.BOTTOM
+//                    xAxis.granularity = 1f
+//                    xAxis.setDrawGridLines(false)
+//                    xAxis.setDrawAxisLine(false)
+//                    xAxis.setDrawLabels(true)
+//                    xAxis.textColor = Color.BLACK
+
+
+                    // Refresh the chart
+                    chart.invalidate()
+
+                }
+
+            }
+        }
+
         upload.setOnClickListener {
+            print("mmmmmmmmmmmmmmmmmmmmmmmmm")
+//            println(getElevationFromGoogleMaps(-3.361678,55.942617))
             if (this::route.isInitialized) {
                 // TODO route is the DirectionRoute
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -1070,8 +1203,7 @@ class SearchFragment : Fragment() {
 //                        }
 //                    }
 
-                    // Get the coordinates for each point along the route
-                    val points = mutableListOf<com.google.android.gms.maps.model.LatLng>()
+
                     // points1 get the points
                     val points1 = mutableListOf<Point>()
                     for (leg in route.legs()!!) {
@@ -1083,20 +1215,21 @@ class SearchFragment : Fragment() {
                     }
 
 
-
+                    // Get the coordinates for each point along the route
+                    val points = mutableListOf<com.google.maps.model.LatLng>()
                     for (leg in route.legs()!!) {
                         for (step in leg.steps()!!) {
                             val stepPoints = step.geometry()
                             if (stepPoints!=null){
                                 val stepPoints = LineString.fromPolyline(stepPoints, 6).coordinates()
                                 stepPoints.forEach {
-                                    points.add(com.google.android.gms.maps.model.LatLng(it.latitude(),it.longitude()))
+                                    points.add(com.google.maps.model.LatLng(it.latitude(),it.longitude()))
                                 }
                             }
                         }
                     }
 
-                    val p: String = PolyUtil.encode(points)
+//                    val p: String = PolyUtil.encode(points)
 
 //                    println(points1)
 
@@ -1214,6 +1347,47 @@ class SearchFragment : Fragment() {
 //                        .load(url2)
 //                        .into(record)
 
+                    // Initialize the GeoApiContext
+                    val geoApiContext = GeoApiContext()
+                    geoApiContext.setApiKey("AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU")
+                    // Define the path using LatLng objects
+                    val path = listOf(
+                        com.google.maps.model.LatLng(36.579, -118.292), // Mt. Whitney
+                        com.google.maps.model.LatLng(36.606, -118.0638), // Lone Pine
+                        com.google.maps.model.LatLng(36.433, -117.951), // Owens Lake
+                        com.google.maps.model.LatLng(36.588, -116.943), // Beatty Junction
+                        com.google.maps.model.LatLng(36.34, -117.468), // Panama Mint Springs
+                        com.google.maps.model.LatLng(36.24, -116.832) // Badwater, Death Valley
+                    )
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        // Get the elevation data along the path
+                        val results = ElevationApi.getByPoints(geoApiContext, *points.toTypedArray() ).await()
+//                        print(ElevationApi.getByPoint(geoApiContext,com.google.maps.model.LatLng(36.24, -116.832)))
+                        println("success")
+                        // Print the elevation data
+                        results.forEach { result ->
+                            println("Location: ${result.location} - Elevation: ${result.elevation} meters")
+                        }
+                        // Calculate total up and down
+                        var totalUp = 0.0
+                        var totalDown = 0.0
+                        for (i in 1 until results.size) {
+                            val elevationDiff = results[i].elevation - results[i - 1].elevation
+                            if (elevationDiff > 0) {
+                                totalUp += elevationDiff
+                            } else {
+                                totalDown -= elevationDiff
+                            }
+                        }
+
+                        println("Total up: $totalUp meters")
+                        println("Total down: $totalDown meters")
+
+
+                    }
+
+
 
                     // push route geojson
                     val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
@@ -1250,6 +1424,37 @@ class SearchFragment : Fragment() {
 
         return root
     }
+
+    private fun getElevationFromGoogleMaps(longitude: Double, latitude: Double): Double {
+        var result = Double.NaN
+        val url = ("https://maps.googleapis.com/maps/api/elevation/"
+                + "json?locations=" + latitude.toString() + "," + longitude.toString() + "&key=AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU")
+
+        val urlConnection = URL(url).openConnection() as HttpURLConnection
+        try {
+            urlConnection.connect()
+            val responseCode = urlConnection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val inputStream = urlConnection.inputStream
+                val jsonResponse = Scanner(inputStream).useDelimiter("\\A").next()
+                val jsonObject = JSONObject(jsonResponse)
+                val status = jsonObject.getString("status")
+                if (status == "OK") {
+                    val results = jsonObject.getJSONArray("results")
+                    if (results.length() > 0) {
+                        val elevation = results.getJSONObject(0).getDouble("elevation")
+                        result = elevation
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            urlConnection.disconnect()
+        }
+        return result
+    }
+
 
 
 
