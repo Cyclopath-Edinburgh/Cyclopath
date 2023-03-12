@@ -17,7 +17,10 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+<<<<<<< HEAD
 import android.os.Handler
+=======
+>>>>>>> 8b56fc9 (add details, snapshot error)
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -37,12 +40,16 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+<<<<<<< HEAD
 import com.bumptech.glide.Glide
+=======
+>>>>>>> 8b56fc9 (add details, snapshot error)
 import com.example.cyclopath.*
 import com.example.cyclopath.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
@@ -60,10 +67,13 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
+<<<<<<< HEAD
 import com.mapbox.geojson.utils.PolylineUtils
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
+=======
+>>>>>>> 8b56fc9 (add details, snapshot error)
 import com.mapbox.maps.*
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
@@ -116,8 +126,11 @@ import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 8b56fc9 (add details, snapshot error)
 
 
 class SearchFragment : Fragment() {
@@ -1000,6 +1013,7 @@ class SearchFragment : Fragment() {
                     routeRef.putBytes(routeObjJson.toByteArray())
 
 
+<<<<<<< HEAD
 //                    // snapshot
 //                    val snapShotOptions = com.mapbox.mapboxsdk.snapshotter.MapSnapshotter.Options(500, 500)
 //                    snapShotOptions.withRegion(mapboxMap.projection.visibleRegion.latLngBounds)
@@ -1041,13 +1055,21 @@ class SearchFragment : Fragment() {
 
                     println("aaaaaaaaaaaaaaaaaa")
 
+=======
+>>>>>>> 8b56fc9 (add details, snapshot error)
 
 //                    // store snapshot.jpg
 //                    val snapshot: Bitmap = mapView.snapshot()!!
 //                    val imagesRef = storageRef.child("map_snapshots/${temp.route_name_text}.jpg")
+<<<<<<< HEAD
 ////
 //                    if(snapshot==null){
 //                        println("snapshot")
+=======
+//
+//                    if(snapshot==null){
+//                        println("222222222222222222222")
+>>>>>>> 8b56fc9 (add details, snapshot error)
 //                    }
 //
 //                    val baos = ByteArrayOutputStream()
@@ -1061,6 +1083,7 @@ class SearchFragment : Fragment() {
 //                        // Handle any errors that occurred during the upload
 //                    }
 
+<<<<<<< HEAD
                     // Get the coordinates for each point along the route
 //                    val coordinates = mutableListOf<Point>()
 //
@@ -1215,6 +1238,8 @@ class SearchFragment : Fragment() {
 //                        .into(record)
 
 
+=======
+>>>>>>> 8b56fc9 (add details, snapshot error)
                     // push route geojson
                     val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
                     val feature = Feature.fromGeometry(routeGeometry)
@@ -1225,6 +1250,7 @@ class SearchFragment : Fragment() {
                     val featureData = feature.toJson().toByteArray()
                     dataRef.putBytes(featureData)
 
+<<<<<<< HEAD
                     // push directionsroute
                     val drRoute = gson.toJson(route)
                     val drrouteRef = storageRef.child("drroutes/${temp.route_name_text}.json")
@@ -1232,6 +1258,10 @@ class SearchFragment : Fragment() {
 
                     // return success message
                     Toast.makeText(context, "Successfully share route!", Toast.LENGTH_SHORT).show()
+=======
+                    // return success message
+                    Toast.makeText(context, "Successfully login!", Toast.LENGTH_SHORT).show()
+>>>>>>> 8b56fc9 (add details, snapshot error)
                     }
 
                 val discard = popupWindow.contentView.findViewById<Button>(R.id.share_discard)
