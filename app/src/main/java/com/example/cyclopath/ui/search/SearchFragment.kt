@@ -46,6 +46,7 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.ktx.Firebase
@@ -137,6 +138,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import com.google.maps.GeoApiContext
+import com.google.maps.model.ElevationResult
 import com.mapbox.maps.extension.style.expressions.dsl.generated.abs
 import com.mapbox.navigation.base.formatter.DistanceFormatter
 import kotlinx.coroutines.Dispatchers
@@ -1010,36 +1012,36 @@ class SearchFragment : Fragment() {
                         }
                     }
                     // Get the elevation data along the path
-                    val results = ElevationApi.getByPoints(geoApiContext, *points.toTypedArray() ).await()
+                    var totalUp = 0.0
+                    var totalDown = 0.0
+                    val batchSize = 512
+                    val batches = points.chunked(batchSize)
+
+                    val results = mutableListOf<ElevationResult>()
+
+                    for (batch in batches) {
+                        val batchResults = ElevationApi.getByPoints(geoApiContext, *batch.toTypedArray()).await()
+                        results.addAll(batchResults)
+                    }
+
+
+//                    val results = ElevationApi.getByPoints(geoApiContext, *points.toTypedArray() ).await()
 //                        print(ElevationApi.getByPoint(geoApiContext,com.google.maps.model.LatLng(36.24, -116.832)))
                     println("success")
                     // Print the elevation data
-                    results.forEach { result ->
-                        println("Location: ${result.location} - Elevation: ${result.elevation} meters")
-                    }
-                    // Calculate total up and down
-                    var totalUp = 0.0
-                    var totalDown = 0.0
-//                    for (i in 1 until results.size) {
-//                        val elevationDiff = results[i].elevation - results[i - 1].elevation
-//                        if (elevationDiff > 0) {
-//                            totalUp += elevationDiff
-//                        } else {
-//                            totalDown -= elevationDiff
-//                        }
+//                    results.forEach { result ->
+//                        println("Location: ${result.location} - Elevation: ${result.elevation} meters")
 //                    }
-
-                    println("Total up: $totalUp meters")
-                    println("Total down: $totalDown meters")
 
                     // Create a list of BarEntry objects to hold the elevation data
                     val entries = ArrayList<BarEntry>()
                     var lastElevation = results.first().elevation.toFloat()
+                    var distancePer = (route.distance()/1000/points.size).toFloat()
 
                     // Loop through the elevation results and add them to the BarEntry list
-                    results.forEach { result ->
+                    results.forEachIndexed { index, result ->
                         val elevation = result.elevation.toFloat()
-                        entries.add(BarEntry(entries.size.toFloat(), elevation))
+                        entries.add(BarEntry(distancePer*index.toFloat(), elevation))
                         if (elevation > lastElevation) {
                             totalUp += elevation - lastElevation
                         } else {
@@ -1047,6 +1049,9 @@ class SearchFragment : Fragment() {
                         }
                         lastElevation = elevation
                     }
+
+                    println("Total up: $totalUp meters")
+                    println("Total down: $totalDown meters")
 
                     // Create a BarDataSet from the BarEntry list
                     val dataSet = BarDataSet(entries, "Elevation")
@@ -1067,6 +1072,26 @@ class SearchFragment : Fragment() {
                     chart.axisLeft.axisMinimum = 0f
                     chart.axisRight.isEnabled = false
                     chart.xAxis.isEnabled = true
+
+
+                    // Set up the Y-axis label
+                    val yAxis = chart.axisLeft
+                    yAxis.labelCount = 5
+                    yAxis.valueFormatter = object : ValueFormatter() {
+                        override fun getFormattedValue(value: Float): String {
+                            return String.format("%.0f m", value)
+                        }
+                    }
+
+                    // Set up the X-axis label
+                    val xAxis = chart.xAxis
+                    xAxis.labelCount= 5
+                    xAxis.labelCount = entries.size
+                    xAxis.valueFormatter = object : ValueFormatter() {
+                        override fun getFormattedValue(value: Float): String {
+                            return String.format("%.1f km", value)
+                        }
+                    }
 
 //                    val xAxis = chart.xAxis
 ////                    xAxis.valueFormatter = DistanceFormatter()
