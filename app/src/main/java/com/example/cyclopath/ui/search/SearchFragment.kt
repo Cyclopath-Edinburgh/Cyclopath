@@ -37,6 +37,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.cyclopath.*
 import com.example.cyclopath.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -46,6 +47,7 @@ import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
 import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
+import com.google.maps.android.PolyUtil
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineResult
@@ -58,6 +60,10 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
+import com.mapbox.geojson.utils.PolylineUtils
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.maps.*
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
@@ -103,12 +109,15 @@ import com.mapbox.search.ui.adapter.autofill.AddressAutofillUiAdapter
 import com.mapbox.search.ui.view.CommonSearchViewConfiguration
 import com.mapbox.search.ui.view.DistanceUnitType
 import com.mapbox.search.ui.view.SearchResultsView
+import okio.ByteString.Companion.encode
 import java.io.ByteArrayOutputStream
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+
+
 
 
 class SearchFragment : Fragment() {
@@ -418,6 +427,17 @@ class SearchFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        binding = FragmentSearchBinding.inflate(layoutInflater)
+
+//        this.context?.let { Mapbox.getInstance(it, R.string.matoken.toString()) }
+//        Mapbox.getInstance(requireContext(), "sk.eyJ1Ijoia2FuZ2NoZW5neXU1MjkiLCJhIjoiY2xleDZmbnJjMmg2NTNzcnY0b2YzdHR2dSJ9.L5DcbA65cohPI3X1jHRptQ")
+//
+//        if (Mapbox.getAccessToken() == null) {
+//            // Mapbox instance has not been initialized
+//            println("kkkkkkkkkkk")
+//        } else {
+//            // Mapbox instance has been initialized
+//            println("ppppppppppp")
+//        }
 
         addressAutofill = AddressAutofill.create(getString(R.string.matoken))
 
@@ -755,6 +775,8 @@ class SearchFragment : Fragment() {
             }
         }
 
+
+
         recenter.setOnClickListener {
             val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -918,49 +940,18 @@ class SearchFragment : Fragment() {
             }
         }
 
+
+
 //        elevation.setOnClickListener{
 //            if (this::route.isInitialized) {
 //                // TODO route is the DirectionRoute
-//                val profileClient = MapboxElevationProfile.builder()
-//                    .accessToken("YOUR_MAPBOX_ACCESS_TOKEN")
-//                    .coordinates(route.geometry()!!.coordinates())
+//                // Create a Mapbox Elevation client
+//                val client = MapboxElevation.builder()
+//                    .accessToken(R.string.matoken)
 //                    .build()
 //
-//                profileClient.enqueueCall(object : Callback<List<Point>> {
-//                    override fun onResponse(
-//                        call: Call<List<Point>>,
-//                        response: Response<List<Point>>
-//                    ) {
-//                        if (response.isSuccessful) {
-//                            // The response contains a list of Point objects with elevation data
-//                            val pointsWithElevation = response.body()
 //
-//                            // Create a Bitmap image of the elevation profile
-//                            val bitmap = ElevationProfileBitmapFactory.createElevationProfileImage(
-//                                context,
-//                                pointsWithElevation,
-//                                ElevationProfileGradient.GreenToRed,
-//                                400,
-//                                200
-//                            )
-//
-//                            // Display the image in an ImageView or save it to a file
-//                            imageView.setImageBitmap(bitmap)
-//                        } else {
-//                            // Handle the error
-//                        }
-//                    }
-//
-//                    override fun onFailure(call: Call<List<Point>>, t: Throwable) {
-//                        // Handle the error
-//                    }
-//                })
-//
-//            }
-//
-//            else {
-//                Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
-//            }
+//                }
 //
 //        }
 
@@ -1015,35 +1006,214 @@ class SearchFragment : Fragment() {
 //                    snapShotOptions.withStyle(mapboxMap.style!!.url)
 //                    val mapSnapshotter = MapSnapshotter(this, snapShotOptions)
 
-                    mapboxMap
+                    val southwest = LatLng(55.942617, -3.361678)
+                    val northeast = LatLng(55.985612, -3.176283)
+                    val edinburghBounds = LatLngBounds.Builder().include(southwest).include(northeast).build()
 
+
+                    val options = com.mapbox.mapboxsdk.snapshotter.MapSnapshotter.Options(500, 500)
+                    options.withRegion(edinburghBounds)
+
+//
+//                    val mapSnapshotter = com.mapbox.mapboxsdk.snapshotter.MapSnapshotter(requireContext(),options)
+
+//                    this.context?.let { Mapbox.getInstance(it, R.string.matoken.toString()) }
+//                    Mapbox.getInstance(requireContext(), R.string.matoken.toString())
+
+//                    if (mapSnapshotter != null) {
+//                        mapSnapshotter.start { snapshot ->
+//                            // Do something with the snapshot, for example save it to Firebase
+//                            // The snapshot is ready, you can now use it
+//                            val baos = ByteArrayOutputStream()
+//                            snapshot!!.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+//                            val data = baos.toByteArray()
+//                            val imagesRef = storageRef.child("map_snapshots/${temp.route_name_text}.jpg")
+//                            val uploadTask = imagesRef.putBytes(data)
+//                            uploadTask.addOnSuccessListener {
+//                                // The snapshot has been successfully uploaded to Firebase Storage
+//                                println("success snapshot 222222222222222222222222")
+//                            }.addOnFailureListener {
+//                                // Handle any errors that occurred during the upload
+//                                println("sssssssssssssss snapshot fail")
+//                            }
+//                        }
+//                    }
+
+                    println("aaaaaaaaaaaaaaaaaa")
 
 
 //                    // store snapshot.jpg
-//                    println("111111111111111111111")
 //                    val snapshot: Bitmap = mapView.snapshot()!!
-//                    println("111111111111111111111")
 //                    val imagesRef = storageRef.child("map_snapshots/${temp.route_name_text}.jpg")
 ////
 //                    if(snapshot==null){
 //                        println("snapshot")
 //                    }
 //
-//                    println("111111111111111111111")
 //                    val baos = ByteArrayOutputStream()
-//                    println("111111111111111111111")
 //                    snapshot!!.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-//                    println("111111111111111111111")
 //                    val data = baos.toByteArray()
-//                    println("111111111111111111111")
 //
 //                    val uploadTask = imagesRef.putBytes(data)
-//                    println("111111111111111111111")
 //                    uploadTask.addOnSuccessListener {
 //                        // The snapshot has been successfully uploaded to Firebase Storage
 //                    }.addOnFailureListener {
 //                        // Handle any errors that occurred during the upload
 //                    }
+
+                    // Get the coordinates for each point along the route
+//                    val coordinates = mutableListOf<Point>()
+//
+//                    for (leg in route.legs()!!) {
+//                        for (step in leg.steps()!!) {
+//                            coordinates.addAll(step.geometry!!.coordinates())
+//                        }
+//                    }
+
+                    // Get the coordinates for each point along the route
+                    val points = mutableListOf<com.google.android.gms.maps.model.LatLng>()
+                    // points1 get the points
+                    val points1 = mutableListOf<Point>()
+                    for (leg in route.legs()!!) {
+                        for (step in leg.steps()!!) {
+                            val stepPoints = step.geometry()
+                            val decodedPoints = PolylineUtils.decode(stepPoints!!, 6)
+                            val latLngPoints = decodedPoints.map { LatLng(it.latitude(), it.longitude()) }
+                        }
+                    }
+
+
+
+                    for (leg in route.legs()!!) {
+                        for (step in leg.steps()!!) {
+                            val stepPoints = step.geometry()
+                            if (stepPoints!=null){
+                                val stepPoints = LineString.fromPolyline(stepPoints, 6).coordinates()
+                                stepPoints.forEach {
+                                    points.add(com.google.android.gms.maps.model.LatLng(it.latitude(),it.longitude()))
+                                }
+                            }
+                        }
+                    }
+
+                    val p: String = PolyUtil.encode(points)
+
+//                    println(points1)
+
+//                    val point1 = Point.fromLngLat(-122.083306, 37.423045)
+//                    val point2 = Point.fromLngLat(-122.083476, 37.423047)
+//                    val point3 = Point.fromLngLat(-122.083642, 37.423052)
+//
+//                    val points2 = listOf(point1, point2, point3)
+//
+//
+//                    val p = PolylineUtils.encode(points2,6)
+//                    println(points2)
+                    println("000000000000000000000000")
+
+
+                    // get the list of encoded polylines
+                    val encodedPolylines = mutableListOf<String>()
+                    for (leg in route.legs()!!) {
+                        for (step in leg.steps()!!) {
+                            val stepPoints = step.geometry()
+//                            println(stepPoints)
+                            val polyline = PolylineUtils.decode(stepPoints!!, 5)
+                            val encodedPolyline = PolylineUtils.encode(polyline,5)
+                            encodedPolylines.add(encodedPolyline)
+                        }
+                    }
+
+
+                    val startcoordinate = points[0]
+                    val endcoordinate = points[1]
+
+
+
+
+
+
+                    val pline_test = "e`{}DcfuvDwTnNaIf`@wW|x@un@tf@oe@|L}UnUwAn`Alf@fo@"
+
+                    // Construct a Mapbox Static Images API URL with the desired parameters
+
+                    val width = "400" // Width of the static image in pixels
+                    val height = "400" // Height of the static image in pixels
+                    val zoom = "12" // Zoom level of the map
+                    val apiKey = "pk.eyJ1Ijoia2FuZ2NoZW5neXU1MjkiLCJhIjoiY2xleDZjZDR3MGFrcDN4bjB2ZnFwNmVyeiJ9.ztnMUP3hoSD75UWAiU55Aw" // Your Mapbox access token
+                    val markerColor = "0000FF" // Color of the route marker in hexadecimal format
+                    val markerSize = "large" // Size of the route marker
+//                    val markerCoordinates = points?.joinToString(";") { "${it.longitude},${it.latitude}" } // String representation of the coordinates for the route marker
+
+                    val startColor = "#FF512F"
+                    val endColor = "#F09819"
+                    val strokeWidth = 4
+
+//                    val colorA = hexStringToRGB(startColor)
+//                    val colorB = hexStringToRGB(endColor)
+//                    val spectrumColors = createSpectrum(colorA, colorB, points.size - 1)
+
+//                    val pathStrings = mutableListOf<String>()
+
+//                     for (i in 0 until coords.size - 1) {
+//                         val path = PolylineUtils.encode(
+//                             listOf(points[i], points[i + 1]),
+//                             5
+//                         ) // use your preferred precision here
+//                         pathStrings.add("path-$strokeWidth+${spectrumColors[i]}($path)")
+//                     }
+
+//                    val pathStrings = mutableListOf<String>()
+//                    for (i in 0 until points.size - 1) {
+//                        val path = PolylineUtils.encode(points1.subList(i, i + 2),5)
+//                        pathStrings.add("path-$strokeWidth+${spectrumColors[i]}($path)") // format from https://docs.mapbox.com/api/maps/#path
+//                    }
+//                    val formatedPathString = pathStrings.joinToString(",")
+//
+//                    val firstCoord = points.first()
+//                    val lastCoord = points.last()
+//                    val startMarker = "pin-s-a+${rgbToHexString(colorA)}(${firstCoord.longitude},${firstCoord.latitude})"
+//                    val endMarker = "pin-s-b+${rgbToHexString(colorB)}(${lastCoord.longitude},${lastCoord.latitude})"
+//
+//                    val pathWithGradient = "$formatedPathString,$startMarker,$endMarker"
+//                    val url = pathWithGradient.encode()
+
+
+//                    val url = "$baseUrl$markerSize-pin-s+${markerColor}($markerCoordinates)/$markerCoordinates,$zoom/$width$height@2x?access_token=$apiKey"
+//                    val url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+0000FF(-122.4200,37.7800)/-122.4200,37.7800,12/800x600?access_token=$apiKey"
+//                    val url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/path-5+f44-0.5(0.5)/auto/400x400?access_token=$apiKey&overlay.geometry=geojson({\"type\":\"LineString\",\"coordinates\":[[<lon1>,<lat1>],[<lon2>,<lat2>]]})&overlay.type=line"
+
+//                    // Construct the URL
+//                    val urlBuilder = StringBuilder()
+//                        .append(baseUrl)
+//                        .append("path-5+f44(${points.joinToString(separator = ",") { "${it.longitude},${it.latitude}"}})")
+//                        .append("/auto")
+//                        .append("($points)")
+//                        .append(",$markerColor-$markerSize")
+//                        .append("/$width" + "x" + "$height")
+//                        .append("?access_token=$apiKey")
+//                        .append("&zoom=$zoom")
+//                    val url = urlBuilder.toString()
+
+                    val successUrl = "https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-a+9ed4bd(-122.46589,37.77343),pin-s-b+000(-122.42816,37.75965),path-5+f44-0.5(${encodedPolylines})/auto/500x300?access_token="
+//
+                    val baseUrl = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
+                    val staticMapUrlBuilder = StringBuilder()
+                    staticMapUrlBuilder.append(baseUrl)
+                    staticMapUrlBuilder.append("path-5+f44-0.5(")
+                    staticMapUrlBuilder.append(route.geometry())
+                    staticMapUrlBuilder.append(")/auto/500x300?access_token=")
+                    staticMapUrlBuilder.append(apiKey)
+                    val url2 = staticMapUrlBuilder.toString()
+
+
+                    println(route.geometry())
+
+                    // Use an image loading library to load the static image into an ImageView
+//                    Glide.with(this)
+//                        .load(url2)
+//                        .into(record)
+
 
                     // push route geojson
                     val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
@@ -1055,8 +1225,13 @@ class SearchFragment : Fragment() {
                     val featureData = feature.toJson().toByteArray()
                     dataRef.putBytes(featureData)
 
+                    // push directionsroute
+                    val drRoute = gson.toJson(route)
+                    val drrouteRef = storageRef.child("drroutes/${temp.route_name_text}.json")
+                    drrouteRef.putBytes(drRoute.toByteArray())
+
                     // return success message
-                    Toast.makeText(context, "Successfully login!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Successfully share route!", Toast.LENGTH_SHORT).show()
                     }
 
                 val discard = popupWindow.contentView.findViewById<Button>(R.id.share_discard)
@@ -1467,6 +1642,33 @@ class SearchFragment : Fragment() {
         }
 
     }
+
+    fun decToHex(dec: Int): String = if (dec < 16) "0" + dec.toString(16) else dec.toString(16)
+
+    fun hexToDec(hex: String): Int = Integer.parseInt(hex, 16)
+
+    fun rgbToHexString(rgb: List<Int>): String = decToHex(rgb[0]) + decToHex(rgb[1]) + decToHex(rgb[2])
+
+    fun hexStringToRGB(hexString: String): List<Int> {
+        val s = hexString.replace("#", "")
+        return listOf(hexToDec(s.substring(0, 2)), hexToDec(s.substring(2, 4)), hexToDec(s.substring(4, 6)))
+    }
+
+    // sRGB: starting RGB color, like [255, 0, 0]
+// eRGB: ending RGB color, like [122, 122, 122]
+// numSteps: number of steps in the gradient
+    fun createSpectrum(sRGB: List<Int>, eRGB: List<Int>, numSteps: Int): List<String> {
+        val colors = mutableListOf<String>()
+        for (i in 0 until numSteps) {
+            val r = Math.round(((eRGB[0] - sRGB[0]).toFloat() * i / numSteps)) + sRGB[0]
+            val g = Math.round(((eRGB[1] - sRGB[1]).toFloat() * i / numSteps)) + sRGB[1]
+            val b = Math.round(((eRGB[2] - sRGB[2]).toFloat() * i / numSteps)) + sRGB[2]
+            colors.add(rgbToHexString(listOf(r, g, b)))
+        }
+        return colors
+    }
+
+
 
     fun getTime(): String {
         val current = LocalDateTime.now()
