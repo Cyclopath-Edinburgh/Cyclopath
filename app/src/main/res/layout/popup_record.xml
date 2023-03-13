@@ -60,6 +60,9 @@
             android:fontFamily="@font/arbutus_slab"
             android:textColor="@color/themegreen"
             android:text="Date:Time"
+            android:imeOptions="actionDone"
+            android:maxLines="1"
+            android:inputType="text"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
