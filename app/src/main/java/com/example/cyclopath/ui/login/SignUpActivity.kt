@@ -94,6 +94,8 @@ class SignUpActivity : AppCompatActivity() {
                 val password2 = password2text.text.toString()
                 if ((username.length < 5) or (username.length > 20)) {
                     Toast.makeText(this, "Username should be 5-20 characters.", Toast.LENGTH_SHORT).show()
+                } else if (!password.matches("^(?=.*[a-zA-Z])[a-zA-Z0-9!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]+$".toRegex())) {
+                    Toast.makeText(this, "Username must contains at least 1 letter.", Toast.LENGTH_LONG).show()
                 } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                     Toast.makeText(this, "The email address is invalid.", Toast.LENGTH_SHORT).show()
                 } else if ((password.length < 5) or (password.length > 20)) {
