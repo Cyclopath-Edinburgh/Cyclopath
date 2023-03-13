@@ -21,15 +21,6 @@ import androidx.fragment.app.Fragment
 import com.example.cyclopath.R
 import com.example.cyclopath.ui.TncActivity
 import com.example.cyclopath.ui.login.LoginActivity
-import com.google.android.gms.auth.api.Auth
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
-import java.text.SimpleDateFormat
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.AxisBase
 import com.github.mikephil.charting.components.XAxis
@@ -38,6 +29,13 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -143,12 +141,12 @@ class ProfileFragment : Fragment() {
         day.add("Sun")
 
         // Get the start date and end date of current week
-        val today = Calendar.getInstance().time
+        val today = sdf.format(Calendar.getInstance().time)
         val startdate = sdf.parse(date!!)
         val cal: Calendar = Calendar.getInstance()
-        cal.set(Calendar.DATE, today.date)
-        cal.set(Calendar.MONTH, today.month)
-        cal.set(Calendar.YEAR, today.year+1900)
+//        cal.set(Calendar.DATE, today.date)
+//        cal.set(Calendar.MONTH, today.month)
+//        cal.set(Calendar.YEAR, today.year+1900)
         cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
         var start = sdf.format(cal.time)
         cal.add(Calendar.DATE, 6)
@@ -162,7 +160,13 @@ class ProfileFragment : Fragment() {
         // Change the start date and end date to the previous week
         left = root.findViewById(R.id.history_left)
         left.setOnClickListener {
-            if (startdate.before(sdf.parse(start))) {
+            val cal1 = Calendar.getInstance()
+            val cal2 = Calendar.getInstance()
+            cal1.time = startdate
+            cal2.time = sdf.parse(end)
+            val sameDay = cal1[Calendar.DAY_OF_YEAR] === cal2[Calendar.DAY_OF_YEAR] &&
+                    cal1[Calendar.YEAR] === cal2[Calendar.YEAR]
+            if (startdate.before(sdf.parse(start)) && !sameDay) {
                 cal.add(Calendar.DATE, -1)
                 end = sdf.format(cal.time)
                 cal.add(Calendar.DATE, -6)
@@ -179,7 +183,13 @@ class ProfileFragment : Fragment() {
         right = root.findViewById(R.id.history_right)
         right.setOnClickListener {
             val today = Calendar.getInstance()
-            if (today.time.after(sdf.parse(end))) {
+            val cal1 = Calendar.getInstance()
+            val cal2 = Calendar.getInstance()
+            cal1.time = today.time
+            cal2.time = sdf.parse(end)
+            val sameDay = cal1[Calendar.DAY_OF_YEAR] === cal2[Calendar.DAY_OF_YEAR] &&
+                    cal1[Calendar.YEAR] === cal2[Calendar.YEAR]
+            if (today.time.after(sdf.parse(end)) && !sameDay) {
                 cal.add(Calendar.DATE, 13)
                 end = sdf.format(cal.time)
                 cal.add(Calendar.DATE, -6)
@@ -194,14 +204,14 @@ class ProfileFragment : Fragment() {
 
         Handler(Looper.getMainLooper()).postDelayed(
                 {
-                    if (distanceList[sdf.format(today)] != null) {
+                    if (distanceList[today] != null) {
                         todayDistance = root.findViewById(R.id.profile_distance)
-                        var di = distanceList[sdf.format(today)]!!.toFloat()
+                        var di = distanceList[today]!!.toFloat()
                         var distance = String.format("%.3f KM",di/1000)
                         todayDistance.text = "Distance Travelled: $distance"
 
                         todayDuration = root.findViewById(R.id.profile_duration)
-                        var d = dulist[sdf.format(today)]!!.toFloat()
+                        var d = dulist[today]!!.toFloat()
                         val hours = d / 3600
                         val minutes = (d % 3600) / 60
                         val seconds = d % 60
@@ -362,7 +372,7 @@ class ProfileFragment : Fragment() {
                     val strs = it.split(",").toTypedArray()
                     distanceList[strs[0]] = strs[1]
                     dulist[strs[0]] = strs[2]
-                    println(it)
+//                    println(it)
                 }
             }
         }.addOnFailureListener {

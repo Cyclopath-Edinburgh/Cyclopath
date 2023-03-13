@@ -546,11 +546,10 @@ class SearchFragment : Fragment() {
         elevation = root.findViewById(R.id.elevation)
 //        elevation = root.findViewById(R.id.elevation)
         dropdown = root.findViewById(R.id.dropdown)
-        text = root.findViewById(R.id.routetext2)
 
         val lay = root.findViewById<ConstraintLayout>(R.id.constraintLayout)
 
-        lay.foreground.alpha = 0
+//        lay.foreground.alpha = 0
 //        Handler(Looper.getMainLooper()).postDelayed({
 //            if (!isPopup) {
 //
@@ -560,6 +559,8 @@ class SearchFragment : Fragment() {
         
         sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
         name = sp!!.getString("username", "user")!!
+
+        mapboxMap.setCamera(CameraOptions.Builder().center(Point.fromLngLat(-3.1870091, 55.9443771)).zoom(14.0).build())
 
 //        initNavigation()
 
@@ -573,7 +574,7 @@ class SearchFragment : Fragment() {
                     ),
                     PERMISSIONS_REQUEST_LOCATION
             )
-            firstnolocation = true
+//            firstnolocation = true
         }
 
         if (ContextCompat.checkSelfPermission(requireContext(),
@@ -586,19 +587,24 @@ class SearchFragment : Fragment() {
             println("this3")
             askForLocationPermissions()
         } else {
-            println("this4")
-            firstnolocation = true
             val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
-            if (gps_enabled) {
-                locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
-                locationPermissionHelper.checkPermissions {
-                    onMapReady()
-                }
-            } else {
-                Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
+            if (!gps_enabled) {
+//                firstnolocation = true
+                Toast.makeText(context, "Please enable your location service.", Toast.LENGTH_SHORT).show()
             }
+            onMapReady()
+
+//            if (gps_enabled) {
+//                locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+//                locationPermissionHelper.checkPermissions {
+//                    onMapReady()
+//                }
+//            } else {
+//                onMapReady()
+//                Toast.makeText(context, "Please enable your location service.", Toast.LENGTH_SHORT).show()
+//            }
         }
 
         annotationApi = mapView.annotations
@@ -809,19 +815,19 @@ class SearchFragment : Fragment() {
             var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
             if (gps_enabled && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                if (firstnolocation) {
-                    firstnolocation = false
-                    locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
-                    locationPermissionHelper.checkPermissions {
-                        onMapReady()
-                    }
-                    Toast.makeText(context,"Detecting current location.",Toast.LENGTH_SHORT).show()
-                    Handler().postDelayed({
-                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
-                    }, 3000)
-                } else {
-                    mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
-                }
+//                if (firstnolocation) {
+//                    firstnolocation = false
+//                    locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+//                    locationPermissionHelper.checkPermissions {
+//                        onMapReady()
+//                    }
+//                    Toast.makeText(context,"Detecting current location.",Toast.LENGTH_SHORT).show()
+//                    Handler().postDelayed({
+//                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+//                    }, 1000)
+//                } else {
+                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+//                }
             } else {
                 Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
             }
@@ -881,7 +887,7 @@ class SearchFragment : Fragment() {
                 yesb.setOnClickListener {
                     if (!nameList.contains(textinput.text.toString())) {
                         popupWindow.dismiss()
-                        lay.foreground.alpha = 0
+//                        lay.foreground.alpha = 0
 
                         Toast.makeText(context, "Stop recording", Toast.LENGTH_SHORT).show()
                         isRecord = false
@@ -957,7 +963,7 @@ class SearchFragment : Fragment() {
                 val nob = popupWindow.contentView.findViewById<Button>(R.id.record_discard)
                 nob.setOnClickListener {
                     popupWindow.dismiss()
-                    lay.foreground.alpha = 0
+//                    lay.foreground.alpha = 0
                 }
             } else {
                 Toast.makeText(context, "Start recording", Toast.LENGTH_SHORT).show()
@@ -1436,7 +1442,7 @@ class SearchFragment : Fragment() {
                 val discard = popupWindow.contentView.findViewById<Button>(R.id.share_discard)
                 discard.setOnClickListener {
                     popupWindow.dismiss()
-                    lay.foreground.alpha = 0
+//                    lay.foreground.alpha = 0
                 }
 
 
@@ -1603,7 +1609,7 @@ class SearchFragment : Fragment() {
                                 R.layout.spinner_item, strlist)
 
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                        text.visibility = View.INVISIBLE
+//                        text.visibility = View.INVISIBLE
                         dropdown.visibility = View.VISIBLE
                         dropdown.isClickable = true
                         dropdown.setAdapter(adapter)
@@ -1832,37 +1838,43 @@ class SearchFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupGesturesListener() {
+        println("HERE")
+        println(originText.text.toString())
         mapView.gestures.addOnMoveListener(onMoveListener)
         mapView.gestures.addOnMapLongClickListener { point ->
-            if (!this::origin.isInitialized) {
+//            if (!this::origin.isInitialized) {
+            if (originText.text.toString() == "") {
                 origin = point
                 isOrigin = true
                 ignoreNextMapIdleEvent = true
                 ignoreNextQueryTextUpdateOrigin = true
                 addAnnotationToMap(origin)
                 isOrigin = false
-                originText.setText(point.latitude().toString()+","+point.longitude().toString())
+                originText.setText(String.format("%.4f", point.latitude()) + "," + String.format("%.4f", point.longitude()))
                 originText.clearFocus()
-            } else if (!this::destination.isInitialized) {
+            } else if (destinationText.text.toString() == "") {
+//            } else if (!this::destination.isInitialized) {
                 destination = point
                 isOrigin = false
                 ignoreNextMapIdleEvent = true
                 ignoreNextQueryTextUpdateDestination = true
                 addAnnotationToMap(destination)
                 isOrigin = true
-                destinationText.setText(point.latitude().toString()+","+point.longitude().toString())
+                destinationText.setText(String.format("%.4f", point.latitude()) + "," + String.format("%.4f", point.longitude()))
                 destinationText.clearFocus()
-            } else {
-                origin = point
-                isOrigin = true
-                ignoreNextMapIdleEvent = true
-                ignoreNextQueryTextUpdateOrigin = true
-                addAnnotationToMap(origin)
-                isOrigin = false
-                originText.setText(point.latitude().toString()+","+point.longitude().toString())
-                originText.clearFocus()
             }
+//            } else {
+//                origin = point
+//                isOrigin = true
+//                ignoreNextMapIdleEvent = true
+//                ignoreNextQueryTextUpdateOrigin = true
+//                addAnnotationToMap(origin)
+//                isOrigin = false
+//                originText.setText(String.format("%.4f", point.latitude()) + "," + String.format("%.4f", point.longitude()))
+//                originText.clearFocus()
+//            }
 
             if (this::origin.isInitialized && this::destination.isInitialized) {
                 fetchARoute(origin, destination)
@@ -1990,6 +2002,7 @@ class SearchFragment : Fragment() {
         }
         locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
+//        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(Point.fromLngLat(-3.187194, 55.947388)).build())
 //        Handler().postDelayed({
 //            current = Point.fromLngLat(
 //                    mapboxMap.cameraState.center.longitude(), mapboxMap.cameraState.center.latitude()

@@ -109,13 +109,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.cyclopath.ui.record.RecordActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
-        </activity>
-        <activity
             android:name="com.example.cyclopath.ui.MainActivity"
             android:exported="true"
             android:label="Cyclopath Edinburgh"
