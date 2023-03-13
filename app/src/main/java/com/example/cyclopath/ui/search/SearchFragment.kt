@@ -18,6 +18,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -144,6 +145,8 @@ import com.mapbox.navigation.base.formatter.DistanceFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.lang.Double.max
+import java.lang.Double.min
 
 
 class SearchFragment : Fragment() {
@@ -402,7 +405,7 @@ class SearchFragment : Fragment() {
     private lateinit var upload : FloatingActionButton
     private lateinit var elevation : FloatingActionButton
     private lateinit var dropdown : Spinner
-    private lateinit var text : TextView
+    private lateinit var timer : Chronometer
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
@@ -445,6 +448,7 @@ class SearchFragment : Fragment() {
     
     var distanceList: HashMap<String, String> = hashMapOf<String, String>()
     var durationList: HashMap<String, String> = hashMapOf<String, String>()
+    var caloriesList: HashMap<String, String> = hashMapOf<String, String>()
 
     private var isPopup = false
 
@@ -546,6 +550,7 @@ class SearchFragment : Fragment() {
         elevation = root.findViewById(R.id.elevation)
 //        elevation = root.findViewById(R.id.elevation)
         dropdown = root.findViewById(R.id.dropdown)
+        timer = root.findViewById(R.id.timer)
 
         val lay = root.findViewById<ConstraintLayout>(R.id.constraintLayout)
 
@@ -886,6 +891,8 @@ class SearchFragment : Fragment() {
                 val yesb = popupWindow.contentView.findViewById<Button>(R.id.record_save)
                 yesb.setOnClickListener {
                     if (!nameList.contains(textinput.text.toString())) {
+                        timer.stop()
+                        timer.visibility = View.INVISIBLE
                         popupWindow.dismiss()
 //                        lay.foreground.alpha = 0
 
@@ -911,16 +918,19 @@ class SearchFragment : Fragment() {
 
                         end = curr
                         var duration = (end.hour-start.hour)*3600 + (end.minute - start.minute)*60 + (end.second-start.second)
+                        var calories = distance*0.032
                         var d = duration.toString()
                         var infopath = "history/$name/$filename.txt"
                         var infoRef = storageRef.child(infopath)
 
                         if (distanceList.keys.contains(today)) {
                             distanceList[today] = (distanceList[today]!!.toFloat() + distance).toString()
-                            durationList[today] = (durationList[today]!!.toFloat()+d.toFloat()).toString()
+                            durationList[today] = (durationList[today]!!.toFloat() + d.toFloat()).toString()
+                            caloriesList[today] = (caloriesList[today]!!.toFloat() + calories).toString()
                         } else {
                             distanceList[today] = distance.toString()
                             durationList[today] = d
+                            caloriesList[today] = calories.toString()
                         }
 
                         uploadDistance()
@@ -935,10 +945,22 @@ class SearchFragment : Fragment() {
                             first = "origin=" + routeCoordinates.first().latitude().toString() + "," + routeCoordinates.first().longitude().toString()
                             second = "destination=" + routeCoordinates.last().latitude().toString() + "," + routeCoordinates.last().longitude().toString()
                         }
+
                         val third = "duration=$d"
                         val fourth = "distance="+String.format("%.2f",distance)
                         val fifth = "start=$formattedstart"
                         val sixth = "end=$formatted"
+                        val seventh = "calories=$calories"
+                        var maxLong = -90.0
+                        var minLong = 90.0
+                        var maxLat = -90.0
+                        var minLat = 90.0
+                        for (i in routeCoordinates) {
+                            maxLong = max(maxLong, i.longitude())
+                            minLong = min(minLong, i.longitude())
+                            maxLat = max(maxLat, i.latitude())
+                            minLat = min(minLat, i.latitude())
+                        }
                         baos2.write(first.toByteArray())
                         baos2.write("\n".toByteArray())
                         baos2.write(second.toByteArray())
@@ -950,6 +972,16 @@ class SearchFragment : Fragment() {
                         baos2.write(fifth.toByteArray())
                         baos2.write("\n".toByteArray())
                         baos2.write(sixth.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(seventh.toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(String.format("maxLong=%.8f",maxLong).toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(String.format("minLong=%.8f",minLong).toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(String.format("maxLat=%.8f",maxLat).toByteArray())
+                        baos2.write("\n".toByteArray())
+                        baos2.write(String.format("minLat=%.8f",minLat).toByteArray())
                         baos2.write("\n".toByteArray())
                         val data2 = baos2.toByteArray()
                         infoRef.putBytes(data2)
@@ -963,9 +995,19 @@ class SearchFragment : Fragment() {
                 val nob = popupWindow.contentView.findViewById<Button>(R.id.record_discard)
                 nob.setOnClickListener {
                     popupWindow.dismiss()
-//                    lay.foreground.alpha = 0
+                    Toast.makeText(context, "Recording discarded.", Toast.LENGTH_SHORT).show()
+                    isRecord = false
+                    record.setImageResource(R.drawable.startrecording)
+                    timer.setBase(SystemClock.elapsedRealtime())
+                    timer.visibility = View.INVISIBLE
+                    distance = 0.0
+                    routeCoordinates = ArrayList<Point>()
+
                 }
             } else {
+                timer.visibility = View.VISIBLE
+                timer.setBase(SystemClock.elapsedRealtime())
+                timer.start()
                 Toast.makeText(context, "Start recording", Toast.LENGTH_SHORT).show()
                 isRecord = true
                 record.setImageResource(R.drawable.stoprecording)
@@ -1922,6 +1964,7 @@ class SearchFragment : Fragment() {
     fun retrieveDistance() {
         distanceList = HashMap<String, String>()
         durationList = HashMap<String, String>()
+        caloriesList = HashMap<String, String>()
         val storageRef = storage.reference
         var dataRef = storageRef.child("distanceData/$name.txt")
         dataRef.getBytes(ONE_MEGABYTE).addOnSuccessListener { it ->
@@ -1931,6 +1974,7 @@ class SearchFragment : Fragment() {
                     val strs = it.split(",").toTypedArray()
                     distanceList[strs[0]] = strs[1]
                     durationList[strs[0]] = strs[2]
+                    caloriesList[strs[0]] = strs[3]
                 }
             }
         }.addOnFailureListener {
@@ -1962,7 +2006,8 @@ class SearchFragment : Fragment() {
             val d = key
             val s = item
             val c = durationList[key]
-            baos.write("$d,$s,$c".toByteArray())
+            val ca = caloriesList[key]
+            baos.write("$d,$s,$c,$ca".toByteArray())
             baos.write("\n".toByteArray())
         }
         val data = baos.toByteArray()

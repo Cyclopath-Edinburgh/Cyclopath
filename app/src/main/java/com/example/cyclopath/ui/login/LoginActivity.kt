@@ -115,7 +115,6 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
 
         signup.setOnClickListener {
             var intent = Intent(this, SignUpActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
 
@@ -336,5 +335,5 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnected
     }
-    
+
 }

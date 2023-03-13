@@ -5,8 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/constraintLayout"
-    tools:context=".ui.profile.ProfileFragment"
-    android:foreground="@color/black">
+    tools:context=".ui.profile.ProfileFragment">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -92,7 +91,7 @@
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/profile_today"
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
+                android:layout_height="100dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
@@ -132,6 +131,19 @@
                         android:textSize="15dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/profile_distance" />
+
+                    <TextView
+                        android:id="@+id/profile_calories"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/arbutus_slab"
+                        android:text="Estimated Calories Consumed: 0"
+                        android:textColor="@color/black"
+                        android:textSize="15dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/profile_duration" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -341,6 +353,76 @@
 
             </FrameLayout>
 
+            <TextView
+                android:id="@+id/history_caloriestitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:text="Total Estimated Calories Consumed"
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/profile_duc" />
+
+            <!--            <View-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="1dp"-->
+            <!--                android:layout_marginStart="145dp"-->
+            <!--                android:layout_marginTop="5dp"-->
+            <!--                android:layout_marginEnd="145dp"-->
+            <!--                android:background="@color/black"-->
+            <!--                app:layout_constraintEnd_toEndOf="parent"-->
+            <!--                app:layout_constraintStart_toStartOf="parent"-->
+            <!--                app:layout_constraintTop_toBottomOf="@id/history_durationtitle" />-->
+
+            <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/profile_cac"
+                android:layout_width="match_parent"
+                android:layout_height="170dp"
+                android:background="@drawable/border"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/history_caloriestitle">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="kJ"
+                        android:textSize="8dp"
+                        app:layout_constraintStart_toStartOf="@id/history_calorieschart"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp" />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/history_calorieschart"
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="8dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </FrameLayout>
+
             <Button
                 android:id="@+id/logout"
                 android:layout_width="match_parent"
@@ -349,9 +431,10 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginTop="16dp"
                 android:text="Logout"
-                app:layout_constraintTop_toBottomOf="@id/profile_duc"
+                app:layout_constraintTop_toBottomOf="@id/profile_cac"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                android:fontFamily="@font/arbutus_slab"/>
 
             <TextView
                 android:id="@+id/tnc"
@@ -363,7 +446,8 @@
                 android:textColor="#2291CE"
                 app:layout_constraintTop_toBottomOf="@id/logout"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                android:fontFamily="@font/arbutus_slab"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -2,38 +2,37 @@ package com.example.cyclopath.ui.login
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Patterns
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.ImageView
-import android.widget.PopupWindow
-import android.widget.ProgressBar
-import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.cyclopath.G
 import com.example.cyclopath.R
+import com.example.cyclopath.ui.MainActivity
 import com.example.cyclopath.ui.TncActivity
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuth.AuthStateListener
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+
 
 class SignUpActivity : AppCompatActivity() {
 
     var db: FirebaseFirestore? = null
+    var sp: SharedPreferences? = null
+    private lateinit var mAuthListener : AuthStateListener
 
     private lateinit var usernametext : TextInputEditText
     private lateinit var emailtext : TextInputEditText
@@ -41,6 +40,7 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var password2text : TextInputEditText
     private lateinit var checkbox : CheckBox
     private lateinit var submit : Button
+    private lateinit var login : Button
     private lateinit var resend : Button
     private lateinit var userList : ArrayList<Array<String>>
     private lateinit var emailPasswordActivity: EmailPasswordActivity
@@ -48,6 +48,11 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var info : ImageView
     private var signed = false
     private var done = false
+
+    private lateinit var username: String
+    private lateinit var email: String
+    private lateinit var password: String
+    private lateinit var today: String
 
     var storage = Firebase.storage
 
@@ -63,9 +68,10 @@ class SignUpActivity : AppCompatActivity() {
         emailPasswordActivity = EmailPasswordActivity()
         db = FirebaseFirestore.getInstance()
         getUserData(db!!)
+        sp = getSharedPreferences("user_data", MODE_PRIVATE)
 
         val lay = findViewById<ConstraintLayout>(R.id.constraintLayout)
-//        lay.foreground.alpha = 0
+        lay.foreground.alpha = 0
 
         usernametext = findViewById(R.id.username_input)
         emailtext = findViewById(R.id.email_input)
@@ -73,6 +79,7 @@ class SignUpActivity : AppCompatActivity() {
         password2text = findViewById(R.id.password2_input)
         checkbox = findViewById(R.id.checkbox)
         submit = findViewById(R.id.signup)
+        login = findViewById(R.id.login)
         resend = findViewById(R.id.resend)
         bar = findViewById(R.id.progressBar)
         info = findViewById(R.id.info)
@@ -102,8 +109,31 @@ class SignUpActivity : AppCompatActivity() {
                 } else if (!checkEmail(email)) {
                     Toast.makeText(this, "The email has been used.", Toast.LENGTH_SHORT).show()
                 } else {
+                    this.username = username
+                    this.email = email
+                    this.password = password
                     signup(username,email,password)
                 }
+            }
+        }
+
+        login.setOnClickListener {
+            emailPasswordActivity.signAccount(email, password)
+            val user = Firebase.auth.currentUser
+            user!!.reload()
+            if (user!!.isEmailVerified) {
+                bar.visibility = View.VISIBLE
+                Toast.makeText(this, "Directing to Main Page.", Toast.LENGTH_SHORT).show()
+                Handler().postDelayed({
+                    sp!!.edit().putString("username", username).apply()
+                    sp!!.edit().putString("email", email).apply()
+                    sp!!.edit().putString("startdate",today).apply()
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                }, 2000)
+            } else {
+                Toast.makeText(applicationContext, "Please activate your email address.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -174,16 +204,17 @@ class SignUpActivity : AppCompatActivity() {
             if (done) {
                 emailPasswordActivity.sendVerificationEmail(email)
                 resend.visibility = View.VISIBLE
+                login.visibility = View.VISIBLE
                 submit.visibility = View.INVISIBLE
+                bar.visibility = View.INVISIBLE
                 Toast.makeText(applicationContext, "Successfully sign up!", Toast.LENGTH_SHORT).show()
                 Toast.makeText(applicationContext, "An activation email has been sent to your email address.", Toast.LENGTH_SHORT).show()
                 Handler().postDelayed({
-                    bar.visibility = View.INVISIBLE
                     done = emailPasswordActivity.getSuccess()
                     if (done) {
                         val sdf = SimpleDateFormat("yyyy.MM.dd")
                         val cal = Calendar.getInstance()
-                        val today = sdf.format(cal.time).toString()
+                        today = sdf.format(cal.time).toString()
                         val user: MutableMap<String, Any> = HashMap()
                         user["email"] = email
                         user["startdate"] = today

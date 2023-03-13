@@ -232,14 +232,24 @@
         />
 
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="32dp"
+        android:layout_width="84dp"
+        android:layout_height="42dp"
         android:src="@drawable/startrecording"
         android:id="@+id/record"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view"
         android:layout_marginTop="32dp"
         android:layout_marginStart="8dp"/>
+
+    <Chronometer
+        android:id="@+id/timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/record"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toEndOf="@id/record"
+        android:visibility="invisible"/>
 
     <include
         layout="@layout/weather_plugin"

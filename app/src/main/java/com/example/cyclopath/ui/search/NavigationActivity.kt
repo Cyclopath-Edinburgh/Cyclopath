@@ -533,16 +533,16 @@ class NavigationActivity : AppCompatActivity() {
         }
 
         // initialize view interactions
-        binding.stop.setOnClickListener {
-            clearRouteAndStopNavigation()
-        }
+//        binding.stop.setOnClickListener {
+//            clearRouteAndStopNavigation()
+//        }
         binding.recenter.setOnClickListener {
             navigationCamera.requestNavigationCameraToFollowing()
-            binding.routeOverview.showTextAndExtend(BUTTON_ANIMATION_DURATION)
+            binding.recenter.showTextAndExtend(BUTTON_ANIMATION_DURATION)
         }
         binding.routeOverview.setOnClickListener {
             navigationCamera.requestNavigationCameraToOverview()
-            binding.recenter.showTextAndExtend(BUTTON_ANIMATION_DURATION)
+            binding.routeOverview.showTextAndExtend(BUTTON_ANIMATION_DURATION)
         }
         binding.soundButton.setOnClickListener {
             // mute/unmute voice instructions

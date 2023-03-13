@@ -37,6 +37,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
 
 
 class ProfileFragment : Fragment() {
@@ -51,10 +52,13 @@ class ProfileFragment : Fragment() {
     lateinit var right: ImageView
     private lateinit var distanceData: LineDataSet
     private lateinit var durationData: LineDataSet
+    private lateinit var caloriesData: LineDataSet
     private lateinit var alldistanceData: LineData
     private lateinit var alldurationData: LineData
+    private lateinit var allcaloriesData: LineData
     private lateinit var distanceChart: LineChart
     private lateinit var durationChart: LineChart
+    private lateinit var caloriesChart: LineChart
 
     val ONE_MEGABYTE: Long = 1024 * 1024
     var storage = Firebase.storage
@@ -63,9 +67,11 @@ class ProfileFragment : Fragment() {
     var day = ArrayList<String>()
     var distanceList = HashMap<String, String>()
     var dulist = HashMap<String, String>()
+    var caloriesList = HashMap<String, String>()
     var timeList = HashMap<String, Double>()
     lateinit var todayDistance : TextView
     lateinit var todayDuration : TextView
+    lateinit var todayCalories : TextView
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -75,7 +81,6 @@ class ProfileFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_profile, container, false)
 
         val lay = root.findViewById<ConstraintLayout>(R.id.constraintLayout)
-        lay.foreground.alpha = 0
 
         sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
         val date = sp!!.getString("startdate", "2022.10.20")
@@ -95,11 +100,9 @@ class ProfileFragment : Fragment() {
             val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             val popupView: View = inflater.inflate(R.layout.popup_logout, null)
 
-            val popupWindow = PopupWindow(popupView, 700, 400)
+            val popupWindow = PopupWindow(popupView, 700, 500)
 
             popupWindow.isFocusable = true
-
-//            lay.foreground.alpha = 120
 
             popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
 
@@ -119,7 +122,6 @@ class ProfileFragment : Fragment() {
             val nob = popupWindow.contentView.findViewById<Button>(R.id.logout_no)
             nob.setOnClickListener {
                 popupWindow.dismiss()
-                lay.foreground.alpha = 0
             }
 
         }
@@ -176,6 +178,7 @@ class ProfileFragment : Fragment() {
                 timeList = HashMap<String, Double>()
                 setupDistanceChart(root, start)
                 setupDurationCharts(root, start)
+                setupCaloriesCharts(root, start)
             }
         }
 
@@ -199,6 +202,7 @@ class ProfileFragment : Fragment() {
                 timeList = HashMap<String, Double>()
                 setupDistanceChart(root, start)
                 setupDurationCharts(root, start)
+                setupCaloriesCharts(root, start)
             }
         }
 
@@ -225,9 +229,15 @@ class ProfileFragment : Fragment() {
                         }
                         todayDuration.text = "Duration: $duration"
 
+                        todayCalories = root.findViewById(R.id.profile_calories)
+                        var ca = caloriesList[today]!!.toFloat()
+                        var calories = String.format("%.4f KM",ca)
+                        todayCalories.text = "Estimated Calories Consumed: $calories"
+
                     }
                     setupDistanceChart(root, start)
                     setupDurationCharts(root, start)
+                    setupCaloriesCharts(root, start)
                 },
                 500
         )
@@ -361,6 +371,67 @@ class ProfileFragment : Fragment() {
 
     }
 
+    fun setupCaloriesCharts(root: View, start: String) {
+        caloriesChart = root.findViewById<LineChart>(R.id.history_calorieschart)
+
+        val entries_res_accel_x = ArrayList<Entry>()
+
+        caloriesData = LineDataSet(entries_res_accel_x, null)
+
+        caloriesData.setDrawCircles(true)
+        caloriesData.setCircleColor(Color.BLACK)
+        caloriesData.circleHoleColor = Color.BLACK
+        caloriesData.disableDashedLine()
+        caloriesChart.axisLeft.setDrawGridLines(false)
+        caloriesChart.xAxis.setDrawGridLines(false)
+        caloriesChart.axisRight.setDrawGridLines(false)
+        caloriesChart.legend.isEnabled = false
+        caloriesChart.description = null
+        caloriesChart.axisRight.setDrawLabels(false)
+        caloriesChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+
+        activity?.let {
+            ContextCompat.getColor(
+                    it,
+                    R.color.black
+            )
+        }?.let {
+            caloriesData.color = it
+        }
+
+        var i = 0
+        var temp_cal = Calendar.getInstance()
+        val arr = start.split(".")
+        temp_cal.set(Calendar.YEAR, arr[0].toInt())
+        temp_cal.set(Calendar.MONTH, (arr[1].toInt()) - 1)
+        temp_cal.set(Calendar.DATE, arr[2].toInt())
+        while (i < 7) {
+            if (caloriesList.keys.contains(sdf.format(temp_cal.time))) {
+                caloriesData.addEntry(caloriesList[sdf.format(temp_cal.time)]?.let {
+                    Entry(
+                            i.toFloat(),
+                            it.toFloat()
+                    )
+                })
+            } else {
+                caloriesData.addEntry(Entry(i.toFloat(), 0F))
+            }
+            temp_cal.add(Calendar.DATE, 1)
+            i++
+        }
+
+        val dataSetsRes = ArrayList<ILineDataSet>()
+        dataSetsRes.add(caloriesData)
+
+        allcaloriesData = LineData(dataSetsRes)
+//        alldistanceData.setValueFormatter(DataFormatter())
+        caloriesChart.data = allcaloriesData
+        caloriesChart.xAxis.valueFormatter = xFormatter(day)
+
+        caloriesChart.invalidate()
+
+    }
+
     fun retrieveData() {
         val username = sp!!.getString("username","user")
         val storageRef = storage.reference
@@ -372,6 +443,7 @@ class ProfileFragment : Fragment() {
                     val strs = it.split(",").toTypedArray()
                     distanceList[strs[0]] = strs[1]
                     dulist[strs[0]] = strs[2]
+                    caloriesList[strs[0]] = strs[3]
 //                    println(it)
                 }
             }

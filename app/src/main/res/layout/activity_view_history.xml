@@ -6,107 +6,167 @@
     android:layout_height="match_parent"
     tools:context=".ui.history.ViewHistoryActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="10dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:text="YYYYDDMM:HHMMSS"
-        android:textColor="@color/themegreen"
-        android:textSize="24dp"
-        android:fontFamily="@font/arbutus_slab"
-        android:id="@+id/title"
-        android:textStyle="bold"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="32dp"/>
+        app:layout_constraintVertical_bias="1.0">
 
-    <com.mapbox.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        android:layout_marginTop="32dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@drawable/border"
-        app:layout_constraintTop_toBottomOf="@+id/mapView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="24dp"
-        />
+            ``<TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="YYYYDDMM:HHMMSS"
+                android:textColor="@color/themegreen"
+                android:textSize="24dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/title"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="32dp"/>
 
+            <com.mapbox.maps.MapView
+                android:id="@+id/mapView"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                android:layout_marginTop="32dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="Total Time Taken: 0H0M0S"
-        android:textColor="@color/black"
-        android:textSize="18dp"
-        android:fontFamily="@font/arbutus_slab"
-        android:id="@+id/ttt"
-        app:layout_constraintTop_toBottomOf="@+id/mapView"
-        android:layout_marginTop="32dp"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="290dp"
+                android:background="@drawable/border"
+                app:layout_constraintTop_toBottomOf="@+id/mapView"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="24dp"
+                />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="Total Distance: 0M"
-        android:textColor="@color/black"
-        android:textSize="18dp"
-        android:fontFamily="@font/arbutus_slab"
-        android:id="@+id/td"
-        app:layout_constraintTop_toBottomOf="@+id/ttt"
-        android:layout_marginTop="16dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="32dp"
+                android:text="Total Time Taken: 0H0M0S"
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/ttt"
+                app:layout_constraintTop_toBottomOf="@+id/mapView"
+                android:layout_marginTop="32dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="Average Speed: 0KM/H"
-        android:textColor="@color/black"
-        android:textSize="18dp"
-        android:fontFamily="@font/arbutus_slab"
-        android:id="@+id/as"
-        app:layout_constraintTop_toBottomOf="@+id/td"
-        android:layout_marginTop="16dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="32dp"
+                android:text="Total Distance: 0M"
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/td"
+                app:layout_constraintTop_toBottomOf="@+id/ttt"
+                android:layout_marginTop="16dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="Start Time: HH:MM:SS"
-        android:textColor="@color/black"
-        android:textSize="18dp"
-        android:fontFamily="@font/arbutus_slab"
-        android:id="@+id/start"
-        app:layout_constraintTop_toBottomOf="@+id/as"
-        android:layout_marginTop="16dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="32dp"
+                android:text="Average Speed: 0KM/H"
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/as"
+                app:layout_constraintTop_toBottomOf="@+id/td"
+                android:layout_marginTop="16dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="End Time: HH:MM:SS"
-        android:textColor="@color/black"
-        android:textSize="18dp"
-        android:fontFamily="@font/arbutus_slab"
-        android:id="@+id/end"
-        app:layout_constraintTop_toBottomOf="@+id/start"
-        android:layout_marginTop="16dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="32dp"
+                android:text="Start Time: HH:MM:SS"
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/start"
+                app:layout_constraintTop_toBottomOf="@+id/as"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="32dp"
+                android:text="End Time: HH:MM:SS"
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/end"
+                app:layout_constraintTop_toBottomOf="@+id/start"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="Origin: "
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/origincoor"
+                app:layout_constraintTop_toBottomOf="@+id/end"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="32dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="Destination: "
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/destinationcoor"
+                app:layout_constraintTop_toBottomOf="@+id/origincoor"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="32dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="Estimated Calories Consumed: "
+                android:textColor="@color/black"
+                android:textSize="15dp"
+                android:fontFamily="@font/arbutus_slab"
+                android:id="@+id/calories"
+                app:layout_constraintTop_toBottomOf="@+id/destinationcoor"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="32dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
