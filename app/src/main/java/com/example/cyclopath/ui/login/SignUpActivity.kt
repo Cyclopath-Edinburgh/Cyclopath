@@ -38,6 +38,7 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var usernametext : TextInputEditText
     private lateinit var emailtext : TextInputEditText
     private lateinit var passwordtext : TextInputEditText
+    private lateinit var password2text : TextInputEditText
     private lateinit var checkbox : CheckBox
     private lateinit var submit : Button
     private lateinit var resend : Button
@@ -64,11 +65,12 @@ class SignUpActivity : AppCompatActivity() {
         getUserData(db!!)
 
         val lay = findViewById<ConstraintLayout>(R.id.constraintLayout)
-        lay.foreground.alpha = 0
+//        lay.foreground.alpha = 0
 
         usernametext = findViewById(R.id.username_input)
         emailtext = findViewById(R.id.email_input)
         passwordtext = findViewById(R.id.password_input)
+        password2text = findViewById(R.id.password2_input)
         checkbox = findViewById(R.id.checkbox)
         submit = findViewById(R.id.signup)
         resend = findViewById(R.id.resend)
@@ -82,6 +84,7 @@ class SignUpActivity : AppCompatActivity() {
                 val username = usernametext.text.toString()
                 val email = emailtext.text.toString()
                 val password = passwordtext.text.toString()
+                val password2 = password2text.text.toString()
                 if ((username.length < 5) or (username.length > 20)) {
                     Toast.makeText(this, "Username should be 5-20 characters.", Toast.LENGTH_SHORT).show()
                 } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -90,6 +93,8 @@ class SignUpActivity : AppCompatActivity() {
                     Toast.makeText(this, "Password should be 5-20 characters.", Toast.LENGTH_SHORT).show()
                 } else if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?])[a-zA-Z0-9!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]+$".toRegex())) {
                     Toast.makeText(this, "Password must contains at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 symbol.", Toast.LENGTH_LONG).show()
+                } else if (password2 != password) {
+                    Toast.makeText(this, "The password and confirm password do not match.", Toast.LENGTH_SHORT).show()
                 } else if (!checkbox.isChecked) {
                     Toast.makeText(this, "Please agree to the terms and conditions.", Toast.LENGTH_SHORT).show()
                 } else if (!checkUsername(username)) {
@@ -108,33 +113,33 @@ class SignUpActivity : AppCompatActivity() {
 
         }
 
-        var callback: OnBackPressedCallback = object : OnBackPressedCallback(true /* enabled by default */) {
-            override fun handleOnBackPressed() {
-                val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                val popupView: View = inflater.inflate(R.layout.popup_signup, null)
-
-                val popupWindow = PopupWindow(popupView, 700, 400)
-
-                lay.foreground.alpha = 120
-
-                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
-
-                val yesb = popupWindow.contentView.findViewById<Button>(R.id.exit_yes)
-                yesb.setOnClickListener {
-                    popupWindow.dismiss()
-                    val intent = Intent(this@SignUpActivity, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                }
-
-                val nob = popupWindow.contentView.findViewById<Button>(R.id.exit_no)
-                nob.setOnClickListener {
-                    popupWindow.dismiss()
-                    lay.foreground.alpha = 0
-                }
-            }
-        }
-        onBackPressedDispatcher.addCallback(this, callback)
+//        var callback: OnBackPressedCallback = object : OnBackPressedCallback(true /* enabled by default */) {
+//            override fun handleOnBackPressed() {
+//                val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+//                val popupView: View = inflater.inflate(R.layout.popup_signup, null)
+//
+//                val popupWindow = PopupWindow(popupView, 700, 400)
+//
+//                lay.foreground.alpha = 120
+//
+//                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+//
+//                val yesb = popupWindow.contentView.findViewById<Button>(R.id.exit_yes)
+//                yesb.setOnClickListener {
+//                    popupWindow.dismiss()
+//                    val intent = Intent(this@SignUpActivity, LoginActivity::class.java)
+//                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                    startActivity(intent)
+//                }
+//
+//                val nob = popupWindow.contentView.findViewById<Button>(R.id.exit_no)
+//                nob.setOnClickListener {
+//                    popupWindow.dismiss()
+//                    lay.foreground.alpha = 0
+//                }
+//            }
+//        }
+//        onBackPressedDispatcher.addCallback(this, callback)
 
         info.setOnClickListener {
             val intent = Intent(this@SignUpActivity, TncActivity::class.java)
@@ -169,6 +174,7 @@ class SignUpActivity : AppCompatActivity() {
             if (done) {
                 emailPasswordActivity.sendVerificationEmail(email)
                 resend.visibility = View.VISIBLE
+                submit.visibility = View.INVISIBLE
                 Toast.makeText(applicationContext, "Successfully sign up!", Toast.LENGTH_SHORT).show()
                 Toast.makeText(applicationContext, "An activation email has been sent to your email address.", Toast.LENGTH_SHORT).show()
                 Handler().postDelayed({
@@ -197,6 +203,7 @@ class SignUpActivity : AppCompatActivity() {
                 }, 1000)
             } else {
                 Toast.makeText(this, "The email has been used.", Toast.LENGTH_SHORT).show()
+                bar.visibility = View.INVISIBLE
             }
         }, 3000)
     }
