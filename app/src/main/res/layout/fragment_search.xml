@@ -213,6 +213,7 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/upload"
+        app:fabCustomSize="54dp"
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -229,9 +230,6 @@
         android:layout_marginBottom="8dp"
         app:fabCustomSize="54dp"
         />
-
-
-
 
     <ImageView
         android:layout_width="64dp"
