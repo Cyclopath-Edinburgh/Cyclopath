@@ -13,14 +13,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import com.example.cyclopath.G
 import com.example.cyclopath.ui.MainActivity
-import com.example.cyclopath.R
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
-import com.facebook.FacebookCallback
-import com.facebook.FacebookException
-import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -34,6 +31,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.cyclopath.R
 
 
 class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
@@ -76,6 +74,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         google = findViewById(R.id.google)
         signup = findViewById(R.id.su)
         bar = findViewById(R.id.progressBar)
+        usernametext.setTypeface(ResourcesCompat.getFont(this, R.font.arbutus_slab))
 
         if (!isNetworkAvailable(this)) {
             Toast.makeText(this@LoginActivity, "Please connect to the Internet.", Toast.LENGTH_LONG).show()

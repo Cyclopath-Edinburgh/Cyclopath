@@ -99,19 +99,12 @@
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.app.lib_name"
-                android:value="" />
+                android:value=""/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name="com.example.cyclopath.ui.record.RecordActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
         </activity>
         <activity
             android:name="com.example.cyclopath.ui.MainActivity"
