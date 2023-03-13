@@ -196,39 +196,50 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
     }
 
 
-    fun login(username: String?, password: String) {
-        val docRef = db!!.collection("users").document(username!!)
-        docRef.get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val document = task.result
-                if (document.exists()) {
-                    emailPasswordActivity.signAccount(document.get("email").toString(), password)
-                    bar.visibility = View.VISIBLE
-                    Handler().postDelayed({
-                        bar.visibility = View.INVISIBLE
-                        done = emailPasswordActivity.getLogin()
-                        if (done) {
-                            val user = Firebase.auth.currentUser
-                            user!!.reload()
-                            if (user.isEmailVerified()) {
-                                Toast.makeText(applicationContext, "Successfully login!", Toast.LENGTH_SHORT).show()
-                                sp!!.edit().putString("username", username).apply()
-                                sp!!.edit().putString("email", document.get("email").toString()).apply()
-                                sp!!.edit().putString("startdate",document.get("startdate").toString()).apply()
-                                val intent = Intent(this, MainActivity::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                startActivity(intent)
+    fun login(email: String?, password: String) {
+        var username = ""
+        for (i in userList) {
+            if (i[1] == email!!) {
+                username = i[0]
+                break
+            }
+        }
+        if (username != "") {
+            val docRef = db!!.collection("users").document(username!!)
+            docRef.get().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val document = task.result
+                    if (document.exists()) {
+                        emailPasswordActivity.signAccount(document.get("email").toString(), password)
+                        bar.visibility = View.VISIBLE
+                        Handler().postDelayed({
+                            bar.visibility = View.INVISIBLE
+                            done = emailPasswordActivity.getLogin()
+                            if (done) {
+                                val user = Firebase.auth.currentUser
+                                user!!.reload()
+                                if (user.isEmailVerified()) {
+                                    Toast.makeText(applicationContext, "Successfully login!", Toast.LENGTH_SHORT).show()
+                                    sp!!.edit().putString("username", username).apply()
+                                    sp!!.edit().putString("email", document.get("email").toString()).apply()
+                                    sp!!.edit().putString("startdate", document.get("startdate").toString()).apply()
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    startActivity(intent)
+                                } else {
+                                    Toast.makeText(applicationContext, "Please activate your email address.", Toast.LENGTH_SHORT).show()
+                                }
                             } else {
-                                Toast.makeText(applicationContext, "Please activate your email address.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@LoginActivity, "Password incorrect.", Toast.LENGTH_SHORT).show()
                             }
-                        } else {
-                            Toast.makeText(this@LoginActivity, "Password incorrect.", Toast.LENGTH_SHORT).show()
-                        }
-                    }, 3000)
-                } else {
-                    Toast.makeText(applicationContext, "Username not found.", Toast.LENGTH_SHORT).show()
+                        }, 3000)
+                    } else {
+                        Toast.makeText(applicationContext, "Email not found.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
+        } else {
+            Toast.makeText(applicationContext, "Email not found.", Toast.LENGTH_SHORT).show()
         }
     }
 
