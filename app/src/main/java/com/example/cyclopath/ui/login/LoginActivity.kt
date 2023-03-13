@@ -16,12 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import com.example.cyclopath.G
 import com.example.cyclopath.ui.MainActivity
-import com.example.cyclopath.R
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
-import com.facebook.FacebookCallback
-import com.facebook.FacebookException
-import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -35,6 +31,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.cyclopath.R
 
 
 class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
@@ -191,12 +188,12 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                                 sp!!.edit().putString("email", email).apply()
                                 Toast.makeText(this@LoginActivity, "Successfully login!", Toast.LENGTH_SHORT).show()
                                 gotoMain()
-                    } else {
-                        Toast.makeText(this@LoginActivity, "Login failed.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@LoginActivity, "Login failed.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
-            }
-        }
     }
 
 
@@ -339,6 +336,5 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
         val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnected
     }
-
-//    TODO, facebook
+    
 }
