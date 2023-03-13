@@ -15,6 +15,7 @@ import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -433,6 +434,8 @@ class SearchFragment : Fragment() {
 
     private var isPopup = false
 
+    private var firstnolocation = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        binding = FragmentSearchBinding.inflate(layoutInflater)
@@ -457,15 +460,15 @@ class SearchFragment : Fragment() {
 //            findAddress(mapCenter)
 //        }
 
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                &&
-                ContextCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            askForLocationPermissions()
-        }
+//        if (ContextCompat.checkSelfPermission(requireContext(),
+//                        Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED
+//                &&
+//                ContextCompat.checkSelfPermission(requireContext(),
+//                        Manifest.permission.ACCESS_COARSE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            askForLocationPermissions()
+//        }
 
 //        LocationEngineProvider.getBestLocationEngine(requireContext()).lastKnownLocationOrNull(requireContext()) { point ->
 //            point?.let {
@@ -532,9 +535,40 @@ class SearchFragment : Fragment() {
 
 //        initNavigation()
 
-        locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
-        locationPermissionHelper.checkPermissions {
-            onMapReady()
+
+        if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    PERMISSIONS_REQUEST_LOCATION
+            )
+            firstnolocation = true
+        }
+
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                &&
+                ContextCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            askForLocationPermissions()
+        } else {
+            firstnolocation = true
+            val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            if (gps_enabled) {
+                locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+                locationPermissionHelper.checkPermissions {
+                    onMapReady()
+                }
+            } else {
+                Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
+            }
         }
 
         annotationApi = mapView.annotations
@@ -739,7 +773,26 @@ class SearchFragment : Fragment() {
         }
 
         recenter.setOnClickListener {
-            mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+            val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            if (gps_enabled && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (firstnolocation) {
+                    firstnolocation = false
+                    locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+                    locationPermissionHelper.checkPermissions {
+                        onMapReady()
+                    }
+                    Toast.makeText(context,"Detecting current location.",Toast.LENGTH_SHORT).show()
+                    Handler().postDelayed({
+                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+                    }, 3000)
+                } else {
+                    mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+                }
+            } else {
+                Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
+            }
         }
 
         swap.setOnClickListener {
@@ -1008,11 +1061,6 @@ class SearchFragment : Fragment() {
                         .accessToken(getString(R.string.matoken))
                         // comment out the location engine setting block to disable simulation
                         .locationEngine(replayLocationEngine)
-                        .historyRecorderOptions(
-                                HistoryRecorderOptions.Builder()
-//                                        .fileDirectory("/data")
-                                        .build()
-                        )
                         .build()
         )
 //        mapView.location.apply {
@@ -1246,6 +1294,7 @@ class SearchFragment : Fragment() {
         }
     }
 
+
     open fun askForLocationPermissions() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),
                         Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -1280,6 +1329,10 @@ class SearchFragment : Fragment() {
         } else {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                     Cyclopath.LOCATION_PERMISSION_REQUEST_CODE)
+        }
+        locationPermissionHelper = LocationPermissionHelper(WeakReference(activity))
+        locationPermissionHelper.checkPermissions {
+            onMapReady()
         }
     }
 
@@ -1483,6 +1536,7 @@ class SearchFragment : Fragment() {
         }
         locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
+        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(Point.fromLngLat(-3.187194, 55.947388)).build())
 //        Handler().postDelayed({
 //            current = Point.fromLngLat(
 //                    mapboxMap.cameraState.center.longitude(), mapboxMap.cameraState.center.latitude()
