@@ -142,6 +142,9 @@ import com.google.maps.GeoApiContext
 import com.google.maps.model.ElevationResult
 import com.mapbox.maps.extension.style.expressions.dsl.generated.abs
 import com.mapbox.navigation.base.formatter.DistanceFormatter
+import com.mapbox.search.*
+import com.mapbox.search.common.AsyncOperationTask
+import com.mapbox.search.result.SearchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -445,6 +448,9 @@ class SearchFragment : Fragment() {
     private var sp : SharedPreferences? = null
     private lateinit var name : String
     private lateinit var nameList : ArrayList<String>
+
+    private lateinit var searchEngine: SearchEngine
+    private lateinit var searchRequestTask: AsyncOperationTask
     
     var distanceList: HashMap<String, String> = hashMapOf<String, String>()
     var durationList: HashMap<String, String> = hashMapOf<String, String>()
@@ -453,6 +459,9 @@ class SearchFragment : Fragment() {
     private var isPopup = false
 
     private var firstnolocation = true
+    private var finding = ""
+    private var originstr = ""
+    private var destinationstr = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -831,7 +840,8 @@ class SearchFragment : Fragment() {
 //                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                    }, 1000)
 //                } else {
-                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
+                updateCamera(current,0.0)
+//                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                }
             } else {
                 Toast.makeText(context,"Please enable your location service.",Toast.LENGTH_SHORT).show()
@@ -892,7 +902,7 @@ class SearchFragment : Fragment() {
                 yesb.setOnClickListener {
                     if (!nameList.contains(textinput.text.toString())) {
                         timer.stop()
-                        timer.visibility = View.INVISIBLE
+                        timer.setBase(SystemClock.elapsedRealtime())
                         popupWindow.dismiss()
 //                        lay.foreground.alpha = 0
 
@@ -938,56 +948,76 @@ class SearchFragment : Fragment() {
                         val baos2 = ByteArrayOutputStream()
                         var first = ""
                         var second = ""
-                        if (routeCoordinates.size == 0) {
-                            first = "origin=" + current.latitude().toString() + "," + current.longitude().toString()
-                            second = "destination=" + current.latitude().toString() + "," + current.longitude().toString()
+                        if (routeCoordinates.size <= 1) {
+                            finding = "start"
+                            findAddress(current.longitude(), current.latitude())
+                            Handler().postDelayed({
+                                finding = "end"
+                                findAddress(current.longitude(), current.latitude())
+                            }, 500)
+//                            first = "origin=" + current.latitude().toString() + "," + current.longitude().toString()
+//                            second = "destination=" + current.latitude().toString() + "," + current.longitude().toString()
                         } else {
-                            first = "origin=" + routeCoordinates.first().latitude().toString() + "," + routeCoordinates.first().longitude().toString()
-                            second = "destination=" + routeCoordinates.last().latitude().toString() + "," + routeCoordinates.last().longitude().toString()
+                            println(routeCoordinates)
+                            finding = "start"
+                            findAddress(routeCoordinates.first().longitude(), routeCoordinates.first().latitude())
+                            Handler().postDelayed({
+                                finding = "end"
+                                findAddress(routeCoordinates.last().longitude(), routeCoordinates.last().latitude())
+                            }, 500)
+//                            first = "origin=" + routeCoordinates.first().latitude().toString() + "," + routeCoordinates.first().longitude().toString()
+//                            second = "destination=" + routeCoordinates.last().latitude().toString() + "," + routeCoordinates.last().longitude().toString()
                         }
 
-                        val third = "duration=$d"
-                        val fourth = "distance="+String.format("%.2f",distance)
-                        val fifth = "start=$formattedstart"
-                        val sixth = "end=$formatted"
-                        val seventh = "calories=$calories"
-                        var maxLong = -90.0
-                        var minLong = 90.0
-                        var maxLat = -90.0
-                        var minLat = 90.0
-                        for (i in routeCoordinates) {
-                            maxLong = max(maxLong, i.longitude())
-                            minLong = min(minLong, i.longitude())
-                            maxLat = max(maxLat, i.latitude())
-                            minLat = min(minLat, i.latitude())
-                        }
-                        baos2.write(first.toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(second.toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(third.toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(fourth.toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(fifth.toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(sixth.toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(seventh.toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(String.format("maxLong=%.8f",maxLong).toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(String.format("minLong=%.8f",minLong).toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(String.format("maxLat=%.8f",maxLat).toByteArray())
-                        baos2.write("\n".toByteArray())
-                        baos2.write(String.format("minLat=%.8f",minLat).toByteArray())
-                        baos2.write("\n".toByteArray())
-                        val data2 = baos2.toByteArray()
-                        infoRef.putBytes(data2)
+                        Handler().postDelayed({
+                            println("HELLOOO")
+                            println(originstr)
+                            println(destinationstr)
+                            first = "origin=$originstr"
+                            second = "destination=$destinationstr"
+                            val third = "duration=$d"
+                            val fourth = "distance="+String.format("%.2f",distance)
+                            val fifth = "start=$formattedstart"
+                            val sixth = "end=$formatted"
+                            val seventh = "calories=$calories"
+                            var maxLong = -90.0
+                            var minLong = 90.0
+                            var maxLat = -90.0
+                            var minLat = 90.0
+                            for (i in routeCoordinates) {
+                                maxLong = max(maxLong, i.longitude())
+                                minLong = min(minLong, i.longitude())
+                                maxLat = max(maxLat, i.latitude())
+                                minLat = min(minLat, i.latitude())
+                            }
+                            baos2.write(first.toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(second.toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(third.toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(fourth.toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(fifth.toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(sixth.toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(seventh.toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(String.format("maxLong=%.8f",maxLong).toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(String.format("minLong=%.8f",minLong).toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(String.format("maxLat=%.8f",maxLat).toByteArray())
+                            baos2.write("\n".toByteArray())
+                            baos2.write(String.format("minLat=%.8f",minLat).toByteArray())
+                            baos2.write("\n".toByteArray())
+                            val data2 = baos2.toByteArray()
+                            infoRef.putBytes(data2)
 
-                        distance = 0.0
-                        routeCoordinates = ArrayList<Point>()
+                            distance = 0.0
+                            routeCoordinates = ArrayList<Point>()
+                        }, 1000)
                     } else {
                         Toast.makeText(context,"This name has been used.", Toast.LENGTH_SHORT).show()
                     }
@@ -998,14 +1028,13 @@ class SearchFragment : Fragment() {
                     Toast.makeText(context, "Recording discarded.", Toast.LENGTH_SHORT).show()
                     isRecord = false
                     record.setImageResource(R.drawable.startrecording)
+                    timer.stop()
                     timer.setBase(SystemClock.elapsedRealtime())
-                    timer.visibility = View.INVISIBLE
                     distance = 0.0
                     routeCoordinates = ArrayList<Point>()
 
                 }
             } else {
-                timer.visibility = View.VISIBLE
                 timer.setBase(SystemClock.elapsedRealtime())
                 timer.start()
                 Toast.makeText(context, "Start recording", Toast.LENGTH_SHORT).show()
@@ -1528,7 +1557,58 @@ class SearchFragment : Fragment() {
         return result
     }
 
+    private val searchCallback = object : SearchCallback {
 
+        override fun onResults(results: List<SearchResult>, responseInfo: ResponseInfo) {
+            if (results.isEmpty()) {
+
+            } else {
+                if (finding == "origin") {
+                    originText.setText(listOfNotNull(
+                            results[0].address!!.houseNumber,
+                            results[0].address!!.street
+                    ).joinToString())
+                    originText.clearFocus()
+                    searchResultsViewOrigin.isVisible = false
+                    searchResultsViewOrigin.hideKeyboard()
+                } else if (finding == "destination") {
+                    destinationText.setText(listOfNotNull(
+                            results[0].address!!.houseNumber,
+                            results[0].address!!.street
+                    ).joinToString())
+                    destinationText.clearFocus()
+                    searchResultsViewDestination.isVisible = false
+                    searchResultsViewDestination.hideKeyboard()
+                } else if (finding == "start") {
+                    originstr = listOfNotNull(
+                            results[0].address!!.houseNumber,
+                            results[0].address!!.street
+                    ).joinToString()
+                } else if (finding == "end") {
+                    destinationstr = listOfNotNull(
+                            results[0].address!!.houseNumber,
+                            results[0].address!!.street
+                    ).joinToString()
+                }
+            }
+        }
+
+        override fun onError(e: Exception) {
+        }
+    }
+
+    fun findAddress(longitude: Double, latitude: Double) {
+
+        searchEngine = SearchEngine.createSearchEngineWithBuiltInDataProviders(
+                SearchEngineSettings(getString(R.string.matoken))
+        )
+
+        val options = ReverseGeoOptions(
+                center = Point.fromLngLat(longitude, latitude),
+                limit = 1
+        )
+        searchRequestTask = searchEngine.search(options, searchCallback)
+    }
 
 
     private fun initNavigation() {
@@ -1572,9 +1652,9 @@ class SearchFragment : Fragment() {
                 CameraOptions.Builder()
                         .center(point)
                         .bearing(bearing)
-                        .pitch(45.0)
-                        .zoom(17.0)
-                        .padding(EdgeInsets(1000.0, 0.0, 0.0, 0.0))
+//                        .pitch(45.0)
+//                        .zoom(17.0)
+                        .padding(EdgeInsets(0.0, 0.0, 0.0, 0.0))
                         .build(),
                 mapAnimationOptionsBuilder.build()
         )
@@ -1882,11 +1962,8 @@ class SearchFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun setupGesturesListener() {
-        println("HERE")
-        println(originText.text.toString())
         mapView.gestures.addOnMoveListener(onMoveListener)
         mapView.gestures.addOnMapLongClickListener { point ->
-//            if (!this::origin.isInitialized) {
             if (originText.text.toString() == "") {
                 origin = point
                 isOrigin = true
@@ -1894,29 +1971,22 @@ class SearchFragment : Fragment() {
                 ignoreNextQueryTextUpdateOrigin = true
                 addAnnotationToMap(origin)
                 isOrigin = false
+                finding = "origin"
+                findAddress(point.longitude(),point.latitude())
                 originText.setText(String.format("%.4f", point.latitude()) + "," + String.format("%.4f", point.longitude()))
                 originText.clearFocus()
             } else if (destinationText.text.toString() == "") {
-//            } else if (!this::destination.isInitialized) {
                 destination = point
                 isOrigin = false
                 ignoreNextMapIdleEvent = true
                 ignoreNextQueryTextUpdateDestination = true
                 addAnnotationToMap(destination)
                 isOrigin = true
+                finding = "destination"
+                findAddress(point.longitude(),point.latitude())
                 destinationText.setText(String.format("%.4f", point.latitude()) + "," + String.format("%.4f", point.longitude()))
                 destinationText.clearFocus()
             }
-//            } else {
-//                origin = point
-//                isOrigin = true
-//                ignoreNextMapIdleEvent = true
-//                ignoreNextQueryTextUpdateOrigin = true
-//                addAnnotationToMap(origin)
-//                isOrigin = false
-//                originText.setText(String.format("%.4f", point.latitude()) + "," + String.format("%.4f", point.longitude()))
-//                originText.clearFocus()
-//            }
 
             if (this::origin.isInitialized && this::destination.isInitialized) {
                 fetchARoute(origin, destination)

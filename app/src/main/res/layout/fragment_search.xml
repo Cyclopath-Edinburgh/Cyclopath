@@ -43,7 +43,7 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
         android:clickable="true"
-        android:src="@drawable/startfrom"
+        android:src="@drawable/recenter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/swap"
         app:layout_constraintTop_toTopOf="parent"
@@ -73,7 +73,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="12dp"
         android:clickable="true"
-        android:src="@drawable/startfrom"
+        android:src="@drawable/recenter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/swap"
         app:layout_constraintTop_toBottomOf="@id/origin_focus"
@@ -234,25 +234,35 @@
         app:tint="@color/themegreen"
         />
 
-    <ImageView
+    <View
+        android:id="@+id/record_view"
         android:layout_width="84dp"
-        android:layout_height="42dp"
-        android:src="@drawable/startrecording"
-        android:id="@+id/record"
+        android:layout_height="64dp"
+        android:background="@drawable/border"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view"
         android:layout_marginTop="32dp"
-        android:layout_marginStart="8dp"/>
+        android:layout_marginStart="8dp" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="36dp"
+        android:src="@drawable/startrecording"
+        android:id="@+id/record"
+        app:layout_constraintStart_toStartOf="@id/record_view"
+        app:layout_constraintTop_toTopOf="@id/record_view"
+        app:layout_constraintEnd_toEndOf="@id/record_view"
+        android:layout_marginTop="2dp"
+        />
 
     <Chronometer
         android:id="@+id/timer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@id/record_view"
+        app:layout_constraintEnd_toEndOf="@id/record_view"
         app:layout_constraintTop_toBottomOf="@id/record"
-        android:layout_marginStart="8dp"
-        app:layout_constraintEnd_toEndOf="@id/record"
-        android:visibility="invisible"/>
+        />
 
     <include
         layout="@layout/weather_plugin"

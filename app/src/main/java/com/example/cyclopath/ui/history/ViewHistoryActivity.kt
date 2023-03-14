@@ -103,15 +103,17 @@ class ViewHistoryActivity : AppCompatActivity() {
             data.forEach {
                 if (it != "") {
                     if ("origin" in it) {
-                        val strs = it.substring(7).split(",").toTypedArray()
-                        originLat = strs[0].toDouble()
-                        originLong = strs[1].toDouble()
-                        origin = String.format("%.6f,%.6f",originLat,originLong)
+//                        val strs = it.substring(7).split(",").toTypedArray()
+//                        originLat = strs[0].toDouble()
+//                        originLong = strs[1].toDouble()
+//                        origin = String.format("%.6f,%.6f",originLat,originLong)
+                       origin = it.substring(7)
                     } else if ("destination" in it) {
-                        val strs = it.substring(12).split(",").toTypedArray()
-                        destinationLat = strs[0].toDouble()
-                        destinationLong = strs[1].toDouble()
-                        destination = String.format("%.6f,%.6f",destinationLat,destinationLong)
+//                        val strs = it.substring(12).split(",").toTypedArray()
+//                        destinationLat = strs[0].toDouble()
+//                        destinationLong = strs[1].toDouble()
+//                        destination = String.format("%.6f,%.6f",destinationLat,destinationLong)
+                        destination = it.substring(12)
                     } else if ("duration" in it) {
                         var d = it.substring(9).toFloat()
                         speed = (d/3600).toString()
