@@ -320,9 +320,10 @@ class SearchFragment : Fragment() {
                     enhancedLocation,
                     locationMatcherResult.keyPoints,
             )
-            mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(Point.fromLngLat(
-                    enhancedLocation.longitude, enhancedLocation.latitude
-            )).bearing(enhancedLocation.bearing.toDouble()).build())
+            // HERE (3lines)
+//            mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(Point.fromLngLat(
+//                    enhancedLocation.longitude, enhancedLocation.latitude
+//            )).bearing(enhancedLocation.bearing.toDouble()).build())
 //            updateCamera(
 //                    Point.fromLngLat(
 //                            enhancedLocation.longitude, enhancedLocation.latitude
@@ -356,7 +357,8 @@ class SearchFragment : Fragment() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
 
     private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
-        mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
+        print("HELLO")
+//        mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
     }
 
     private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
@@ -560,16 +562,6 @@ class SearchFragment : Fragment() {
 //        elevation = root.findViewById(R.id.elevation)
         dropdown = root.findViewById(R.id.dropdown)
         timer = root.findViewById(R.id.timer)
-
-        val lay = root.findViewById<ConstraintLayout>(R.id.constraintLayout)
-
-//        lay.foreground.alpha = 0
-//        Handler(Looper.getMainLooper()).postDelayed({
-//            if (!isPopup) {
-//
-//            }
-//        }, 100)
-
         
         sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
         name = sp!!.getString("username", "user")!!
@@ -579,7 +571,6 @@ class SearchFragment : Fragment() {
 //        initNavigation()
 
         if (ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            println("this2")
             ActivityCompat.requestPermissions(
                     requireActivity(),
                     arrayOf(
@@ -588,7 +579,6 @@ class SearchFragment : Fragment() {
                     ),
                     PERMISSIONS_REQUEST_LOCATION
             )
-//            firstnolocation = true
         }
 
         if (ContextCompat.checkSelfPermission(requireContext(),
@@ -598,7 +588,6 @@ class SearchFragment : Fragment() {
                 ContextCompat.checkSelfPermission(requireContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            println("this3")
             askForLocationPermissions()
         } else {
             val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -813,16 +802,18 @@ class SearchFragment : Fragment() {
 
         navigate.setOnClickListener {
             if (this::route.isInitialized) {
-                var intent = Intent(activity, NavigationActivity::class.java)
-                intent.putExtra("origin",origin)
-                intent.putExtra("route",route)
-                startActivity(intent)
+                if (origin == current) {
+                    var intent = Intent(activity, NavigationActivity::class.java)
+                    intent.putExtra("origin", origin)
+                    intent.putExtra("route", route)
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(context, "Please specify the current location as origin to navigate.", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 Toast.makeText(context, "Please specify your route.", Toast.LENGTH_SHORT).show()
             }
         }
-
-
 
         recenter.setOnClickListener {
             val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -1017,6 +1008,8 @@ class SearchFragment : Fragment() {
 
                             distance = 0.0
                             routeCoordinates = ArrayList<Point>()
+
+                            Toast.makeText(context, "Successfully saved track!", Toast.LENGTH_SHORT).show()
                         }, 1000)
                     } else {
                         Toast.makeText(context,"This name has been used.", Toast.LENGTH_SHORT).show()
@@ -2093,10 +2086,10 @@ class SearchFragment : Fragment() {
                             requireContext(),
                             com.mapbox.maps.plugin.locationcomponent.R.drawable.mapbox_user_icon
                     ),
-                    bearingImage = AppCompatResources.getDrawable(
-                            requireContext(),
-                            com.mapbox.maps.plugin.locationcomponent.R.drawable.mapbox_user_bearing_icon
-                    ),
+//                    bearingImage = AppCompatResources.getDrawable(
+//                            requireContext(),
+//                            com.mapbox.maps.plugin.locationcomponent.R.drawable.mapbox_user_bearing_icon
+//                    ),
                     shadowImage = AppCompatResources.getDrawable(
                             requireContext(),
                             com.mapbox.maps.plugin.locationcomponent.R.drawable.mapbox_user_stroke_icon
@@ -2146,6 +2139,7 @@ class SearchFragment : Fragment() {
    @Override
    override fun onDestroy() {
        super.onDestroy()
+       searchRequestTask.cancel()
        mapView.location
                .removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
        mapView.location

@@ -112,7 +112,7 @@ dependencies {
     //beta 43
     implementation "com.mapbox.search:mapbox-search-android-ui:1.0.0-beta.39"
 
-    implementation "com.google.android.gms:play-services-location:18.0.0"
+    implementation "com.google.android.gms:play-services-location:20.0.0"
 
     implementation 'com.google.android.material:material:1.8.0'
 

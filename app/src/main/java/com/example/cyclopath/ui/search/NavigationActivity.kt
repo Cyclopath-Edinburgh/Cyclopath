@@ -429,6 +429,27 @@ class NavigationActivity : AppCompatActivity() {
             onInitialize = this::initNavigation
     )
 
+    private val tripProgressFormatter: TripProgressUpdateFormatter by lazy {
+        /**
+         * Here a distance formatter with default values is being created. The distance remaining formatter can also come from
+         * MapboxNavigation just be sure it is instantiated and configured first. The formatting options in MapboxNavigation
+         * can be found at: MapboxNavigation.navigationOptions.distanceFormatterOptions
+         */
+        val distanceFormatterOptions =
+                DistanceFormatterOptions.Builder(this).build()
+
+        /**
+         * These are Mapbox formatters being created with default values. You can provide your own custom formatters by implementing
+         * the appropriate interface. The expected output of a formatter is a SpannableString that is applied to the the view
+         * component in [MapboxTripProgressView].
+         */
+        TripProgressUpdateFormatter.Builder(this)
+                .distanceRemainingFormatter(DistanceRemainingFormatter(distanceFormatterOptions))
+                .timeRemainingFormatter(TimeRemainingFormatter(this))
+                .estimatedTimeToArrivalFormatter(EstimatedTimeToArrivalFormatter(this))
+                .build()
+    }
+
     private lateinit var origin : Point
 
     @SuppressLint("MissingPermission")
@@ -481,6 +502,7 @@ class NavigationActivity : AppCompatActivity() {
 
         // initialize bottom progress view
         tripProgressApi = MapboxTripProgressApi(
+//                tripProgressFormatter
                 TripProgressUpdateFormatter.Builder(this)
                         .distanceRemainingFormatter(
                                 DistanceRemainingFormatter(distanceFormatterOptions)
