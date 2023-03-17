@@ -478,5 +478,12 @@
     <string name="fb_login_protocol_scheme">fb1234</string>
     <string name="facebook_client_token">41ea06b31996e8a96d3b49d71037865d</string>
 
+    <string-array name="sort_options">
+        <item>Distance</item>
+        <item>Difficulty</item>
+        <item>Ratings</item>
+    </string-array>
+
+
 
 </resources>

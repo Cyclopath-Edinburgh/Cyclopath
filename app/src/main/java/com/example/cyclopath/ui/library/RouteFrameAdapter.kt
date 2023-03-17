@@ -26,7 +26,6 @@ import com.mapbox.maps.extension.style.style
 class RouteFrameAdapter(
     private val routes: MutableList<RouteObj>,
 ): RecyclerView.Adapter<RouteFrameAdapter.RouteObjHolder>() {
-
     class RouteObjHolder(view: View) : RecyclerView.ViewHolder(view){
         var imageView: ImageView = itemView.findViewById(R.id.route_image)
         val routeItemClickable: View = view.findViewById(R.id.route_item_clickable)
@@ -38,13 +37,8 @@ class RouteFrameAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RouteObjHolder {
-        return RouteObjHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.route_item,
-                parent,
-                false
-            )
-        )
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.route_item, parent, false)
+        return RouteObjHolder(view)
     }
 
     override fun onBindViewHolder(holder: RouteObjHolder, position: Int) {
@@ -108,6 +102,21 @@ class RouteFrameAdapter(
 //        }
 
 
+    }
+
+    fun sortByDistance() {
+        routes.sortBy { it.route_length_text }
+        notifyDataSetChanged()
+    }
+
+    fun sortByDifficulty() {
+        routes.sortByDescending { it.difficulty }
+        notifyDataSetChanged()
+    }
+
+    fun sortByRating() {
+        routes.sortByDescending { it.route_popularity_text }
+        notifyDataSetChanged()
     }
 
 

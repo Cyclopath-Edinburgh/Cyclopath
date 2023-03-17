@@ -9,7 +9,6 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.example.cyclopath.R
 import com.example.cyclopath.databinding.ActivityMainBinding
-import com.example.cyclopath.ui.library.Testa
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mapbox.mapboxsdk.Mapbox

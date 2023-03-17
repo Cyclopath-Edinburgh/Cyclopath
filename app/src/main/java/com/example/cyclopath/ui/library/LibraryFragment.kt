@@ -9,7 +9,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.Button
+import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -98,19 +100,6 @@ class LibraryFragment : Fragment() {
             .registerTypeAdapter(GeoJson::class.java, GeoJsonTypeAdapter())
             .create()
 
-//        val gson = GsonBuilder()
-//            .registerTypeAdapter(DirectionsRoute::class.java, object :
-//                JsonDeserializer<DirectionsRoute> {
-//                override fun deserialize(
-//                    json: JsonElement?,
-//                    typeOfT: Type?,
-//                    context: JsonDeserializationContext?
-//                ): DirectionsRoute {
-//                    val directionsResponse = DirectionsResponse.fromJson(json?.asJsonObject.toString())
-//                    return directionsResponse.routes()[0]
-//                }
-//            })
-//            .create()
 
 
         val adapter = RouteFrameAdapter(routeObjList)
@@ -161,6 +150,32 @@ class LibraryFragment : Fragment() {
             val intent = Intent(context, myRoutesActivity::class.java)
             startActivity(intent)
         }
+
+        val sortSpinner = root.findViewById<Spinner>(R.id.sort_spinner)
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedOption = parent?.getItemAtPosition(position).toString()
+                when (selectedOption) {
+                    "Distance" -> {
+                        // Sort by distance
+                        adapter.sortByDistance()
+                    }
+                    "Difficulty" -> {
+                        // Sort by difficulty
+                        adapter.sortByDifficulty()
+                    }
+                    "Ratings" -> {
+                        // Sort by ratings
+                        adapter.sortByRating()
+                    }
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+
+
 
         return root
     }

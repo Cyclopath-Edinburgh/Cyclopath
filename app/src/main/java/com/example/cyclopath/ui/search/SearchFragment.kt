@@ -139,12 +139,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import com.google.maps.GeoApiContext
+import com.google.maps.internal.PolylineEncoding
 import com.google.maps.model.ElevationResult
 import com.mapbox.maps.extension.style.expressions.dsl.generated.abs
 import com.mapbox.navigation.base.formatter.DistanceFormatter
 import com.mapbox.search.*
 import com.mapbox.search.common.AsyncOperationTask
 import com.mapbox.search.result.SearchResult
+import com.squareup.okhttp.OkHttpClient
+import com.squareup.okhttp.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -422,6 +425,11 @@ class SearchFragment : Fragment() {
     private lateinit var origin: Point
     private lateinit var destination: Point
     private var isOrigin : Boolean = true
+
+
+    private lateinit var chart: BarChart
+    private var totalUp = 0.0
+    private var totalDown = 0.0
 
     private lateinit var annotationApi : AnnotationPlugin
     private lateinit var pointAnnotationManager : PointAnnotationManager
@@ -1057,12 +1065,19 @@ class SearchFragment : Fragment() {
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 val popupView: View = inflater.inflate(R.layout.popup_elevation, null)
 
-                val popupWindow = PopupWindow(popupView, 1500, 600)
+                val popupWindow = PopupWindow(popupView, 1500, 800)
                 popupWindow.isFocusable = true
 
-                popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+                popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 600, 0)
 
-                val chart = popupWindow.contentView.findViewById<BarChart>(R.id.elevation_chart)
+                val totalup = popupWindow.contentView.findViewById<TextView>(R.id.up_ele)
+                val totaldown = popupWindow.contentView.findViewById<TextView>(R.id.down_ele)
+                chart = popupWindow.contentView.findViewById<BarChart>(R.id.elevation_chart)
+                val upstr : CharSequence = totalUp.toInt().toString() + " m"
+                val downstr : CharSequence = totalDown.toInt().toString() + " m"
+                totalup.text = upstr
+                totaldown.text = downstr
+
                 // Initialize the GeoApiContext
                 val geoApiContext = GeoApiContext()
                 geoApiContext.setApiKey("AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU")
@@ -1082,8 +1097,6 @@ class SearchFragment : Fragment() {
                         }
                     }
                     // Get the elevation data along the path
-                    var totalUp = 0.0
-                    var totalDown = 0.0
                     val batchSize = 512
                     val batches = points.chunked(batchSize)
 
@@ -1093,15 +1106,6 @@ class SearchFragment : Fragment() {
                         val batchResults = ElevationApi.getByPoints(geoApiContext, *batch.toTypedArray()).await()
                         results.addAll(batchResults)
                     }
-
-
-//                    val results = ElevationApi.getByPoints(geoApiContext, *points.toTypedArray() ).await()
-//                        print(ElevationApi.getByPoint(geoApiContext,com.google.maps.model.LatLng(36.24, -116.832)))
-                    println("success")
-                    // Print the elevation data
-//                    results.forEach { result ->
-//                        println("Location: ${result.location} - Elevation: ${result.elevation} meters")
-//                    }
 
                     // Create a list of BarEntry objects to hold the elevation data
                     val entries = ArrayList<BarEntry>()
@@ -1123,11 +1127,13 @@ class SearchFragment : Fragment() {
                     println("Total up: $totalUp meters")
                     println("Total down: $totalDown meters")
 
+
                     // Create a BarDataSet from the BarEntry list
                     val dataSet = BarDataSet(entries, "Elevation")
 
                     // Set the colors of the bars
                     dataSet.colors = listOf(Color.GREEN)
+
 
                     // Create a BarData object from the BarDataSet
                     val data = BarData(dataSet)
@@ -1156,21 +1162,11 @@ class SearchFragment : Fragment() {
                     // Set up the X-axis label
                     val xAxis = chart.xAxis
                     xAxis.labelCount= 5
-                    xAxis.labelCount = entries.size
                     xAxis.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
                             return String.format("%.1f km", value)
                         }
                     }
-
-//                    val xAxis = chart.xAxis
-////                    xAxis.valueFormatter = DistanceFormatter()
-//                    xAxis.position = XAxis.XAxisPosition.BOTTOM
-//                    xAxis.granularity = 1f
-//                    xAxis.setDrawGridLines(false)
-//                    xAxis.setDrawAxisLine(false)
-//                    xAxis.setDrawLabels(true)
-//                    xAxis.textColor = Color.BLACK
 
 
                     // Refresh the chart
@@ -1207,10 +1203,6 @@ class SearchFragment : Fragment() {
                 popupWindow.contentView.findViewById<Button>(R.id.share_to_library).setOnClickListener {
                     // TODO store all the info
                     val temp = RouteObj()
-//                    temp.dr = route
-//                    val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
-//                    val feature = Feature.fromGeometry(routeGeometry)
-//                    temp.route_geojson = feature
 
                     temp.route_name_text = routeNameInput.text.toString()
                     temp.route_description_text = descriptionInput.text.toString()
@@ -1219,13 +1211,11 @@ class SearchFragment : Fragment() {
                     temp.route_length_text = String.format("%.2f",route.distance()/1000)+"km"
                     temp.geoJsonurl = "routegeojson/${temp.route_name_text}.geojson"
 
+                    val storageRef = Firebase.storage.reference
 
                     // store routeObj.json
                     val gson = Gson()
-                    val routeObjJson = gson.toJson(temp)
-                    val storageRef = Firebase.storage.reference
-                    val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
-                    routeRef.putBytes(routeObjJson.toByteArray())
+
 
 
 //                    // snapshot
@@ -1310,8 +1300,11 @@ class SearchFragment : Fragment() {
                     }
 
 
+
+
                     // Get the coordinates for each point along the route
                     val points = mutableListOf<com.google.maps.model.LatLng>()
+                    val points10 = mutableListOf<com.google.maps.model.LatLng>()
                     for (leg in route.legs()!!) {
                         for (step in leg.steps()!!) {
                             val stepPoints = step.geometry()
@@ -1323,21 +1316,13 @@ class SearchFragment : Fragment() {
                             }
                         }
                     }
-
-//                    val p: String = PolyUtil.encode(points)
-
-//                    println(points1)
-
-//                    val point1 = Point.fromLngLat(-122.083306, 37.423045)
-//                    val point2 = Point.fromLngLat(-122.083476, 37.423047)
-//                    val point3 = Point.fromLngLat(-122.083642, 37.423052)
-//
-//                    val points2 = listOf(point1, point2, point3)
-//
-//
-//                    val p = PolylineUtils.encode(points2,6)
-//                    println(points2)
-                    println("000000000000000000000000")
+                    var i = 0
+                    for( p in points){
+                        if(i%10 == 0){
+                            points10.add(p)
+                        }
+                        i++
+                    }
 
 
                     // get the list of encoded polylines
@@ -1355,11 +1340,6 @@ class SearchFragment : Fragment() {
 
                     val startcoordinate = points[0]
                     val endcoordinate = points[1]
-
-
-
-
-
 
                     val pline_test = "e`{}DcfuvDwTnNaIf`@wW|x@un@tf@oe@|L}UnUwAn`Alf@fo@"
 
@@ -1429,59 +1409,54 @@ class SearchFragment : Fragment() {
                     val staticMapUrlBuilder = StringBuilder()
                     staticMapUrlBuilder.append(baseUrl)
                     staticMapUrlBuilder.append("path-5+f44-0.5(")
-                    staticMapUrlBuilder.append(route.geometry())
+                    staticMapUrlBuilder.append(PolylineEncoding.encode(points10))
                     staticMapUrlBuilder.append(")/auto/500x300?access_token=")
                     staticMapUrlBuilder.append(apiKey)
                     val url2 = staticMapUrlBuilder.toString()
+                    println("000000000000000000000000000000000000000000000000000000000")
+                    println(url2)
 
 
-                    println(route.geometry())
+//                    println(route.geometry())
 
                     // Use an image loading library to load the static image into an ImageView
 //                    Glide.with(this)
 //                        .load(url2)
 //                        .into(record)
 
+
+
                     // Initialize the GeoApiContext
                     val geoApiContext = GeoApiContext()
                     geoApiContext.setApiKey("AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU")
-                    // Define the path using LatLng objects
-                    val path = listOf(
-                        com.google.maps.model.LatLng(36.579, -118.292), // Mt. Whitney
-                        com.google.maps.model.LatLng(36.606, -118.0638), // Lone Pine
-                        com.google.maps.model.LatLng(36.433, -117.951), // Owens Lake
-                        com.google.maps.model.LatLng(36.588, -116.943), // Beatty Junction
-                        com.google.maps.model.LatLng(36.34, -117.468), // Panama Mint Springs
-                        com.google.maps.model.LatLng(36.24, -116.832) // Badwater, Death Valley
-                    )
 
-                    GlobalScope.launch(Dispatchers.IO) {
-                        // Get the elevation data along the path
-                        val results = ElevationApi.getByPoints(geoApiContext, *points.toTypedArray() ).await()
-//                        print(ElevationApi.getByPoint(geoApiContext,com.google.maps.model.LatLng(36.24, -116.832)))
-                        println("success")
-                        // Print the elevation data
-                        results.forEach { result ->
-                            println("Location: ${result.location} - Elevation: ${result.elevation} meters")
-                        }
-                        // Calculate total up and down
-                        var totalUp = 0.0
-                        var totalDown = 0.0
-                        for (i in 1 until results.size) {
-                            val elevationDiff = results[i].elevation - results[i - 1].elevation
-                            if (elevationDiff > 0) {
-                                totalUp += elevationDiff
-                            } else {
-                                totalDown -= elevationDiff
-                            }
-                        }
+                    //push bar chart
+                    var chartpath = "routeBarChart/${temp.route_name_text}.png"
+                    var chartRef = storageRef.child(chartpath)
 
-                        println("Total up: $totalUp meters")
-                        println("Total down: $totalDown meters")
+                    chart.setDrawingCacheEnabled(true)
+                    chart.buildDrawingCache()
+                    val bitmap = Bitmap.createBitmap(chart.getDrawingCache())
+                    chart.setDrawingCacheEnabled(false)
 
+                    val baos = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+                    val data = baos.toByteArray()
 
+                    val uploadTask = chartRef.putBytes(data)
+                    uploadTask.addOnSuccessListener {
+                        // Image upload successful
+                    }.addOnFailureListener {
+                        // Image upload failed
                     }
 
+                    temp.route_up = totalUp.toInt()
+                    temp.route_down = totalDown.toInt()
+
+                    // push route
+                    val routeObjJson = gson.toJson(temp)
+                    val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
+                    routeRef.putBytes(routeObjJson.toByteArray())
 
 
                     // push route geojson
@@ -1501,7 +1476,45 @@ class SearchFragment : Fragment() {
 
                     // return success message
                     Toast.makeText(context, "Successfully share route!", Toast.LENGTH_SHORT).show()
+
+                    // Construct the URL for the static map image
+                    // Calculate the middle point of the points list
+                    val middlePoint = points10[points10.size / 2]
+                    // Add the start and end markers to the markers variable
+                    val startMarker = "${points.first().lat},${points.first().lng}"
+                    val endMarker = "${points.last().lat},${points.last().lng}"
+                    val markers = "color:red|label:S|$startMarker&markers=color:green|label:E|$endMarker"
+                    val googleKey = "AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU"
+                    val size = "640x640"
+                    val center = "${middlePoint.lat},${middlePoint.lng}"
+                    val izoom = 12
+                    val path = "enc:"+ PolylineEncoding.encode(points10)
+
+//                    points.forEach { point ->
+//                        path.append("|${point.lat},${point.lng}")
+//                    }
+                    val url = "https://maps.googleapis.com/maps/api/staticmap?&language=en&key=$googleKey&size=$size&center=$center&zoom=$izoom&markers=$markers&path=$path"
+
+                    // Create a URL object from the image URL
+                    val url1 = URL(url)
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        // Open a connection to the URL and read the image data
+                        val connection = url1.openConnection() as HttpURLConnection
+                        connection.doInput = true
+                        connection.connect()
+                        val input = connection.inputStream
+                        val imageData = input.readBytes()
+
+                        // Save the image data to Firebase storage
+                        val staticimageRef = Firebase.storage.reference.child("images/${temp.route_name_text}.png")
+                        staticimageRef.putBytes(imageData)
+
                     }
+
+
+
+                }
 
                 val discard = popupWindow.contentView.findViewById<Button>(R.id.share_discard)
                 discard.setOnClickListener {
@@ -1519,6 +1532,8 @@ class SearchFragment : Fragment() {
 
         return root
     }
+
+
 
     private fun getElevationFromGoogleMaps(longitude: Double, latitude: Double): Double {
         var result = Double.NaN
@@ -1744,6 +1759,8 @@ class SearchFragment : Fragment() {
                                 )
                             }
                         }
+
+                        // add here
 
                     }
                 }

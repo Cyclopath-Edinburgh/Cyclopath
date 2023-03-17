@@ -16,6 +16,8 @@ class RouteObj {
     var difficulty: Double?= null
     var geoJsonurl: String?= null
     var snapshot: Bitmap? = null
+    var route_up: Int ?= null
+    var route_down: Int ?= null
 
     init {
         route_name_text = ""

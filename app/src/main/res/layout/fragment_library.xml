@@ -33,6 +33,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Routelibrary" />
 
+    <Spinner
+        android:id="@+id/sort_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/route_library_search_field"
+        android:entries="@array/sort_options"/>
+
     <TextView
         android:id="@+id/Routelibrary"
         android:layout_width="wrap_content"
@@ -52,18 +60,18 @@
         android:layout_height="652dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/route_library_search_field" />
+        app:layout_constraintTop_toBottomOf="@+id/sort_spinner" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/myroutes"
         android:layout_width="64dp"
         android:layout_height="64dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="50dp"
         android:backgroundTint="@color/white"
         android:src="@drawable/myroutes"
         app:backgroundTint="@color/white"
         app:fabCustomSize="64dp"
-        android:layout_marginBottom="50dp"
-        android:layout_marginRight="20dp"
         app:layout_constraintBottom_toBottomOf="@+id/r_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="34dp" />
