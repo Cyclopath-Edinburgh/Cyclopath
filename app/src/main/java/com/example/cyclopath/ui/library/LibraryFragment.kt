@@ -205,7 +205,7 @@ class LibraryFragment : Fragment() {
 
         // Initialize Places API
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), R.string.googletoken.toString(), Locale("en","GB"));
+            Places.initialize(requireContext(), "AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU", Locale("en","GB"));
         }
 
 
@@ -224,7 +224,7 @@ class LibraryFragment : Fragment() {
                 // TODO: Get info about the selected place.
                 val searchLatLng = place.latLng
                 Log.i(TAG, "Place: ${place.name}, ${place.id}")
-                
+
             }
 
             override fun onError(status: Status) {
