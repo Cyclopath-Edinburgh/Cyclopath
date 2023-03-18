@@ -132,16 +132,6 @@ class LibraryFragment : Fragment() {
                             // Parse the JSON String into a Route object
                             val route = gson.fromJson(jsonString, RouteObj::class.java)
 
-//                            var specificFileRef = routeGeoRef.child(route.route_name_text+".geojson")
-//
-//                            // Download the file to a local file
-//                            val localFile = File.createTempFile("filename", "json")
-//                            specificFileRef.getFile(localFile).addOnSuccessListener {
-//                                // Handle success case
-//                            }.addOnFailureListener {
-//                                // Handle failure case
-//                            }
-
                             // Create a reference to the image with the same name as the RouteObj
                             val imageRef = storageRef.child("images/${route.route_name_text}.png")
 

@@ -1463,6 +1463,8 @@ class SearchFragment : Fragment() {
                     temp.startLng = points[0].lng
                     temp.startLat = points[0].lat
 
+                    temp.near = sqrt((temp.startLng-55.944171) *(temp.startLng-55.944171) + (temp.startLat+3.186810)*(temp.startLat+3.186810))
+
                     val geocoder = Geocoder(context, Locale.getDefault())
                     val addresses = geocoder.getFromLocation(points[0].lat, points[0].lng, 1)
                     if (addresses.isNotEmpty()) {
