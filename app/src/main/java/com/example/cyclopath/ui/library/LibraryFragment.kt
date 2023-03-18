@@ -4,6 +4,7 @@ import RouteObj
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.location.Geocoder
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -48,6 +49,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.sqrt
 
 /**
  * A simple [Fragment] subclass.
@@ -216,15 +218,33 @@ class LibraryFragment : Fragment() {
                     as AutocompleteSupportFragment
 
         // Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME))
+        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
                 // TODO: Get info about the selected place.
-                val searchLatLng = place.latLng
-                Log.i(TAG, "Place: ${place.name}, ${place.id}")
+//                val geocoder = Geocoder(requireContext(), Locale.getDefault())
+//                val address = "1600 Amphitheatre Parkway, Mountain View, CA"
+//
+//                val results = geocoder.getFromLocationName(address, 1)
+//
+//                if (results.isNotEmpty()) {
+//                    val latitude = results[0].latitude
+//                    val longitude = results[0].longitude
+//                    println(latitude)
+//                    println(longitude)
+//                    Log.i(TAG, "Latitude: $latitude, Longitude: $longitude")
+//                }
 
+                val searchLatLng = place.latLng
+                println(place.toString())
+                println(searchLatLng)
+                Log.i(TAG, "Place: ${place.name}, ${place.id}")
+                if (searchLatLng != null) {
+                    updateNear(searchLatLng.longitude,searchLatLng.latitude)
+                }
+                adapter.sortByNearest()
             }
 
             override fun onError(status: Status) {
@@ -234,11 +254,13 @@ class LibraryFragment : Fragment() {
         })
 
 
-
-
         return root
     }
 
-
+    fun updateNear(lng: Double, lat: Double){
+        routeObjList.forEach { route ->
+            route.near = sqrt((route.startLng-lng) *(route.startLng-lng) + (route.startLat-lat)*(route.startLat-lat))
+        }
+    }
 
 }

@@ -19,7 +19,10 @@ class RouteObj {
     var route_up: Int ?= null
     var route_down: Int ?= null
     var staticimage: Bitmap ?=null
-    var near: Double ?= null
+    var near: Double = 0.0
+    var startLng : Double = 0.0
+    var startLat: Double = 0.0
+    var route_distance: Double=0.0
 
     init {
         route_name_text = ""

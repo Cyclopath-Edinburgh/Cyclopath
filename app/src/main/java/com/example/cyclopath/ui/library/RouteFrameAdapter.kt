@@ -23,9 +23,12 @@ import com.mapbox.maps.extension.style.layers.properties.generated.LineJoin
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapbox.maps.extension.style.style
 
+
 class RouteFrameAdapter(
-    private val routes: MutableList<RouteObj>,
+    private var routes: MutableList<RouteObj>,
 ): RecyclerView.Adapter<RouteFrameAdapter.RouteObjHolder>() {
+    private var routesTemp: MutableList<RouteObj> = routes
+
     class RouteObjHolder(view: View) : RecyclerView.ViewHolder(view){
         var imageView: ImageView = itemView.findViewById(R.id.route_image)
         val routeItemClickable: View = view.findViewById(R.id.route_item_clickable)
@@ -71,43 +74,10 @@ class RouteFrameAdapter(
         }
 
 
-
-
-//        val storageRef = Firebase.storage.reference
-//        var dataRef = storageRef.child(route.geoJsonurl.toString())
-//        dataRef.downloadUrl.addOnSuccessListener {
-//            holder.imageView.getMapboxMap().loadStyle(
-//                (
-//                        style(styleUri = Style.MAPBOX_STREETS) {
-//                            +geoJsonSource("line") {
-//                                url(it.toString())
-//                            }
-//                            +lineLayer("linelayer", "line") {
-//                                lineCap(LineCap.ROUND)
-//                                lineJoin(LineJoin.ROUND)
-//                                lineOpacity(0.9)
-//                                lineWidth(8.0)
-//                                lineColor("#F55C5C")
-//                            }
-//
-//                            val cameraOptions = CameraOptions.Builder()
-//                                .zoom(3.0)
-//                                .center(Point.fromLngLat(-118.2437, 34.0522))
-//                                .build()
-//
-//                            mapView.getMapboxMap().setCamera(cameraOptions)
-//                        }
-//                        )
-//            )
-//        }.addOnFailureListener {
-//
-//        }
-
-
     }
 
     fun sortByDistance() {
-        routes.sortBy { it.route_length_text }
+        routes.sortBy { it.route_distance }
         notifyDataSetChanged()
     }
 
@@ -119,11 +89,21 @@ class RouteFrameAdapter(
     fun sortByRating() {
         routes.sortByDescending { it.route_popularity_text }
         notifyDataSetChanged()
+        println("iiiooo")
+        println(routesTemp.toString())
     }
 
     fun sortByNearest() {
+        filter()
         routes.sortBy { it.near }
         notifyDataSetChanged()
+    }
+
+    fun filter(){
+        routes = routesTemp
+        routes = routes.filter { item ->
+            item.near < 2.0
+        } as MutableList<RouteObj>
     }
 
 

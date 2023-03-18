@@ -13,6 +13,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
@@ -1108,6 +1109,8 @@ class SearchFragment : Fragment() {
                         results.addAll(batchResults)
                     }
 
+                    totalUp = 0.0
+                    totalDown = 0.0
                     // Create a list of BarEntry objects to hold the elevation data
                     val entries = ArrayList<BarEntry>()
                     var lastElevation = results.first().elevation.toFloat()
@@ -1175,6 +1178,8 @@ class SearchFragment : Fragment() {
 
                 }
 
+            }else {
+                Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -1211,6 +1216,8 @@ class SearchFragment : Fragment() {
                     temp.difficulty = route.duration()/route.distance()
                     temp.route_length_text = String.format("%.2f",route.distance()/1000)+"km"
                     temp.geoJsonurl = "routegeojson/${temp.route_name_text}.geojson"
+                    temp.route_distance = route.distance()/1000
+
 
                     val storageRef = Firebase.storage.reference
 
@@ -1453,6 +1460,18 @@ class SearchFragment : Fragment() {
 
                     temp.route_up = totalUp.toInt()
                     temp.route_down = totalDown.toInt()
+                    temp.startLng = points[0].lng
+                    temp.startLat = points[0].lat
+
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    val addresses = geocoder.getFromLocation(points[0].lat, points[0].lng, 1)
+                    if (addresses.isNotEmpty()) {
+                        temp.route_start = addresses[0].getAddressLine(0)
+                    }
+                    val addresses2 = geocoder.getFromLocation(points[points.size-1].lat, points[points.size-1].lng, 1)
+                    if (addresses2.isNotEmpty()) {
+                        temp.route_end = addresses2[0].getAddressLine(0)
+                    }
 
                     // push route
                     val routeObjJson = gson.toJson(temp)
@@ -1538,9 +1557,6 @@ class SearchFragment : Fragment() {
                         staticimageRef.putBytes(imageData)
 
                     }
-
-
-
                 }
 
                 val discard = popupWindow.contentView.findViewById<Button>(R.id.share_discard)
