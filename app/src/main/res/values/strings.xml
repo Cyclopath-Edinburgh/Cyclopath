@@ -467,6 +467,7 @@
     <string name="address_autofill_pin_correction_note">Drag map to correct pin position</string>
     <string name="address_autofill_error_pin_correction">Unable to locate selected coordinate</string>
     <string name="matoken">sk.eyJ1IjoiY3ljbG9wYXRoIiwiYSI6ImNsY3M5ZzV6ZDBpZjczdm53NnAyOHAwbDEifQ.7qLVoLnrTaP18Tc0L9Mrsw</string>
+    <string name="googletoken">AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU</string>
 
     <string name="forget_password"><u>Forgot password?</u></string>
     <string name="signup"><u>Sign Up</u></string>

@@ -153,6 +153,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.Double.max
 import java.lang.Double.min
+import kotlin.math.*
 
 
 class SearchFragment : Fragment() {
@@ -1478,18 +1479,44 @@ class SearchFragment : Fragment() {
                     Toast.makeText(context, "Successfully share route!", Toast.LENGTH_SHORT).show()
 
                     // Construct the URL for the static map image
+                    // Calculate the bounds of the route
+                    var minLat = Double.MAX_VALUE
+                    var maxLat = -Double.MAX_VALUE
+                    var minLng = Double.MAX_VALUE
+                    var maxLng = -Double.MAX_VALUE
+
+                    points10.forEach { point ->
+                        minLat = minOf(minLat, point.lat)
+                        maxLat = maxOf(maxLat, point.lat)
+                        minLng = minOf(minLng, point.lng)
+                        maxLng = maxOf(maxLng, point.lng)
+                    }
+
+                    // Calculate the center of the bounds
+                    val centerLat = (minLat + maxLat) / 2
+                    val centerLng = (minLng + maxLng) / 2
+
+                    println(minLng)
+                    println(maxLng)
+                    println("==========================")
+                    println(centerLat)
+                    println(centerLng)
+
+
                     // Calculate the middle point of the points list
                     val middlePoint = points10[points10.size / 2]
                     // Add the start and end markers to the markers variable
                     val startMarker = "${points.first().lat},${points.first().lng}"
                     val endMarker = "${points.last().lat},${points.last().lng}"
-                    val markers = "color:red|label:S|$startMarker&markers=color:green|label:E|$endMarker"
+                    val markers = "color:red|label:S|$startMarker&markers=color:blue|label:E|$endMarker"
                     val googleKey = "AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU"
                     val size = "640x640"
-                    val center = "${middlePoint.lat},${middlePoint.lng}"
-                    val izoom = 12
-                    val path = "enc:"+ PolylineEncoding.encode(points10)
+                    val center = "$centerLat,$centerLng"
+                    val izoom = calculateZoomLevel(maxLat, minLat, maxLng, minLng, 640)
+                    val path = "color:0xff0000ff|weight:10%7Cenc:"+ PolylineEncoding.encode(points10)
 
+                    println(middlePoint.lat)
+                    println(middlePoint.lng)
 //                    points.forEach { point ->
 //                        path.append("|${point.lat},${point.lng}")
 //                    }
@@ -1533,6 +1560,41 @@ class SearchFragment : Fragment() {
         return root
     }
 
+    fun calculateZoomLevel(maxLat: Double, minLat: Double, maxLng: Double, minLng: Double, mapWidth: Int): Int {
+        val latRatio = (maxLat - minLat) / 500
+        val lngRatio = (maxLng - minLng) / 1000
+        val latZoom = ln(360 * mapWidth / 256 / lngRatio) / ln(2.0)
+        val lngZoom = ln(180 * mapWidth / 256 / latRatio) / ln(2.0)
+        val zoom = minOf(latZoom, lngZoom).toInt()
+        val distance = route.distance()/300
+        return when {
+            distance >= 500 -> 9
+            distance >= 256 -> 10
+            distance >= 128 -> 11
+            distance >= 64 -> 12
+            distance >= 32 -> 13
+            distance >= 16 -> 14
+            distance >= 8 -> 15
+            distance >= 4 -> 16
+            distance >= 2 -> 17
+            distance >= 1 -> 18
+            distance >= 0.5 -> 19
+            else -> 15 // just in case :)
+        }
+    }
+
+    fun haversineDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
+        val earthRadius = 6371.0 // km
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLng = Math.toRadians(lng2 - lng1)
+        val a = (sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLng / 2) * sin(dLng / 2))
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        println("ddddiiii")
+        println(earthRadius * c)
+        return earthRadius * c
+    }
 
 
     private fun getElevationFromGoogleMaps(longitude: Double, latitude: Double): Double {

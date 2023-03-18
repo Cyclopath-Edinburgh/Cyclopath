@@ -18,6 +18,8 @@ class RouteObj {
     var snapshot: Bitmap? = null
     var route_up: Int ?= null
     var route_down: Int ?= null
+    var staticimage: Bitmap ?=null
+    var near: Double ?= null
 
     init {
         route_name_text = ""

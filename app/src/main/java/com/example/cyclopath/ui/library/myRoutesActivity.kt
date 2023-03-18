@@ -1,6 +1,7 @@
 package com.example.cyclopath.ui.library
 
 import RouteObj
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -49,12 +50,27 @@ class myRoutesActivity: AppCompatActivity() {
                         // Parse the JSON String into a Route object
                         val route = gson.fromJson(jsonString, RouteObj::class.java)
 
-                        // Add the Route object to the list
-                        routeObjList.add(route)
-                        println(route)
-                        // Update the RecyclerView on the main thread
-                        view.post {
-                            adapter.notifyItemInserted(routeObjList.size - 1)
+                        // Create a reference to the image with the same name as the RouteObj
+                        val imageRef = storageRef.child("images/${route.route_name_text}.png")
+
+                        // Download the image as a byte array
+                        imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener { imageBytes ->
+                            // Convert the downloaded bytes to a Bitmap
+                            val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+
+                            // Set the Bitmap to the Route object
+                            route.staticimage = imageBitmap
+
+                            // Add the Route object to the list
+                            routeObjList.add(route)
+
+                            // Update the RecyclerView on the main thread
+                            view.post {
+                                adapter.notifyItemChanged(routeObjList.size - 1)
+                            }
+                        }.addOnFailureListener {
+                            // Handle any errors that occur while downloading the image
+                            Log.e(AccessTokenManager.TAG, "Failed to download image for route: ${route.route_name_text}", it)
                         }
                     }.addOnFailureListener {
                         // Handle any errors that occur while downloading the file

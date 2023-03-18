@@ -6,14 +6,32 @@
     android:layout_height="match_parent"
     tools:context=".ui.library.LibraryFragment">
 
+<!--    <fragment-->
+<!--        android:id="@+id/route_library_search_field"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/Routelibrary"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:layout_marginStart="16dp"-->
+<!--        android:layout_marginEnd="16dp"-->
+<!--        android:layout_marginBottom="16dp"/>-->
+    <fragment
+        android:id="@+id/autocomplete_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/Routelibrary"
+        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+        />
+
     <ImageButton
         android:id="@+id/route_library_search_btn"
         android:layout_width="45dp"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_btn_search"
+        app:layout_constraintBottom_toBottomOf="@+id/autocomplete_fragment"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/route_library_search_field" />
+        app:layout_constraintTop_toTopOf="@+id/autocomplete_fragment" />
 
     <ImageButton
         android:id="@+id/route_library_clear_btn"
@@ -24,21 +42,38 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/r_view" />
 
-    <EditText
-        android:id="@+id/route_library_search_field"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/route_library_clear_btn"
-        app:layout_constraintEnd_toStartOf="@+id/route_library_search_btn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Routelibrary" />
+<!--    <EditText-->
+<!--        android:id="@+id/route_library_search_field"-->
+<!--        android:layout_width="fill_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_toLeftOf="@id/route_library_clear_btn"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/route_library_search_btn"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/Routelibrary" />-->
+
+<!--    <com.google.android.material.textfield.TextInputLayout-->
+<!--        android:layout_width="fill_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_toLeftOf="@id/route_library_clear_btn"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/route_library_search_btn"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/Routelibrary">-->
+
+<!--        <com.google.android.material.textfield.TextInputEditText-->
+<!--            android:id="@+id/search_field"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Search places" />-->
+
+<!--    </com.google.android.material.textfield.TextInputLayout>-->
+
 
     <Spinner
         android:id="@+id/sort_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/route_library_search_field"
+        app:layout_constraintTop_toBottomOf="@+id/autocomplete_fragment"
         android:entries="@array/sort_options"/>
 
     <TextView

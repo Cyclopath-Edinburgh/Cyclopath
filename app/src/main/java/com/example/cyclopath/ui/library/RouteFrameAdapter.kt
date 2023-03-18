@@ -52,7 +52,7 @@ class RouteFrameAdapter(
             holder.routeLengthText.text = route.route_length_text
             holder.routeDurationText.text = route.route_duration
             holder.routeDifficulty.text = route.difficulty.toString()
-            holder.imageView.setImageBitmap(route.snapshot)
+            holder.imageView.setImageBitmap(route.staticimage)
 
             // Set item click listener
             holder.routeItemClickable.setOnClickListener {
@@ -69,6 +69,8 @@ class RouteFrameAdapter(
                 holder.itemView.context.startActivity(i)
             }
         }
+
+
 
 
 //        val storageRef = Firebase.storage.reference
@@ -116,6 +118,11 @@ class RouteFrameAdapter(
 
     fun sortByRating() {
         routes.sortByDescending { it.route_popularity_text }
+        notifyDataSetChanged()
+    }
+
+    fun sortByNearest() {
+        routes.sortBy { it.near }
         notifyDataSetChanged()
     }
 

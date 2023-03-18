@@ -3,15 +3,16 @@ package com.example.cyclopath.ui.library
 import RouteObj
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.Spinner
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,7 +20,16 @@ import com.example.cyclopath.R
 import com.example.cyclopath.items.DirectionsRouteAdapter
 import com.example.cyclopath.ui.history.HistoryAdapter
 import com.facebook.AccessTokenManager.Companion.TAG
+import com.google.android.gms.common.api.Status
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.component1
 import com.google.firebase.storage.ktx.component2
@@ -36,6 +46,8 @@ import java.lang.reflect.Type
 import java.util.concurrent.CountDownLatch
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * A simple [Fragment] subclass.
@@ -128,13 +140,29 @@ class LibraryFragment : Fragment() {
 //                                // Handle failure case
 //                            }
 
-                            // Add the Route object to the list
-                            routeObjList.add(route)
-                            println(route)
-                            // Update the RecyclerView on the main thread
-                            view.post {
-                                adapter.notifyItemInserted(routeObjList.size - 1)
+                            // Create a reference to the image with the same name as the RouteObj
+                            val imageRef = storageRef.child("images/${route.route_name_text}.png")
+
+                            // Download the image as a byte array
+                            imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener { imageBytes ->
+                                // Convert the downloaded bytes to a Bitmap
+                                val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+
+                                // Set the Bitmap to the Route object
+                                route.staticimage = imageBitmap
+
+                                // Add the Route object to the list
+                                routeObjList.add(route)
+
+                                // Update the RecyclerView on the main thread
+                                view.post {
+                                    adapter.notifyItemChanged(routeObjList.size - 1)
+                                }
+                            }.addOnFailureListener {
+                                // Handle any errors that occur while downloading the image
+                                Log.e(TAG, "Failed to download image for route: ${route.route_name_text}", it)
                             }
+
                         }.addOnFailureListener {
                             // Handle any errors that occur while downloading the file
                             Log.e(TAG, "Failed to download route: ${item.name}", it)
@@ -173,6 +201,37 @@ class LibraryFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
+
+        // Initialize Places API
+        if (!Places.isInitialized()) {
+            Places.initialize(requireContext(), R.string.googletoken.toString(), Locale("en","GB"));
+        }
+
+
+
+        // Initialize the AutocompleteSupportFragment.
+        val autocompleteFragment =
+            childFragmentManager.findFragmentById(R.id.autocomplete_fragment)
+                    as AutocompleteSupportFragment
+
+        // Specify the types of place data to return.
+        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME))
+
+        // Set up a PlaceSelectionListener to handle the response.
+        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+            override fun onPlaceSelected(place: Place) {
+                // TODO: Get info about the selected place.
+                val searchLatLng = place.latLng
+                Log.i(TAG, "Place: ${place.name}, ${place.id}")
+                
+            }
+
+            override fun onError(status: Status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: $status")
+            }
+        })
 
 
 
