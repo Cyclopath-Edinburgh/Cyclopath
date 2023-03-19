@@ -2327,7 +2327,9 @@ class SearchFragment : Fragment() {
    @Override
    override fun onDestroy() {
        super.onDestroy()
-       searchRequestTask.cancel()
+       if (this::searchRequestTask.isInitialized) {
+           searchRequestTask.cancel()
+       }
        mapView.location
                .removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
        mapView.location

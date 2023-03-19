@@ -19,7 +19,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
@@ -43,13 +42,24 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
+            android:name="com.example.cyclopath.FrameActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name="com.example.cyclopath.ui.TncActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
-        </activity>
-        <!-- <activity android:name="com.facebook.FacebookActivity" -->
+        </activity> <!-- <activity android:name="com.facebook.FacebookActivity" -->
         <!-- android:configChanges= -->
         <!-- "keyboard|keyboardHidden|screenLayout|screenSize|orientation" -->
         <!-- android:label="@string/app_name" /> -->
@@ -102,11 +112,6 @@
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name="com.example.cyclopath.ui.MainActivity"
@@ -147,10 +152,12 @@
         <activity
             android:name="com.example.cyclopath.ui.library.RouteDetailsActivity"
             android:label="@string/route_details" />
-        <activity android:name="com.example.cyclopath.ui.library.myRoutesActivity"
-            android:label="my routes"/>
-        <activity android:name="com.example.cyclopath.ui.search.WeatherActivity"
-            android:label="weather"/>
+        <activity
+            android:name="com.example.cyclopath.ui.library.myRoutesActivity"
+            android:label="my routes" />
+        <activity
+            android:name="com.example.cyclopath.ui.search.WeatherActivity"
+            android:label="weather" />
         <activity
             android:name="com.example.cyclopath.LoginActivity2"
             android:label="@string/login"
