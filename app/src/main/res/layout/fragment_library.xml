@@ -6,15 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.library.LibraryFragment">
 
-<!--    <fragment-->
-<!--        android:id="@+id/route_library_search_field"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/Routelibrary"-->
-<!--        android:layout_marginTop="16dp"-->
-<!--        android:layout_marginStart="16dp"-->
-<!--        android:layout_marginEnd="16dp"-->
-<!--        android:layout_marginBottom="16dp"/>-->
+
     <fragment
         android:id="@+id/autocomplete_fragment"
         android:layout_width="match_parent"
@@ -23,24 +15,24 @@
         android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
         />
 
-    <ImageButton
-        android:id="@+id/route_library_search_btn"
-        android:layout_width="45dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:src="@drawable/ic_btn_search"
-        app:layout_constraintBottom_toBottomOf="@+id/autocomplete_fragment"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/autocomplete_fragment" />
+<!--    <ImageButton-->
+<!--        android:id="@+id/route_library_search_btn"-->
+<!--        android:layout_width="45dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_alignParentRight="true"-->
+<!--        android:src="@drawable/ic_btn_search"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/autocomplete_fragment"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/autocomplete_fragment" />-->
 
-    <ImageButton
-        android:id="@+id/route_library_clear_btn"
-        android:layout_width="45dp"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/route_library_search_btn"
-        android:src="@drawable/ic_delete"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/r_view" />
+<!--    <ImageButton-->
+<!--        android:id="@+id/route_library_clear_btn"-->
+<!--        android:layout_width="45dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_toLeftOf="@id/route_library_search_btn"-->
+<!--        android:src="@drawable/ic_delete"-->
+<!--        android:visibility="gone"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/r_view" />-->
 
 <!--    <EditText-->
 <!--        android:id="@+id/route_library_search_field"-->
@@ -92,7 +84,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/r_view"
         android:layout_width="384dp"
-        android:layout_height="652dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sort_spinner" />
@@ -102,7 +96,7 @@
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_marginRight="20dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="20dp"
         android:backgroundTint="@color/white"
         android:src="@drawable/myroutes"
         app:backgroundTint="@color/white"

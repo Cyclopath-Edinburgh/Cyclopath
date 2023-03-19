@@ -13,7 +13,8 @@ class RouteObj {
     var route_start : String? = null
     var route_end : String? = null
     var route_duration: String? = null
-    var difficulty: Double?= null
+    var difficulty: Int?= null
+    var difficulty_level : String?=null
     var geoJsonurl: String?= null
     var snapshot: Bitmap? = null
     var route_up: Int ?= null
@@ -23,6 +24,9 @@ class RouteObj {
     var startLng : Double = 0.0
     var startLat: Double = 0.0
     var route_distance: Double=0.0
+    var focusLng: Double?= null
+    var focusLat: Double?= null
+    var zoomlevel: Int? =null
 
     init {
         route_name_text = ""

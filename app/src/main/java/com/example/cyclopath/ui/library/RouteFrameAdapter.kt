@@ -37,6 +37,9 @@ class RouteFrameAdapter(
         val routeLengthText: TextView = view.findViewById(R.id.route_length_text)
         val routeDurationText: TextView = view.findViewById(R.id.route_duration)
         val routeDifficulty: TextView = view.findViewById(R.id.route_difficulty)
+        val routeUp: TextView = view.findViewById(R.id.up_ele)
+        val routeDown: TextView = view.findViewById(R.id.down_ele)
+        val routeAddress: TextView = view.findViewById(R.id.route_address)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RouteObjHolder {
@@ -54,8 +57,11 @@ class RouteFrameAdapter(
             holder.routeNameText.text = route.route_name_text
             holder.routeLengthText.text = route.route_length_text
             holder.routeDurationText.text = route.route_duration
-            holder.routeDifficulty.text = route.difficulty.toString()
+            holder.routeDifficulty.text = route.difficulty_level
             holder.imageView.setImageBitmap(route.staticimage)
+            holder.routeUp.text = route.route_up.toString() + "m"
+            holder.routeDown.text = route.route_down.toString() + "m"
+            holder.routeAddress.text = route.route_start
 
             // Set item click listener
             holder.routeItemClickable.setOnClickListener {
@@ -69,6 +75,12 @@ class RouteFrameAdapter(
                 i.putExtra("popularity", routes[position].route_popularity_text)
                 i.putExtra("elevation", routes[position].route_elevation_text)
                 i.putExtra("duration", routes[position].route_duration)
+                i.putExtra("up",routes[position].route_up)
+                i.putExtra("down",routes[position].route_down)
+                i.putExtra("zoom",routes[position].zoomlevel)
+                i.putExtra("focusLng",routes[position].focusLng)
+                i.putExtra("focusLat",routes[position].focusLat)
+                i.putExtra("difficultyLevel",routes[position].difficulty_level)
                 holder.itemView.context.startActivity(i)
             }
         }

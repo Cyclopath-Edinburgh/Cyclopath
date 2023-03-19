@@ -16,10 +16,7 @@ import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.SystemClock
+import android.os.*
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -489,6 +486,7 @@ class SearchFragment : Fragment() {
 //            // Mapbox instance has been initialized
 //            println("ppppppppppp")
 //        }
+        weatherTask().execute()
 
         addressAutofill = AddressAutofill.create(getString(R.string.matoken))
 
@@ -1213,7 +1211,6 @@ class SearchFragment : Fragment() {
                     temp.route_name_text = routeNameInput.text.toString()
                     temp.route_description_text = descriptionInput.text.toString()
                     temp.route_duration = String.format("%.2f",route.duration()/60)+"mins"
-                    temp.difficulty = route.duration()/route.distance()
                     temp.route_length_text = String.format("%.2f",route.distance()/1000)+"km"
                     temp.geoJsonurl = "routegeojson/${temp.route_name_text}.geojson"
                     temp.route_distance = route.distance()/1000
@@ -1475,11 +1472,6 @@ class SearchFragment : Fragment() {
                         temp.route_end = addresses2[0].getAddressLine(0)
                     }
 
-                    // push route
-                    val routeObjJson = gson.toJson(temp)
-                    val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
-                    routeRef.putBytes(routeObjJson.toByteArray())
-
 
                     // push route geojson
                     val routeGeometry: LineString = LineString.fromPolyline(route.geometry()!!, 6)
@@ -1517,11 +1509,7 @@ class SearchFragment : Fragment() {
                     val centerLat = (minLat + maxLat) / 2
                     val centerLng = (minLng + maxLng) / 2
 
-                    println(minLng)
-                    println(maxLng)
-                    println("==========================")
-                    println(centerLat)
-                    println(centerLng)
+
 
 
                     // Calculate the middle point of the points list
@@ -1531,18 +1519,26 @@ class SearchFragment : Fragment() {
                     val endMarker = "${points.last().lat},${points.last().lng}"
                     val markers = "color:red|label:S|$startMarker&markers=color:blue|label:E|$endMarker"
                     val googleKey = "AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU"
-                    val size = "640x640"
+                    val size = "4000x300&scale=2"
                     val center = "$centerLat,$centerLng"
                     val izoom = calculateZoomLevel(maxLat, minLat, maxLng, minLng, 640)
                     val path = "color:0xff0000ff|weight:10%7Cenc:"+ PolylineEncoding.encode(points10)
 
                     println(middlePoint.lat)
                     println(middlePoint.lng)
-//                    points.forEach { point ->
-//                        path.append("|${point.lat},${point.lng}")
-//                    }
-                    val url = "https://maps.googleapis.com/maps/api/staticmap?&language=en&key=$googleKey&size=$size&center=$center&zoom=$izoom&markers=$markers&path=$path"
 
+                    temp.focusLng = centerLng
+                    temp.focusLat = centerLat
+                    temp.zoomlevel = izoom
+                    temp.difficulty = calculateDifficulty(route.distance(),totalUp)
+                    temp.difficulty_level = calculateDifficultyLevel(route.distance(),totalUp)
+                    // push route
+                    val routeObjJson = gson.toJson(temp)
+                    val routeRef = storageRef.child("routes/${temp.route_name_text}.json")
+                    routeRef.putBytes(routeObjJson.toByteArray())
+
+
+                    val url = "https://maps.googleapis.com/maps/api/staticmap?&language=en&key=$googleKey&size=$size&center=$center&zoom=$izoom&markers=$markers&path=$path"
                     // Create a URL object from the image URL
                     val url1 = URL(url)
 
@@ -1578,14 +1574,38 @@ class SearchFragment : Fragment() {
         return root
     }
 
+    fun calculateDifficulty(distance: Double, up: Double): Int {
+        val climbingPerKm = up / (distance / 1000)  // convert meters to km
+        return when {
+            climbingPerKm < 10.7 -> 1   // Easy ride
+            climbingPerKm < 15.2 -> 2   // Medium
+            climbingPerKm < 21.3 -> 3   // Hard
+            climbingPerKm < 30.5 -> 4   // Very hard
+            else -> 5   // Hardcore
+        }
+    }
+
+    fun calculateDifficultyLevel(distance: Double, up: Double): String {
+        val climbingPerKm = up / (distance / 1000)  // convert meters to km
+        return when {
+            climbingPerKm < 10.7 -> "Easy ride"
+            climbingPerKm < 15.2 -> "Medium"
+            climbingPerKm < 21.3 -> "Hard"
+            climbingPerKm < 30.5 -> "Very hard"
+            else -> "Hardcore"
+        }
+    }
+
+
     fun calculateZoomLevel(maxLat: Double, minLat: Double, maxLng: Double, minLng: Double, mapWidth: Int): Int {
         val latRatio = (maxLat - minLat) / 500
         val lngRatio = (maxLng - minLng) / 1000
         val latZoom = ln(360 * mapWidth / 256 / lngRatio) / ln(2.0)
         val lngZoom = ln(180 * mapWidth / 256 / latRatio) / ln(2.0)
         val zoom = minOf(latZoom, lngZoom).toInt()
-        val distance = route.distance()/300
+        val distance = route.distance()/150
         return when {
+            distance >= 1000 -> 8
             distance >= 500 -> 9
             distance >= 256 -> 10
             distance >= 128 -> 11
@@ -1597,6 +1617,8 @@ class SearchFragment : Fragment() {
             distance >= 2 -> 17
             distance >= 1 -> 18
             distance >= 0.5 -> 19
+            distance >= 0.25 -> 20
+            distance >= 0.1 -> 21
             else -> 15 // just in case :)
         }
     }
@@ -1613,6 +1635,64 @@ class SearchFragment : Fragment() {
         println(earthRadius * c)
         return earthRadius * c
     }
+
+    inner class weatherTask() : AsyncTask<String, Void, String>() {
+        override fun onPreExecute() {
+            super.onPreExecute()
+            /* Showing the ProgressBar, Making the main design GONE */
+        }
+
+        override fun doInBackground(vararg params: String?): String? {
+            val CITY: String = "edinburgh,uk"
+            val API: String = "5c6caee0d64a8dd4571f62c65fc99f6f" // Use API key
+            var response:String?
+            try{
+                response = URL("https://api.openweathermap.org/data/2.5/weather?q=$CITY&units=metric&appid=$API").readText(
+                    Charsets.UTF_8
+                )
+            }catch (e: Exception){
+                response = null
+            }
+            return response
+        }
+
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+            try {
+                /* Extracting JSON returns from the API */
+                val jsonObj = JSONObject(result)
+                val main = jsonObj.getJSONObject("main")
+                val sys = jsonObj.getJSONObject("sys")
+                val wind = jsonObj.getJSONObject("wind")
+                val weather = jsonObj.getJSONArray("weather").getJSONObject(0)
+                val iconId = weather.getString("icon")
+                val iconUrl = "https://openweathermap.org/img/w/$iconId.png"
+
+                val updatedAt:Long = jsonObj.getLong("dt")
+                val temp = main.getString("temp").dropLast(1)+"°C"
+                val humidity = main.getString("humidity")
+
+                val windSpeed = wind.getString("speed")
+                val weatherDescription = weather.getString("description")
+
+                /* Populating extracted data into our views */
+                // Load the weather icon image using Glide
+                Glide.with(this@SearchFragment).load(iconUrl).into(requireView().findViewById<ImageView>(R.id.weather_icon))
+
+                requireView().findViewById<TextView>(R.id.status).text = weatherDescription.capitalize()
+                requireView().findViewById<TextView>(R.id.temp).text = temp
+
+//                findViewById<TextView>(R.id.wind).text = windSpeed
+//                findViewById<TextView>(R.id.pressure).text = pressure
+//                findViewById<TextView>(R.id.humidity).text = humidity
+
+                /* Views populated, Hiding the loader, Showing the main design */
+            } catch (e: Exception) {
+            }
+
+        }
+    }
+
 
 
     private fun getElevationFromGoogleMaps(longitude: Double, latitude: Double): Double {

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="150dp"
+    android:layout_height="340dp"
     android:orientation="vertical"
     android:layout_marginTop="20dp"
     android:layout_marginBottom="10dp"
@@ -13,54 +13,133 @@
 
     <ImageView
         android:id="@+id/route_image"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
+        android:layout_width="350dp"
+        android:layout_height="200dp"
         android:layout_alignParentEnd="true"
         android:scaleType="centerCrop"
         android:src="@drawable/routeshow"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/route_item_clickable"
+        app:layout_constraintStart_toStartOf="@+id/route_item_clickable"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/route_info_layout"
-        android:layout_width="match_parent"
+
+    <TextView
+        android:id="@+id/route_name_text"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toStartOf="@id/route_image"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/route_item_clickable"
-        tools:layout_editor_absoluteX="16dp">
+        android:text="Route Name"
+        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@color/themegreen"
+        android:layout_marginLeft="10dp"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@+id/route_image"
+        android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/route_name_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Route Name"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+    <TextView
+        android:id="@+id/route_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Appleton tower to king building"
+        android:textColor="@color/themegreen"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginLeft="10dp"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@+id/route_name_text"
+         />
 
-        <TextView
-            android:id="@+id/route_length_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Route Length"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/route_difficulty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/themegreen"
+        android:text="Difficulty"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginLeft="10dp"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@+id/route_address"
+         />
 
-        <TextView
-            android:id="@+id/route_duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Route duration"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/route_length_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="3dp"
+        android:shadowColor="#FFFFFF"
+        android:text="15"
+        android:textColor="@color/themegreen"
+        android:textSize="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/route_difficulty"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:id="@+id/route_difficulty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Route Dificulty"
-            android:textSize="14sp" />
-    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/distanceimg"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="3dp"
+        android:src="@drawable/distance"
+        android:layout_marginLeft="3dp"
+        app:layout_constraintLeft_toRightOf="@id/route_length_text"
+        app:layout_constraintTop_toBottomOf="@+id/route_difficulty"
+        tools:layout_editor_absoluteX="63dp" />
+
+    <TextView
+        android:id="@+id/up_ele"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:shadowColor="#FFFFFF"
+        android:text="5"
+        android:textColor="@color/themegreen"
+        android:layout_marginLeft="10dp"
+        android:textSize="16dp"
+        app:layout_constraintLeft_toRightOf="@id/distanceimg"
+        app:layout_constraintTop_toBottomOf="@+id/route_difficulty" />
+
+    <ImageView
+        android:id="@+id/goup"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/circle_up"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="3dp"
+        app:layout_constraintLeft_toRightOf="@id/up_ele"
+        app:layout_constraintTop_toBottomOf="@+id/route_difficulty" />
+
+    <TextView
+        android:id="@+id/down_ele"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="3dp"
+        android:shadowColor="#FFFFFF"
+        android:text="5"
+        android:textColor="@color/themegreen"
+        android:textSize="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/route_difficulty"
+        app:layout_constraintLeft_toRightOf="@id/goup"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <ImageView
+        android:id="@+id/godown"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/circle_down"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="3dp"
+        app:layout_constraintLeft_toRightOf="@id/down_ele"
+        app:layout_constraintTop_toBottomOf="@+id/route_difficulty" />
+
+    <TextView
+        android:id="@+id/route_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Route duration"
+        android:textSize="14sp"
+        android:layout_marginLeft="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/distanceimg" />
 
     <View
         android:id="@+id/route_item_clickable"
@@ -70,7 +149,9 @@
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:onClick="onRouteItemClick"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="16dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

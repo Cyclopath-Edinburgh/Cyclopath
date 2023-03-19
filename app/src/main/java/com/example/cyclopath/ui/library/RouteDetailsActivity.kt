@@ -57,6 +57,7 @@ class RouteDetailsActivity: AppCompatActivity() {
         var detai_distance: TextView = findViewById(R.id.rd_dis)
         var detail_rate: TextView = findViewById(R.id.rating)
 
+
         //
         detail_name.setText(intent.getStringExtra("route"))
         detail_description.setText(intent.getStringExtra("description"))
@@ -84,8 +85,8 @@ class RouteDetailsActivity: AppCompatActivity() {
                             }
 
                             val cameraOptions = CameraOptions.Builder()
-                                .zoom(13.0)
-                                .center(Point.fromLngLat(-3.195851,55.947145 ))
+                                .zoom(intent.getIntExtra("zoom",1).toDouble()-2.0)
+                                .center(Point.fromLngLat(intent.getDoubleExtra("focusLng",0.0),intent.getDoubleExtra("focusLat",0.0) ))
                                 .build()
 
                             routelane.getMapboxMap().setCamera(cameraOptions)
@@ -172,9 +173,12 @@ class RouteDetailsActivity: AppCompatActivity() {
             temp.route_name_text = intent.getStringExtra("route")
             temp.route_description_text = intent.getStringExtra("description")
             temp.route_duration = intent.getStringExtra("duration")
-            temp.difficulty = intent.getDoubleExtra("difficulty",0.0)
+            temp.difficulty = intent.getIntExtra("difficulty",0)
             temp.route_length_text = intent.getStringExtra("distance")
             temp.geoJsonurl = url
+            temp.route_up = intent.getIntExtra("up",0)
+            temp.route_down = intent.getIntExtra("down",0)
+            temp.difficulty_level = intent.getStringExtra("difficultyLevel")
 
             var sp = this.baseContext?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
             val name = sp!!.getString("username","empty")
