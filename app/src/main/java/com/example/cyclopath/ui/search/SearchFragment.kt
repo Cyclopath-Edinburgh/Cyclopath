@@ -490,7 +490,7 @@ class SearchFragment : Fragment() {
 //            // Mapbox instance has been initialized
 //            println("ppppppppppp")
 //        }
-        weatherTask().execute()
+
 
         addressAutofill = AddressAutofill.create(getString(R.string.matoken))
 
@@ -1076,7 +1076,7 @@ class SearchFragment : Fragment() {
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 val popupView: View = inflater.inflate(R.layout.popup_elevation, null)
 
-                val popupWindow = PopupWindow(popupView, 1500, 800)
+                val popupWindow = PopupWindow(popupView, 1100, 800)
                 popupWindow.isFocusable = true
 
                 popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 20.dpToPx(resources))
@@ -1200,7 +1200,7 @@ class SearchFragment : Fragment() {
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
 
-                val popupWindow = PopupWindow(popupView, 1000, 600)
+                val popupWindow = PopupWindow(popupView, 1000, 900)
                 popupWindow.isFocusable = true
 
                 popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
@@ -2336,6 +2336,12 @@ class SearchFragment : Fragment() {
                .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
        mapView.gestures.removeOnMoveListener(onMoveListener)
    }
+
+
+    override fun onResume() {
+        weatherTask().execute()
+        super.onResume()
+    }
 
     fun Int.dpToPx(resources: Resources): Int {
         return TypedValue.applyDimension(
