@@ -1145,7 +1145,7 @@ class SearchFragment : Fragment() {
                     val dataSet = BarDataSet(entries, "Elevation")
 
                     // Set the colors of the bars
-                    dataSet.colors = listOf(Color.GREEN)
+                    dataSet.colors = listOf(Color.rgb(25,57,26))
 
 
                     // Create a BarData object from the BarDataSet
@@ -1532,7 +1532,7 @@ class SearchFragment : Fragment() {
                     val googleKey = "AIzaSyDjAFFs1s-IfgS7-sFsK1E2n9DVtYNIvXU"
                     val size = "4000x300&scale=2"
                     val center = "$centerLat,$centerLng"
-                    val izoom = calculateZoomLevel(maxLat, minLat, maxLng, minLng, 640)
+                    val izoom = calculateZoomLevel(maxLat, minLat, maxLng, minLng, 640)-1
                     val path = "color:0xff0000ff|weight:10%7Cenc:"+ PolylineEncoding.encode(points10)
 
                     println(middlePoint.lat)
@@ -1540,7 +1540,7 @@ class SearchFragment : Fragment() {
 
                     temp.focusLng = centerLng
                     temp.focusLat = centerLat
-                    temp.zoomlevel = izoom
+                    temp.zoomlevel = izoom+1
                     temp.difficulty = calculateDifficulty(route.distance(),totalUp)
                     temp.difficulty_level = calculateDifficultyLevel(route.distance(),totalUp)
                     // push route
