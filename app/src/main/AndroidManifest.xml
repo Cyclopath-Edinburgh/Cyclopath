@@ -149,6 +149,8 @@
             android:label="@string/route_details" />
         <activity android:name="com.example.cyclopath.ui.library.myRoutesActivity"
             android:label="my routes"/>
+        <activity android:name="com.example.cyclopath.ui.search.WeatherActivity"
+            android:label="weather"/>
         <activity
             android:name="com.example.cyclopath.LoginActivity2"
             android:label="@string/login"

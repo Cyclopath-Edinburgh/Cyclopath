@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="20dp"
         app:layout_constraintBottom_toTopOf="@+id/up_ele"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,7 +46,7 @@
         android:textColor="@color/themegreen"
         android:textSize="18dp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/record_save"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
 
@@ -69,7 +69,7 @@
         android:textColor="@color/themegreen"
         android:textSize="18dp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/record_save"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/goup" />
 
     <ImageView
@@ -80,31 +80,7 @@
         app:layout_constraintStart_toEndOf="@+id/down_ele"
         app:layout_constraintTop_toBottomOf="@+id/elevation_chart" />
 
-    <Button
-        android:id="@+id/record_save"
-        android:layout_width="110dp"
-        android:layout_height="35dp"
-        android:layout_marginBottom="10dp"
-        android:backgroundTint="@color/themegreen"
-        android:fontFamily="@font/arbutus_slab"
-        android:text="Save"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/record_discard"
-        app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/record_discard"
-        android:layout_width="110dp"
-        android:layout_height="35dp"
-        android:layout_marginBottom="10dp"
-        android:backgroundTint="@color/themegreen"
-        android:fontFamily="@font/arbutus_slab"
-        android:text="Cancel"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/record_save" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

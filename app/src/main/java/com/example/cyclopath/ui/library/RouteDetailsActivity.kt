@@ -1,12 +1,14 @@
 package com.example.cyclopath.ui.library
 
 import RouteObj
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -56,13 +58,35 @@ class RouteDetailsActivity: AppCompatActivity() {
         var detail_duration: TextView = findViewById(R.id.rd_dur)
         var detai_distance: TextView = findViewById(R.id.rd_dis)
         var detail_rate: TextView = findViewById(R.id.rating)
+        var eleImage :ImageView = findViewById(R.id.elevation_detail)
+        var detail_address: TextView = findViewById(R.id.rd_address)
+        var up_ele: TextView = findViewById(R.id.rup_ele)
+        var down_ele: TextView = findViewById(R.id.rdown_ele)
 
 
         //
         detail_name.setText(intent.getStringExtra("route"))
         detail_description.setText(intent.getStringExtra("description"))
-        detail_duration.setText(intent.getStringExtra("duration"))
+        detail_duration.setText("Estimated time: "+intent.getStringExtra("duration"))
         detai_distance.setText(intent.getStringExtra("distance"))
+        detail_address.setText(intent.getStringExtra("route_start"))
+        up_ele.setText(intent.getIntExtra("up",0).toString()+"m")
+        down_ele.setText(intent.getIntExtra("down",0).toString()+"m")
+        detail_rate.setText("Difficulty:"+intent.getStringExtra("difficultyLevel"))
+
+
+        val elevationImageRef = Firebase.storage.reference.child("routeBarChart/${name}.png")
+
+        // Download the image as a byte array
+        elevationImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener { imageBytes ->
+            // Convert the downloaded bytes to a Bitmap
+            val eleimageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            eleImage.setImageBitmap(eleimageBitmap)
+
+        }.addOnFailureListener {
+            // Handle any errors that occur while downloading the image
+            Log.e(AccessTokenManager.TAG, "Failed to download image for route")
+        }
 
 
 
@@ -179,6 +203,10 @@ class RouteDetailsActivity: AppCompatActivity() {
             temp.route_up = intent.getIntExtra("up",0)
             temp.route_down = intent.getIntExtra("down",0)
             temp.difficulty_level = intent.getStringExtra("difficultyLevel")
+            temp.route_start = intent.getStringExtra("route_start")
+            temp.zoomlevel = intent.getIntExtra("zoom",0)
+            temp.focusLng = intent.getDoubleExtra("focusLng",0.0)
+            temp.focusLat = intent.getDoubleExtra("focusLat",0.0)
 
             var sp = this.baseContext?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
             val name = sp!!.getString("username","empty")

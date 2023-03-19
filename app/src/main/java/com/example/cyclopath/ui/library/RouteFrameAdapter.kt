@@ -81,6 +81,7 @@ class RouteFrameAdapter(
                 i.putExtra("focusLng",routes[position].focusLng)
                 i.putExtra("focusLat",routes[position].focusLat)
                 i.putExtra("difficultyLevel",routes[position].difficulty_level)
+                i.putExtra("route_start",routes[position].route_start)
                 holder.itemView.context.startActivity(i)
             }
         }
@@ -93,7 +94,17 @@ class RouteFrameAdapter(
         notifyDataSetChanged()
     }
 
+    fun sortByDistanceD() {
+        routes.sortByDescending { it.route_distance }
+        notifyDataSetChanged()
+    }
+
     fun sortByDifficulty() {
+        routes.sortBy { it.difficulty }
+        notifyDataSetChanged()
+    }
+
+    fun sortByDifficultyD() {
         routes.sortByDescending { it.difficulty }
         notifyDataSetChanged()
     }

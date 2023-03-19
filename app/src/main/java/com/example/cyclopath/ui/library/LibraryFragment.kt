@@ -176,17 +176,21 @@ class LibraryFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selectedOption = parent?.getItemAtPosition(position).toString()
                 when (selectedOption) {
-                    "Distance" -> {
+                    "Distance (low to high)" -> {
                         // Sort by distance
                         adapter.sortByDistance()
                     }
-                    "Difficulty" -> {
+                    "Distance (high to low)"-> {
+                        // Sort by distance
+                        adapter.sortByDistanceD()
+                    }
+                    "Difficulty (low to high)" -> {
                         // Sort by difficulty
                         adapter.sortByDifficulty()
                     }
-                    "Ratings" -> {
+                    "Difficulty (high to low)" -> {
                         // Sort by ratings
-                        adapter.sortByRating()
+                        adapter.sortByDifficultyD()
                     }
                 }
             }

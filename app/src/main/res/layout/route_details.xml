@@ -13,14 +13,14 @@
             android:layout_height="0dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/view2"
-            app:layout_constraintHeight_percent="0.44"
+            app:layout_constraintHeight_percent="0.33"
             />
 
 
     <View
         android:id="@+id/view2"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="200dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="16dp"
@@ -37,35 +37,127 @@
         android:layout_marginStart="6dp"
         android:layout_marginTop="12dp"
         android:fontFamily="@font/arbutus_slab"
+        android:textColor="@color/themegreen"
+        android:textStyle="bold"
+        android:textSize="20sp"
         android:text="Route name"
-        android:textColor="@color/black"
-        android:textSize="13dp"
         app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toBottomOf="@+id/routelane" />
 
     <TextView
-        android:id="@+id/rd_des"
+        android:id="@+id/rd_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
+        android:layout_marginRight="10dp"
         android:fontFamily="@font/arbutus_slab"
-        android:text="Road description"
-        android:textColor="@color/black"
-        android:textSize="13dp"
+        android:text="Address"
+        android:textColor="@color/themegreen"
+        android:textStyle="bold"
+        android:textSize="20sp"
         app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toBottomOf="@+id/rd_name" />
+
+<!--    <TextView-->
+<!--        android:id="@+id/rd_dis"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="6dp"-->
+<!--        android:fontFamily="@font/arbutus_slab"-->
+<!--        android:text="Road distance"-->
+<!--        android:textColor="@color/themegreen"-->
+<!--        android:textSize="16dp"-->
+<!--        app:layout_constraintStart_toStartOf="@+id/view2"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/rd_des" />-->
+
 
     <TextView
         android:id="@+id/rd_dis"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:fontFamily="@font/arbutus_slab"
-        android:text="Road distance"
-        android:textColor="@color/black"
-        android:textSize="13dp"
-        app:layout_constraintStart_toStartOf="@+id/view2"
-        app:layout_constraintTop_toBottomOf="@+id/rd_des" />
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="3dp"
+        android:shadowColor="#FFFFFF"
+        android:text="15 km"
+        android:textColor="@color/themegreen"
+        android:textSize="20dp"
+        app:layout_constraintTop_toBottomOf="@+id/rd_address"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/distanceimg"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="3dp"
+        android:src="@drawable/distance"
+        android:layout_marginLeft="3dp"
+        app:layout_constraintLeft_toRightOf="@id/rd_dis"
+        app:layout_constraintTop_toBottomOf="@+id/rd_address"
+        tools:layout_editor_absoluteX="63dp" />
+
+    <TextView
+        android:id="@+id/rup_ele"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:shadowColor="#FFFFFF"
+        android:text="5m"
+        android:textColor="@color/themegreen"
+        android:layout_marginLeft="10dp"
+        android:textSize="20dp"
+        app:layout_constraintLeft_toRightOf="@id/distanceimg"
+        app:layout_constraintTop_toBottomOf="@+id/rd_address" />
+
+    <ImageView
+        android:id="@+id/goup"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/circle_up"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="3dp"
+        app:layout_constraintLeft_toRightOf="@id/rup_ele"
+        app:layout_constraintTop_toBottomOf="@+id/rd_address" />
+
+    <TextView
+        android:id="@+id/rdown_ele"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="3dp"
+        android:shadowColor="#FFFFFF"
+        android:text="5m"
+        android:textColor="@color/themegreen"
+        android:textSize="20dp"
+        app:layout_constraintTop_toBottomOf="@+id/rd_address"
+        app:layout_constraintLeft_toRightOf="@id/goup"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <ImageView
+        android:id="@+id/godown"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/circle_down"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="3dp"
+        app:layout_constraintLeft_toRightOf="@id/rdown_ele"
+        app:layout_constraintTop_toBottomOf="@+id/rd_address" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <TextView
         android:id="@+id/rd_dur"
@@ -74,8 +166,9 @@
         android:layout_marginStart="6dp"
         android:fontFamily="@font/arbutus_slab"
         android:text="Estimated rime"
-        android:textColor="@color/black"
-        android:textSize="13dp"
+        android:textColor="@color/themegreen"
+        android:layout_marginTop="3dp"
+        android:textSize="16dp"
         app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toBottomOf="@+id/rd_dis" />
 
@@ -86,10 +179,22 @@
         android:layout_marginStart="6dp"
         android:fontFamily="@font/arbutus_slab"
         android:text="Rating: 4.2"
-        android:textColor="@color/black"
-        android:textSize="13dp"
+        android:textColor="@color/themegreen"
+        android:textSize="16dp"
         app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toBottomOf="@+id/rd_dur" />
+
+    <TextView
+        android:id="@+id/rd_des"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:fontFamily="@font/arbutus_slab"
+        android:text="Description"
+        android:textColor="@color/themegreen"
+        android:textSize="16dp"
+        app:layout_constraintStart_toStartOf="@+id/view2"
+        app:layout_constraintTop_toBottomOf="@+id/rating" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/save_route"
@@ -103,12 +208,24 @@
         app:layout_constraintEnd_toEndOf="@+id/view2"
         app:maxImageSize="24dp" />
 
+    <ImageView
+        android:id="@+id/elevation_detail"
+        android:layout_width="350dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="5dp"
+        android:src="@drawable/routeshow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view2" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/c_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/etTodoTitle"
-        app:layout_constraintTop_toBottomOf="@+id/view2"
+        app:layout_constraintTop_toBottomOf="@+id/elevation_detail"
+        android:layout_marginTop="10dp"
         tools:layout_editor_absoluteX="13dp" />
 
     <EditText

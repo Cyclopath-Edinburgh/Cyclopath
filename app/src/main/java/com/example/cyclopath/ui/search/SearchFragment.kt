@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -19,6 +20,7 @@ import android.location.LocationManager
 import android.os.*
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -39,6 +41,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.cyclopath.*
 import com.example.cyclopath.R
+import com.example.cyclopath.ui.library.RouteDetailsActivity
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.Chart
 import com.github.mikephil.charting.components.XAxis
@@ -413,6 +416,7 @@ class SearchFragment : Fragment() {
     private lateinit var elevation : FloatingActionButton
     private lateinit var dropdown : Spinner
     private lateinit var timer : Chronometer
+    private lateinit var weatherclick: View
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
@@ -570,6 +574,7 @@ class SearchFragment : Fragment() {
 //        elevation = root.findViewById(R.id.elevation)
         dropdown = root.findViewById(R.id.dropdown)
         timer = root.findViewById(R.id.timer)
+        weatherclick = root.findViewById<View>(R.id.weather_clickable)
         
         sp = context?.getSharedPreferences("user_data", AppCompatActivity.MODE_PRIVATE)
         name = sp!!.getString("username", "user")!!
@@ -1046,6 +1051,12 @@ class SearchFragment : Fragment() {
         }
 
 
+        weatherclick.setOnClickListener{
+            val i = Intent(activity, WeatherActivity::class.java)
+            startActivity(i)
+        }
+
+
 
 //        elevation.setOnClickListener{
 //            if (this::route.isInitialized) {
@@ -1068,7 +1079,7 @@ class SearchFragment : Fragment() {
                 val popupWindow = PopupWindow(popupView, 1500, 800)
                 popupWindow.isFocusable = true
 
-                popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 600, 0)
+                popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 20.dpToPx(resources))
 
                 val totalup = popupWindow.contentView.findViewById<TextView>(R.id.up_ele)
                 val totaldown = popupWindow.contentView.findViewById<TextView>(R.id.down_ele)
@@ -1673,7 +1684,7 @@ class SearchFragment : Fragment() {
                 val humidity = main.getString("humidity")
 
                 val windSpeed = wind.getString("speed")
-                val weatherDescription = weather.getString("description")
+                val weatherDescription = weather.getString("main")
 
                 /* Populating extracted data into our views */
                 // Load the weather icon image using Glide
@@ -2323,6 +2334,14 @@ class SearchFragment : Fragment() {
                .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
        mapView.gestures.removeOnMoveListener(onMoveListener)
    }
+
+    fun Int.dpToPx(resources: Resources): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            this.toFloat(),
+            resources.displayMetrics
+        ).toInt()
+    }
 
 
 }
