@@ -41,7 +41,7 @@
     <Button
         android:id="@+id/exit_yes"
         android:layout_width="70dp"
-        android:layout_height="35dp"
+        android:layout_height="38dp"
         android:layout_marginBottom="20dp"
         android:backgroundTint="@color/themegreen"
         android:fontFamily="@font/arbutus_slab"
@@ -54,7 +54,7 @@
     <Button
         android:id="@+id/exit_no"
         android:layout_width="70dp"
-        android:layout_height="35dp"
+        android:layout_height="38dp"
         android:layout_marginBottom="20dp"
         android:backgroundTint="@color/themegreen"
         android:fontFamily="@font/arbutus_slab"

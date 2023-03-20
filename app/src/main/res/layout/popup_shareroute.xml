@@ -74,7 +74,7 @@
     <Button
         android:id="@+id/share_to_library"
         android:layout_width="110dp"
-        android:layout_height="35dp"
+        android:layout_height="38dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="15dp"
         android:backgroundTint="@color/themegreen"
@@ -89,7 +89,7 @@
     <Button
         android:id="@+id/share_discard"
         android:layout_width="110dp"
-        android:layout_height="35dp"
+        android:layout_height="38dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="15dp"
         android:backgroundTint="@color/themegreen"

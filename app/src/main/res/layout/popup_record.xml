@@ -70,7 +70,7 @@
     <Button
         android:id="@+id/record_save"
         android:layout_width="110dp"
-        android:layout_height="35dp"
+        android:layout_height="38dp"
         android:layout_marginBottom="20dp"
         android:backgroundTint="@color/themegreen"
         android:fontFamily="@font/arbutus_slab"
@@ -83,7 +83,7 @@
     <Button
         android:id="@+id/record_discard"
         android:layout_width="110dp"
-        android:layout_height="35dp"
+        android:layout_height="38dp"
         android:layout_marginBottom="20dp"
         android:backgroundTint="@color/themegreen"
         android:fontFamily="@font/arbutus_slab"
