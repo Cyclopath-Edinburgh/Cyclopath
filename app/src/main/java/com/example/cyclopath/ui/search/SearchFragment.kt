@@ -433,6 +433,7 @@ class SearchFragment : Fragment() {
     private lateinit var chart: BarChart
     private var totalUp = 0.0
     private var totalDown = 0.0
+    private var barChartFlag = true
 
     private lateinit var annotationApi : AnnotationPlugin
     private lateinit var pointAnnotationManager : PointAnnotationManager
@@ -1184,6 +1185,7 @@ class SearchFragment : Fragment() {
 
                     // Refresh the chart
                     chart.invalidate()
+                    barChartFlag = true
 
                 }
 
@@ -1193,14 +1195,14 @@ class SearchFragment : Fragment() {
         }
 
         upload.setOnClickListener {
-            print("mmmmmmmmmmmmmmmmmmmmmmmmm")
 //            println(getElevationFromGoogleMaps(-3.361678,55.942617))
             if (this::route.isInitialized) {
+                if(this::chart.isInitialized && barChartFlag==true){
                 // TODO route is the DirectionRoute
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
 
-                val popupWindow = PopupWindow(popupView, 1000, 900)
+                val popupWindow = PopupWindow(popupView, 1000, 700)
                 popupWindow.isFocusable = true
 
                 popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
@@ -1578,6 +1580,8 @@ class SearchFragment : Fragment() {
                 }
 
             else {
+                Toast.makeText(context,"Please look at the elevation first", Toast.LENGTH_SHORT).show()
+            }}else{
                 Toast.makeText(context,"Please specify your route.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -1905,6 +1909,7 @@ class SearchFragment : Fragment() {
                         }
 
                         route = routes[0].directionsRoute
+                        barChartFlag = false
 
                         val adapter: ArrayAdapter<String> = ArrayAdapter<String>(context!!,
                                 R.layout.spinner_item, strlist)
