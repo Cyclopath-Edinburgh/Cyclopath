@@ -1187,6 +1187,7 @@ class SearchFragment : Fragment() {
                     chart.invalidate()
                     barChartFlag = true
 
+
                 }
 
             }else {
@@ -1539,6 +1540,7 @@ class SearchFragment : Fragment() {
 
                     println(middlePoint.lat)
                     println(middlePoint.lng)
+                    popupWindow.dismiss()
 
                     temp.focusLng = centerLng
                     temp.focusLat = centerLat
