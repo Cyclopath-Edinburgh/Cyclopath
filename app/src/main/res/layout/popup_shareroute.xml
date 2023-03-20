@@ -39,6 +39,7 @@
             android:id="@+id/description_input"
             android:layout_width="match_parent"
             android:layout_marginRight="10dp"
+            android:layout_marginLeft="5dp"
             android:layout_height="110dp"
             android:fontFamily="@font/arbutus_slab"
             android:text="Description"
@@ -63,6 +64,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginRight="10dp"
+            android:layout_marginLeft="5dp"
             android:fontFamily="@font/arbutus_slab"
             android:text="Date:Time"
             android:textColor="@color/themegreen" />
