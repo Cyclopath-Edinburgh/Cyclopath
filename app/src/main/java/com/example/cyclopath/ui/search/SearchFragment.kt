@@ -1202,7 +1202,7 @@ class SearchFragment : Fragment() {
                 val inflater = context?.getSystemService(AppCompatActivity.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 val popupView: View = inflater.inflate(R.layout.popup_shareroute, null)
 
-                val popupWindow = PopupWindow(popupView, 1000, 700)
+                val popupWindow = PopupWindow(popupView, 1000, 1000)
                 popupWindow.isFocusable = true
 
                 popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)

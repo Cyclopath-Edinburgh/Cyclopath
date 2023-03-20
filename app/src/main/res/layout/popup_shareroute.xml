@@ -37,7 +37,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/description_input"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="130dp"
             android:fontFamily="@font/arbutus_slab"
             android:text="Description"
             android:textColor="@color/themegreen" />
