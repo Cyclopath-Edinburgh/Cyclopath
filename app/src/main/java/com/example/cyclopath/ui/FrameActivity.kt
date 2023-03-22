@@ -1,11 +1,10 @@
-package com.example.cyclopath
+package com.example.cyclopath.ui
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.widget.Toast
-import com.example.cyclopath.ui.library.myRoutesActivity
+import com.example.cyclopath.R
 import com.example.cyclopath.ui.login.LoginActivity
 
 class FrameActivity : AppCompatActivity() {
