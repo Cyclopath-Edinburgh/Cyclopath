@@ -231,7 +231,7 @@ class ProfileFragment : Fragment() {
 
                         todayCalories = root.findViewById(R.id.profile_calories)
                         var ca = caloriesList[today]!!.toFloat()
-                        var calories = String.format("%.4f KM",ca)
+                        var calories = String.format("%.4f kJ",ca)
                         todayCalories.text = "Estimated Calories Consumed: $calories"
 
                     }

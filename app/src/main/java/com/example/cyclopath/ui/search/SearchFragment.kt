@@ -362,7 +362,6 @@ class SearchFragment : Fragment() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
 
     private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
-        print("HELLO")
 //        mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
     }
 
@@ -845,6 +844,7 @@ class SearchFragment : Fragment() {
 //                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                    }, 1000)
 //                } else {
+                print(current)
                 updateCamera(current,0.0)
 //                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                }
@@ -963,7 +963,6 @@ class SearchFragment : Fragment() {
 //                            first = "origin=" + current.latitude().toString() + "," + current.longitude().toString()
 //                            second = "destination=" + current.latitude().toString() + "," + current.longitude().toString()
                         } else {
-                            println(routeCoordinates)
                             finding = "start"
                             findAddress(routeCoordinates.first().longitude(), routeCoordinates.first().latitude())
                             Handler().postDelayed({
