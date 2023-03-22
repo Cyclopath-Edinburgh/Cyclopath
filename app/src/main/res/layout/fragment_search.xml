@@ -34,7 +34,8 @@
         android:backgroundTint="@color/white"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
-        android:fontFamily="@font/arbutus_slab"/>
+        android:fontFamily="@font/arbutus_slab"
+        android:textCursorDrawable="@null" />
 
     <ImageView
         android:id="@+id/origin_focus"
@@ -64,7 +65,8 @@
         android:backgroundTint="@color/white"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
-        android:fontFamily="@font/arbutus_slab"/>
+        android:fontFamily="@font/arbutus_slab"
+        android:textCursorDrawable="@null" />
 
     <ImageView
         android:id="@+id/destination_focus"

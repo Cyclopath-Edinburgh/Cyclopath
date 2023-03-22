@@ -844,7 +844,8 @@ class SearchFragment : Fragment() {
 //                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                    }, 1000)
 //                } else {
-                print(current)
+                println("HERE")
+                println(current)
                 updateCamera(current,0.0)
 //                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                }
