@@ -411,6 +411,7 @@ class SearchFragment : Fragment() {
     private lateinit var recenter : FloatingActionButton
     private lateinit var swap : ImageView
     private lateinit var record : ImageView
+    private lateinit var rview : View
     private lateinit var upload : FloatingActionButton
     private lateinit var elevation : FloatingActionButton
     private lateinit var dropdown : Spinner
@@ -564,6 +565,7 @@ class SearchFragment : Fragment() {
         recenter = root.findViewById(R.id.recenter)
         swap = root.findViewById(R.id.swap)
         record = root.findViewById(R.id.record)
+        rview = root.findViewById(R.id.record_view)
         mapView = root.findViewById(R.id.mapView)
         mapboxMap = mapView.getMapboxMap()
         mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
@@ -844,8 +846,6 @@ class SearchFragment : Fragment() {
 //                        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                    }, 1000)
 //                } else {
-                println("HERE")
-                println(current)
                 updateCamera(current,0.0)
 //                mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(current).build())
 //                }
@@ -875,7 +875,7 @@ class SearchFragment : Fragment() {
             }
         }
 
-        record.setOnClickListener {
+        rview.setOnClickListener {
             if (isRecord) {
 
                 retrieveData()
@@ -985,10 +985,10 @@ class SearchFragment : Fragment() {
                             val fifth = "start=$formattedstart"
                             val sixth = "end=$formatted"
                             val seventh = "calories=$calories"
-                            var maxLong = -90.0
-                            var minLong = 90.0
-                            var maxLat = -90.0
-                            var minLat = 90.0
+                            var maxLong = current.longitude()
+                            var minLong = current.longitude()
+                            var maxLat = current.latitude()
+                            var minLat = current.latitude()
                             for (i in routeCoordinates) {
                                 maxLong = max(maxLong, i.longitude())
                                 minLong = min(minLong, i.longitude())

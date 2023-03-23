@@ -18,7 +18,7 @@ class EmailPasswordActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        auth = Firebase.auth
+        auth = Firebase.auth
     }
 
     public override fun onStart() {

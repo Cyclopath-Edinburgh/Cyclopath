@@ -92,14 +92,14 @@ class SignUpActivity : AppCompatActivity() {
                 val email = emailtext.text.toString()
                 val password = passwordtext.text.toString()
                 val password2 = password2text.text.toString()
-                if ((username.length < 5) or (username.length > 20)) {
-                    Toast.makeText(this, "Username should be 5-20 characters.", Toast.LENGTH_SHORT).show()
+                if ((username.length < 6) or (username.length > 20)) {
+                    Toast.makeText(this, "Username should be 6-20 characters.", Toast.LENGTH_SHORT).show()
                 } else if (!password.matches("^(?=.*[a-zA-Z])[a-zA-Z0-9!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]+$".toRegex())) {
                     Toast.makeText(this, "Username must contains at least 1 letter.", Toast.LENGTH_LONG).show()
                 } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                     Toast.makeText(this, "The email address is invalid.", Toast.LENGTH_SHORT).show()
-                } else if ((password.length < 5) or (password.length > 20)) {
-                    Toast.makeText(this, "Password should be 5-20 characters.", Toast.LENGTH_SHORT).show()
+                } else if ((password.length < 6) or (password.length > 20)) {
+                    Toast.makeText(this, "Password should be 6-20 characters.", Toast.LENGTH_SHORT).show()
                 } else if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?])[a-zA-Z0-9!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]+$".toRegex())) {
                     Toast.makeText(this, "Password must contains at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 symbol.", Toast.LENGTH_LONG).show()
                 } else if (password2 != password) {
@@ -120,23 +120,26 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         login.setOnClickListener {
-            emailPasswordActivity.signAccount(email, password)
             val user = Firebase.auth.currentUser
             user!!.reload()
-            if (user!!.isEmailVerified) {
-                bar.visibility = View.VISIBLE
-                Toast.makeText(this, "Directing to Main Page.", Toast.LENGTH_SHORT).show()
-                Handler().postDelayed({
-                    sp!!.edit().putString("username", username).apply()
-                    sp!!.edit().putString("email", email).apply()
-                    sp!!.edit().putString("startdate",today).apply()
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                }, 2000)
-            } else {
-                Toast.makeText(applicationContext, "Please activate your email address.", Toast.LENGTH_SHORT).show()
-            }
+            bar.visibility = View.VISIBLE
+            Handler().postDelayed({
+                if (user!!.isEmailVerified) {
+                    Toast.makeText(this, "Directing to Main Page.", Toast.LENGTH_SHORT).show()
+                    Handler().postDelayed({
+                        sp!!.edit().putString("username", username).apply()
+                        sp!!.edit().putString("email", email).apply()
+                        sp!!.edit().putString("startdate",today).apply()
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                    }, 1000)
+                } else {
+                    bar.visibility = View.INVISIBLE
+                    Toast.makeText(applicationContext, "Please activate your email address.", Toast.LENGTH_SHORT).show()
+                }
+            }, 1000)
+
         }
 
         resend.setOnClickListener{
@@ -235,7 +238,7 @@ class SignUpActivity : AppCompatActivity() {
                     }
                 }, 1000)
             } else {
-                Toast.makeText(this, "The email has been used.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Sign up unsuccessfully. Please try agian.", Toast.LENGTH_SHORT).show()
                 bar.visibility = View.INVISIBLE
             }
         }, 3000)
@@ -249,6 +252,7 @@ class SignUpActivity : AppCompatActivity() {
                     val u = arrayOf(document.id!!, document.getString("email")!!)
                     userList.add(u)
                 }
+
             }
         }
     }

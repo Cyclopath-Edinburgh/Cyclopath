@@ -90,7 +90,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="Username should be 5-20 characters and must contain at least 1 letter."
+                android:text="Username should be 6-20 characters and must contain at least 1 letter."
                 android:fontFamily="@font/arbutus_slab"
                 android:textSize="10dp"
                 android:textColor="@color/lightgreen"/>
@@ -177,7 +177,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="Password should be 5-20 characters and must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 symbol."
+                android:text="Password should be 6-20 characters and must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 symbol."
                 android:fontFamily="@font/arbutus_slab"
                 android:textSize="10dp"
                 android:textColor="@color/lightgreen"/>

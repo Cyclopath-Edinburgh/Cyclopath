@@ -244,7 +244,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view"
         android:layout_marginTop="32dp"
-        android:layout_marginStart="8dp" />
+        android:layout_marginStart="8dp"
+        android:clickable="true"/>
 
     <ImageView
         android:layout_width="64dp"
