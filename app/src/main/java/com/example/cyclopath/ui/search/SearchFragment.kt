@@ -912,7 +912,7 @@ class SearchFragment : Fragment() {
                         popupWindow.dismiss()
 //                        lay.foreground.alpha = 0
 
-                        Toast.makeText(context, "Stop recording", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Stop recording.", Toast.LENGTH_SHORT).show()
                         isRecord = false
                         record.setImageResource(R.drawable.startrecording)
 
@@ -1023,7 +1023,7 @@ class SearchFragment : Fragment() {
                             distance = 0.0
                             routeCoordinates = ArrayList<Point>()
 
-                            Toast.makeText(context, "Successfully saved track!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Track successfully saved!", Toast.LENGTH_SHORT).show()
                         }, 1000)
                     } else {
                         Toast.makeText(context,"This name has been used.", Toast.LENGTH_SHORT).show()
@@ -1044,7 +1044,7 @@ class SearchFragment : Fragment() {
             } else {
                 timer.setBase(SystemClock.elapsedRealtime())
                 timer.start()
-                Toast.makeText(context, "Start recording", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Start recording.", Toast.LENGTH_SHORT).show()
                 isRecord = true
                 record.setImageResource(R.drawable.stoprecording)
                 start = LocalDateTime.now()

@@ -155,11 +155,11 @@
             android:id="@+id/DHAA"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Don't have an account?"
-            android:textColor="@color/themegreen"
-            android:paddingRight="4dp"
             android:fontFamily="@font/arbutus_slab"
-            />
+            android:textSize="16dp"
+            android:paddingRight="4dp"
+            android:text="Don't have an account?"
+            android:textColor="@color/themegreen" />
 
         <TextView
             android:id="@+id/su"
@@ -168,6 +168,7 @@
             android:clickable="true"
             android:text="@string/signup"
             android:textColor="#2291CE"
+            android:textSize="16dp"
             tools:ignore="TouchTargetSizeCheck"
             android:fontFamily="@font/arbutus_slab"/>
 
