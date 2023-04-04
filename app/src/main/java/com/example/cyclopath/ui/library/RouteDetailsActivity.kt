@@ -180,7 +180,7 @@ class RouteDetailsActivity: AppCompatActivity() {
                 val routeRef = storageRef.child("route_comment/${name}/${randomName}.json")
                 routeRef.putBytes(routeObjJson.toByteArray())
 //                comment.text.clear()
-                Toast.makeText(this, "Successfully comment!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Successfully commented!", Toast.LENGTH_SHORT).show()
 
                 comments.add(cmt)
                 view.post {

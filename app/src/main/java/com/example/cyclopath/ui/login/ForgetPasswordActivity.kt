@@ -32,7 +32,7 @@ class ForgetPasswordActivity : AppCompatActivity() {
                 if (emailPasswordActivity.getValid()) {
                         Toast.makeText(this@ForgetPasswordActivity, "A reset password email has been sent.", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this@ForgetPasswordActivity, "Email address does not exists.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ForgetPasswordActivity, "Email address does not exist.", Toast.LENGTH_SHORT).show()
                     }
 
             }, 1000)

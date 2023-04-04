@@ -185,7 +185,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                                 }
                                 sp!!.edit().putString("username", name).apply()
                                 sp!!.edit().putString("email", email).apply()
-                                Toast.makeText(this@LoginActivity, "Successfully login!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@LoginActivity, "Successfully logged in!", Toast.LENGTH_SHORT).show()
                                 gotoMain()
                             } else {
                                 Toast.makeText(this@LoginActivity, "Login failed.", Toast.LENGTH_SHORT).show()
@@ -219,7 +219,7 @@ class LoginActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLis
                                 val user = Firebase.auth.currentUser
                                 user!!.reload()
                                 if (user.isEmailVerified()) {
-                                    Toast.makeText(applicationContext, "Successfully login!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(applicationContext, "Successfully logged in!", Toast.LENGTH_SHORT).show()
                                     sp!!.edit().putString("username", username).apply()
                                     sp!!.edit().putString("email", document.get("email").toString()).apply()
                                     sp!!.edit().putString("startdate", document.get("startdate").toString()).apply()
